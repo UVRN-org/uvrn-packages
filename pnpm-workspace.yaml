@@ -1,0 +1,7 @@
+packages:
+  - 'uvrn-core'
+  - 'uvrn-sdk'
+  - 'uvrn-cli'
+  - 'uvrn-api'
+  - 'uvrn-mcp'
+  - 'uvrn-adapter'

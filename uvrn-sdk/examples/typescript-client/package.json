@@ -1,0 +1,21 @@
+{
+  "name": "uvrn-sdk-typescript-example",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TypeScript examples for Delta Engine SDK",
+  "scripts": {
+    "basic": "ts-node src/basic-usage.ts",
+    "validation": "ts-node src/validation.ts",
+    "verification": "ts-node src/verification.ts",
+    "builder": "ts-node src/builder.ts"
+  },
+  "dependencies": {
+    "@uvrn/sdk": "file:../..",
+    "@uvrn/core": "file:../../uvrn-core"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "ts-node": "^10.9.0",
+    "typescript": "^5.3.0"
+  }
+}

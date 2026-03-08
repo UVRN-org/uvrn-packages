@@ -1,0 +1,1 @@
+{"bundleId":"cli-test-001","deltaFinal":0.01980198,"sources":["Source A","Source B"],"rounds":[{"round":1,"deltasByMetric":{"value":0.01980198},"withinThreshold":true,"witnessRequired":false}],"suggestedFixes":[],"outcome":"consensus","hash":"36247244c63f58e0b2908d2fad115f60677f29b59b67665579b9b6e8db727791"}

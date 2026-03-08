@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [1.0.0] - 2026-01-15
 
+First public npm release under `@uvrn/sdk` (2026-03-08).
+
 ### Added
 - Initial release of Delta Engine SDK
 - `DeltaEngineClient` with three execution modes:

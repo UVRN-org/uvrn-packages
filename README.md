@@ -38,7 +38,7 @@ All packages are intended to live under [UVRN-org](https://github.com/orgs/UVRN-
 - **Option A**: Push this monorepo as **uvrn-packages** to `https://github.com/UVRN-org/uvrn-packages`.
 - **Option B**: Create one repo per package: **uvrn-delta-engine-core** (for `@uvrn/core`), **uvrn-sdk**, **uvrn-cli**, **uvrn-api**, **uvrn-mcp**, **uvrn-adapter**, then split or mirror from this repo.
 
-New versions: use **1.0.0** (or next semver) for first NPM publish; publish **@uvrn/core** first, then dependents. Full plan (version order, Option A vs B): see Lyrikai Node `admin/docs/build-plans/BP-UVRN-GITHUB-AND-NPM-PUBLISH.md`.
+New versions: use **1.0.0** (or next semver) for first NPM publish; publish **@uvrn/core** first, then dependents. Full plan (version order, Option A vs B): see Lyrikai Node `admin/docs/build-plans/BP-UVRN-GITHUB-AND-NPM-PUBLISH.md`. First publish checklist and report: see `docs/reports/` (e.g. `2026-03-08-npm-first-publish.md`).
 
 ## License
 

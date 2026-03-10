@@ -444,6 +444,8 @@ MIT
 
 ## Links
 
+**Open source:** Source code and issues: [GitHub (uvrn-packages)](https://github.com/UVRN-org/uvrn-packages). Project landing: [UVRN](https://github.com/UVRN-org/uvrn).
+
 - [Repository](https://github.com/UVRN-org/uvrn-packages) — monorepo (this package: `uvrn-mcp`)
 - [@uvrn/core](https://www.npmjs.com/package/@uvrn/core) — Delta Engine core
 - [MCP Protocol](https://modelcontextprotocol.io/) — Model Context Protocol specification

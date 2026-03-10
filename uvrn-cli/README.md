@@ -331,6 +331,8 @@ MIT
 
 ## Links
 
+**Open source:** Source code and issues: [GitHub (uvrn-packages)](https://github.com/UVRN-org/uvrn-packages). Project landing: [UVRN](https://github.com/UVRN-org/uvrn).
+
 - [Repository](https://github.com/UVRN-org/uvrn-packages) — monorepo (this package: `uvrn-cli`)
 - [CLI Guide](docs/CLI_GUIDE.md) — full command reference
 - [@uvrn/core](https://www.npmjs.com/package/@uvrn/core) — core engine library

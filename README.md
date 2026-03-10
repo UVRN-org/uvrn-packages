@@ -56,6 +56,10 @@ pnpm run build
 
 Publish in dependency order: **@uvrn/core** first, then **@uvrn/sdk**, **@uvrn/adapter**, **@uvrn/mcp**, **@uvrn/api**, **@uvrn/cli**. See `docs/reports/` for publish notes (e.g. `2026-03-08-npm-first-publish.md`).
 
+## Open source
+
+**Open source:** Source code and issues are on GitHub: [uvrn-packages](https://github.com/UVRN-org/uvrn-packages) (monorepo). Project landing: [UVRN](https://github.com/UVRN-org/uvrn).
+
 ## License
 
 MIT

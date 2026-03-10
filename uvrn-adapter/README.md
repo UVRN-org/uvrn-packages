@@ -86,5 +86,7 @@ If you need a completely different envelope spec:
 
 ## Links
 
+**Open source:** Source code and issues: [GitHub (uvrn-packages)](https://github.com/UVRN-org/uvrn-packages). Project landing: [UVRN](https://github.com/UVRN-org/uvrn).
+
 - [Repository](https://github.com/UVRN-org/uvrn-packages) — monorepo (this package: `uvrn-adapter`)
 - [@uvrn/core](https://www.npmjs.com/package/@uvrn/core) — Delta Engine core (produces the receipts this adapter wraps)

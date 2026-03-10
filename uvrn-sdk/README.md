@@ -311,6 +311,8 @@ See the [examples directory](./examples/) for complete working examples:
 
 ## Links
 
+**Open source:** Source code and issues: [GitHub (uvrn-packages)](https://github.com/UVRN-org/uvrn-packages). Project landing: [UVRN](https://github.com/UVRN-org/uvrn).
+
 - [Repository](https://github.com/UVRN-org/uvrn-packages) — monorepo (this package: `uvrn-sdk`)
 - [SDK Guide](./docs/SDK_GUIDE.md) — comprehensive usage guide
 - [@uvrn/core](https://www.npmjs.com/package/@uvrn/core) — Delta Engine core (used in local mode)

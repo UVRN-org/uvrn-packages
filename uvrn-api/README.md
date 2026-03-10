@@ -49,6 +49,8 @@ curl -X POST http://localhost:3000/delta/run \
 
 ## Links
 
+**Open source:** Source code and issues: [GitHub (uvrn-packages)](https://github.com/UVRN-org/uvrn-packages). Project landing: [UVRN](https://github.com/UVRN-org/uvrn).
+
 - [Repository](https://github.com/UVRN-org/uvrn-packages) — monorepo (this package: `uvrn-api`)
 - [@uvrn/core](https://www.npmjs.com/package/@uvrn/core) — Delta Engine core used by this server
 - [@uvrn/cli](https://www.npmjs.com/package/@uvrn/cli) — run the engine from the command line instead of HTTP

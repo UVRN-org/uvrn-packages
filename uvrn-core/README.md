@@ -60,6 +60,8 @@ console.log(receipt.hash);      // SHA-256 of canonical receipt
 
 ## Links
 
+**Open source:** Source code and issues: [GitHub (uvrn-packages)](https://github.com/UVRN-org/uvrn-packages). Project landing: [UVRN](https://github.com/UVRN-org/uvrn).
+
 - [Repository](https://github.com/UVRN-org/uvrn-packages) — monorepo (this package: `uvrn-core`)
 - [@uvrn/sdk](https://www.npmjs.com/package/@uvrn/sdk) — programmatic client (CLI/HTTP/local) built on this core
 - [@uvrn/cli](https://www.npmjs.com/package/@uvrn/cli) — run the engine from the command line

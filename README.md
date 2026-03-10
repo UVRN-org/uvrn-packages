@@ -1,6 +1,6 @@
 # uvrn-packages
 
-Monorepo for **UVRN** (Universal Verification Receipts for Nything) protocol packages. Published to npm under the `@uvrn` scope.
+Monorepo for **UVRN** (Universal Verification Receipt Network) protocol packages. Published to npm under the `@uvrn` scope.
 
 ## Getting started
 

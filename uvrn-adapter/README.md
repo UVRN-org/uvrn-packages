@@ -50,6 +50,40 @@ const extracted = extractDeltaReceipt(drvc3);
 - **Interop with DRVC3 systems** — Produce standard DRVC3 envelopes that other tools can validate and parse.
 - **Audit and provenance** — Keep the core receipt hash unchanged while adding issuer and timestamp in the envelope.
 
+## DRVC3 customization
+
+### What you can customize
+
+You can set these options when wrapping a receipt (no code changes to this package):
+
+- **issuer** — Your service or org name (e.g. `'my-app'`, `'acme-corp'`).
+- **event** — Event type (e.g. `'delta-reconciliation'`, `'price-attestation'`).
+- **certificate** — Version or brand string (default `'DRVC3 v1.01'`; you can use e.g. `'MyCorp Receipt v1'`).
+- **description**, **resource**, **replay_instructions**, **tags** — Optional metadata.
+- **extensions** — Arbitrary key-value object for your own metadata (provenance, evidence links, etc.).
+
+Example:
+
+```typescript
+const drvc3 = await wrapInDRVC3(receipt, wallet, {
+  issuer: 'acme-corp',
+  event: 'price-attestation',
+  certificate: 'Acme Receipt v1',
+  extensions: { source: 'https://acme.com/feed', region: 'us-east' },
+});
+```
+
+### What is fixed
+
+The envelope **structure** is defined by the bundled DRVC3 schema (`schemas/drvc3.schema.json`). Required fields (e.g. `receipt_id`, `issuer`, `event`, `timestamp`, `integrity`, `block_state`, `certificate`, `validation.checks.delta_receipt`) cannot be changed when using `validateDRVC3`. There is no option to pass a different schema.
+
+### Using a different envelope format
+
+If you need a completely different envelope spec:
+
+- **Fork this package** — Change the types, schema, wrapper, and validator in your own package and publish under your own scope.
+- **Skip DRVC3** — Use `@uvrn/core` (and optionally `@uvrn/sdk`) only; build your own envelope format and signing/validation on top of the core receipt.
+
 ## Links
 
 - [Repository](https://github.com/UVRN-org/uvrn-packages) — monorepo (this package: `uvrn-adapter`)

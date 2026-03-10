@@ -1,10 +1,10 @@
 # @uvrn/sdk
 
-TypeScript SDK for [UVRN Delta Engine](https://github.com/uvrn/uvrn-core) (formerly Loosechain) — programmatic access to deterministic verification and consensus computation.
+TypeScript SDK for the [UVRN Delta Engine](https://github.com/UVRN-org/uvrn-packages) — programmatic access to deterministic verification and consensus computation.
 
 ## Overview
 
-The Delta Engine SDK provides a developer-friendly interface to interact with the Loosechain Delta Engine in multiple execution modes:
+The Delta Engine SDK provides a developer-friendly interface to interact with the Delta Engine in multiple execution modes:
 
 - **CLI Mode**: Spawn the CLI executable as a child process
 - **HTTP Mode**: Make REST API calls to a running Delta Engine server
@@ -32,20 +32,20 @@ const client = new DeltaEngineClient({
 
 // Build a bundle
 const bundle = new BundleBuilder()
-  .setClaim('Q1 revenue matches forecast within 5%')
+  .setClaim('Metrics from source-a and source-b agree within 5%')
   .addDataSpecQuick(
-    'forecast',
-    'Q1 Forecast',
+    'source-a',
+    'Source A',
     'report',
-    ['forecast-doc-123'],
-    [{ key: 'revenue', value: 1000000, unit: 'USD' }]
+    ['doc-001'],
+    [{ key: 'total', value: 1000, unit: 'count' }]
   )
   .addDataSpecQuick(
-    'actual',
-    'Q1 Actual',
+    'source-b',
+    'Source B',
     'report',
-    ['actuals-doc-456'],
-    [{ key: 'revenue', value: 1020000, unit: 'USD' }]
+    ['doc-002'],
+    [{ key: 'total', value: 1020, unit: 'count' }]
   )
   .setThreshold(0.05)
   .build();
@@ -68,20 +68,20 @@ const client = new DeltaEngineClient({
 });
 
 const bundle = new BundleBuilder()
-  .setClaim('Sales projections are accurate')
+  .setClaim('Metrics from two sources agree within 10%')
   .addDataSpec({
     id: 'source-1',
-    label: 'Projected Sales',
+    label: 'Source One',
     sourceKind: 'report',
-    originDocIds: ['proj-123'],
-    metrics: [{ key: 'total_sales', value: 500000 }]
+    originDocIds: ['doc-001'],
+    metrics: [{ key: 'total', value: 500 }]
   })
   .addDataSpec({
     id: 'source-2',
-    label: 'Actual Sales',
+    label: 'Source Two',
     sourceKind: 'report',
-    originDocIds: ['actual-456'],
-    metrics: [{ key: 'total_sales', value: 485000 }]
+    originDocIds: ['doc-002'],
+    metrics: [{ key: 'total', value: 485 }]
   })
   .setThresholdPercent(10)
   .build();
@@ -235,6 +235,13 @@ Validates current configuration.
 
 Builds and returns the bundle (throws if invalid).
 
+## Use cases
+
+- **Run the engine from code** — Use local mode to run comparisons in-process, or HTTP/CLI mode to call a remote server or CLI.
+- **Build bundles programmatically** — Use BundleBuilder to construct valid bundles without hand-writing JSON.
+- **Validate and verify in pipelines** — Validate bundles before run; verify receipt hashes after run for integrity checks.
+- **Integrate into any service** — Same API whether you use CLI, HTTP, or local; switch modes via config.
+
 ### Validators
 
 **`validateBundle(bundle: unknown): ValidationResult`**
@@ -302,11 +309,13 @@ See the [examples directory](./examples/) for complete working examples:
 - [examples/error-handling/](./examples/error-handling/) - Error handling patterns
 - [examples/batch-processing/](./examples/batch-processing/) - Processing multiple bundles
 
-## Documentation
+## Links
 
-- [SDK Guide](./docs/SDK_GUIDE.md) - Comprehensive usage guide
-- [API Documentation](./docs/api/) - Generated TypeDoc documentation
-- [Delta Engine Core](https://github.com/uvrn/uvrn-core) - Core engine documentation
+- [Repository](https://github.com/UVRN-org/uvrn-packages) — monorepo (this package: `uvrn-sdk`)
+- [SDK Guide](./docs/SDK_GUIDE.md) — comprehensive usage guide
+- [@uvrn/core](https://www.npmjs.com/package/@uvrn/core) — Delta Engine core (used in local mode)
+- [@uvrn/cli](https://www.npmjs.com/package/@uvrn/cli) — run the engine from the command line
+- [@uvrn/api](https://www.npmjs.com/package/@uvrn/api) — HTTP server for the engine
 
 ## Requirements
 
@@ -316,16 +325,3 @@ See the [examples directory](./examples/) for complete working examples:
 ## License
 
 MIT
-
-## Contributing
-
-Contributions are welcome! Please see the main repository for contribution guidelines.
-
-## Support
-
-- GitHub Issues: [Report a bug](https://github.com/uvrn/uvrn-core/issues)
-- Documentation: [Full documentation](https://github.com/uvrn/uvrn-core/tree/main/docs)
-
----
-
-Built with ❤️ by the Loosechain team

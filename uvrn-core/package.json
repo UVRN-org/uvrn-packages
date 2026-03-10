@@ -6,6 +6,12 @@
   "types": "dist/index.d.ts",
   "keywords": ["uvrn", "deterministic", "protocol", "consensus"],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UVRN-org/uvrn-packages.git",
+    "directory": "uvrn-core"
+  },
+  "homepage": "https://github.com/UVRN-org/uvrn-packages#readme",
   "scripts": {
     "build": "tsc",
     "test": "jest",

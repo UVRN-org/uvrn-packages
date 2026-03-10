@@ -1,8 +1,8 @@
 # @uvrn/cli
 
-Command-line interface for the Loosechain Delta Engine. Transform data bundles into verifiable receipts using Layer-1 protocol infrastructure.
+Command-line interface for the UVRN Delta Engine. Transform data bundles into verifiable receipts using deterministic comparison and canonical hashing.
 
-## Installation
+## Install
 
 ### Global Installation (Recommended)
 
@@ -62,7 +62,7 @@ npx delta-engine --version
 delta-engine run bundle.json
 ```
 
-3. **Get your receipt** (with deterministic hash):
+3. **Get your receipt** (with deterministic hash). Example output:
 
 ```json
 {
@@ -282,9 +282,16 @@ elif [ $? -eq 3 ]; then
 fi
 ```
 
-## Protocol Compliance
+## Use cases
 
-This CLI implements the Loosechain Layer-1 protocol specification:
+- **Run comparisons from the shell** — Pass a bundle file, stdin, or URL; get a receipt with outcome and hash.
+- **Validate before running** — Use `delta-engine validate bundle.json` to check structure without executing.
+- **Verify receipts** — Use `delta-engine verify receipt.json` to recompute the hash and confirm integrity.
+- **CI and scripts** — Pipe bundles in and receipts out; use exit codes for success or failure.
+
+## Protocol compliance
+
+This CLI implements the UVRN Delta Engine protocol:
 
 - Deterministic hash computation (SHA-256)
 - Canonical JSON serialization
@@ -318,23 +325,15 @@ Make the CLI executable:
 chmod +x node_modules/.bin/delta-engine
 ```
 
-## Contributing
-
-This package is part of the Loosechain Delta Engine Core monorepo. See the main repository for contribution guidelines.
-
 ## License
 
 MIT
 
-## Related Packages
+## Links
 
-- [@uvrn/core](../uvrn-core) - Core engine library
-- [@uvrn/api](../uvrn-api) - REST API server (coming soon)
-- [@uvrn/mcp](../uvrn-mcp) - MCP server integration (coming soon)
-- [@uvrn/sdk](../uvrn-sdk) - TypeScript SDK (coming soon)
-
-## Support
-
-- Documentation: [docs/CLI_GUIDE.md](docs/CLI_GUIDE.md)
-- Issues: https://github.com/uvrn/lc_delta-core/issues
-- Protocol Spec: See `admin/docs/compass/PROTOCOL.md` in the repository
+- [Repository](https://github.com/UVRN-org/uvrn-packages) — monorepo (this package: `uvrn-cli`)
+- [CLI Guide](docs/CLI_GUIDE.md) — full command reference
+- [@uvrn/core](https://www.npmjs.com/package/@uvrn/core) — core engine library
+- [@uvrn/api](https://www.npmjs.com/package/@uvrn/api) — REST API server (published)
+- [@uvrn/mcp](https://www.npmjs.com/package/@uvrn/mcp) — MCP server for AI assistants (published)
+- [@uvrn/sdk](https://www.npmjs.com/package/@uvrn/sdk) — TypeScript SDK (published)

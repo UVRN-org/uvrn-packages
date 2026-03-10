@@ -7,6 +7,12 @@
   "bin": { "uvrn": "dist/cli.js" },
   "keywords": ["uvrn", "cli", "verification", "receipt"],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UVRN-org/uvrn-packages.git",
+    "directory": "uvrn-cli"
+  },
+  "homepage": "https://github.com/UVRN-org/uvrn-packages#readme",
   "scripts": {
     "build": "tsc",
     "test": "jest",

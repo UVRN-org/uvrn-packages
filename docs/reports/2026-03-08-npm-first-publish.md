@@ -15,18 +15,9 @@
 
 ## Publish status
 
-- **Publish to npm**: Not completed. `pnpm --filter @uvrn/core publish --access public` was run and failed with:
-  - `404 Not Found - PUT https://registry.npmjs.org/@uvrn%2fcore` — "you do not have permission to access it" or scope not found.
-- **Prerequisite**: npm account with access to publish under **@uvrn** scope, and logged in locally (`npm whoami`; `npm login` or token). Once auth/scope is in place, publish in this order:
-  1. `pnpm --filter @uvrn/core publish --access public`
-  2. `pnpm --filter @uvrn/sdk publish --access public`
-  3. `pnpm --filter @uvrn/adapter publish --access public`
-  4. `pnpm --filter @uvrn/mcp publish --access public`
-  5. `pnpm --filter @uvrn/api publish --access public`
-  6. `pnpm --filter @uvrn/cli publish --access public`
+- **Publish to npm**: Completed. All six packages were successfully published at **1.0.0** in dependency order (core, sdk, adapter, mcp, api, cli). See [npm @uvrn packages](https://www.npmjs.com/settings/uvrn/packages).
 
 ## Remains
 
-- Complete npm auth and @uvrn scope setup; run the six publish commands above.
-- Optionally add `CHANGELOG.md` to other packages (core, adapter, mcp, api, cli) for 1.0.0 when they are first published.
-- Any follow-up (e.g. Node/adapter consumer update to use published packages) per Lyrikai Node or other consumers.
+- Optionally add `CHANGELOG.md` to other packages (core, adapter, mcp, api, cli) for 1.0.0.
+- **Next step**: Point Lyrikai Node `adapters/uvrn-ledger` at `@uvrn/core` and `@uvrn/sdk` (Node plan: uvrn-ledger adapter deps).

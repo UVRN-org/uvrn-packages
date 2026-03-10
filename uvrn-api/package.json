@@ -6,6 +6,12 @@
   "types": "dist/index.d.ts",
   "keywords": ["uvrn", "rest-api", "bundle", "protocol"],
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UVRN-org/uvrn-packages.git",
+    "directory": "uvrn-api"
+  },
+  "homepage": "https://github.com/UVRN-org/uvrn-packages#readme",
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",

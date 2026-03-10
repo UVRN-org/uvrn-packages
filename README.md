@@ -2,6 +2,31 @@
 
 Monorepo for **UVRN** (Universal Verification Receipts for Nything) protocol packages. Published to npm under the `@uvrn` scope.
 
+## Getting started
+
+- **Delta Engine (library):** `npm install @uvrn/core @uvrn/sdk`
+- **CLI:** `npm install -g @uvrn/cli` then `delta-engine run bundle.json`
+- **REST API:** `npm install @uvrn/api` then `npx @uvrn/api` (server on port 3000)
+- **MCP (AI assistants):** `npm install @uvrn/mcp` and add to your MCP client config
+- **DRVC3 signing:** `npm install @uvrn/core @uvrn/adapter` to wrap receipts in signed envelopes
+
+See each package README for install, usage, and use cases.
+
+## Packages on npm
+
+| Package | What it is | Install |
+| -------- | ---------- | ------- |
+| [@uvrn/core](https://www.npmjs.com/package/@uvrn/core) | Delta Engine core (run, validate, verify) | `npm install @uvrn/core` |
+| [@uvrn/sdk](https://www.npmjs.com/package/@uvrn/sdk) | TypeScript SDK (CLI / HTTP / local modes) | `npm install @uvrn/sdk` |
+| [@uvrn/cli](https://www.npmjs.com/package/@uvrn/cli) | Command-line (bundle → receipt) | `npm install -g @uvrn/cli` |
+| [@uvrn/api](https://www.npmjs.com/package/@uvrn/api) | REST API server | `npm install @uvrn/api` |
+| [@uvrn/mcp](https://www.npmjs.com/package/@uvrn/mcp) | MCP server for AI assistants | `npm install @uvrn/mcp` |
+| [@uvrn/adapter](https://www.npmjs.com/package/@uvrn/adapter) | DRVC3 envelope adapter (EIP-191) | `npm install @uvrn/adapter` |
+| [@uvrn/delta-engine-core](https://www.npmjs.com/package/@uvrn/delta-engine-core) | Same as @uvrn/core | Use `@uvrn/core` for consistency |
+| [@uvrn/delta-engine-sdk](https://www.npmjs.com/package/@uvrn/delta-engine-sdk) | Same as @uvrn/sdk (programmatic) | Use `@uvrn/sdk` for consistency |
+
+**Naming:** `@uvrn/core` and `@uvrn/delta-engine-core` are the same package (Delta Engine core). `@uvrn/sdk` and `@uvrn/delta-engine-sdk` (programmatic client) are the same. Prefer **@uvrn/core** and **@uvrn/sdk** for consistency.
+
 ## Structure
 
 ```
@@ -27,18 +52,9 @@ pnpm install
 pnpm run build
 ```
 
-## Consumers
+## Publish
 
-- **Lyrikai Node** and other LK projects consume these packages from npm (`@uvrn/core`, `@uvrn/sdk`, etc.). Node acts as director of forces; this repo is the canonical source and publishes to npm.
-
-## Publish to GitHub (UVRN-org)
-
-All packages are intended to live under [UVRN-org](https://github.com/orgs/UVRN-org/repositories):
-
-- **Option A**: Push this monorepo as **uvrn-packages** to `https://github.com/UVRN-org/uvrn-packages`.
-- **Option B**: Create one repo per package: **uvrn-delta-engine-core** (for `@uvrn/core`), **uvrn-sdk**, **uvrn-cli**, **uvrn-api**, **uvrn-mcp**, **uvrn-adapter**, then split or mirror from this repo.
-
-New versions: use **1.0.0** (or next semver) for first NPM publish; publish **@uvrn/core** first, then dependents. Full plan (version order, Option A vs B): see Lyrikai Node `admin/docs/build-plans/BP-UVRN-GITHUB-AND-NPM-PUBLISH.md`. First publish checklist and report: see `docs/reports/` (e.g. `2026-03-08-npm-first-publish.md`).
+Publish in dependency order: **@uvrn/core** first, then **@uvrn/sdk**, **@uvrn/adapter**, **@uvrn/mcp**, **@uvrn/api**, **@uvrn/cli**. See `docs/reports/` for publish notes (e.g. `2026-03-08-npm-first-publish.md`).
 
 ## License
 

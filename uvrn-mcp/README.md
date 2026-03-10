@@ -328,6 +328,12 @@ See [ENVIRONMENT.md](./ENVIRONMENT.md) for detailed configuration options.
 LOG_LEVEL=debug MAX_BUNDLE_SIZE=20971520 npx @uvrn/mcp
 ```
 
+## Use cases
+
+- **Use the Delta Engine from an AI assistant** — Run bundles, validate, and verify receipts via MCP tools (e.g. Claude Desktop) without writing adapter code.
+- **Expose schemas to agents** — Resources provide bundle and receipt JSON schemas so agents can construct valid payloads.
+- **Guided prompts** — Use the built-in prompts (e.g. verify_data, create_bundle) to walk users through verification or bundle creation.
+
 ## Troubleshooting
 
 ### Server doesn't appear in Claude Desktop
@@ -381,13 +387,13 @@ import type { DeltaBundle, DeltaReceipt } from '@uvrn/mcp';
 
 ## Development
 
-### Building from Source
+### Building from source
 
 ```bash
-git clone https://github.com/your-repo/lc_delta-core.git
-cd lc_delta-core/packages/uvrn-mcp
-npm install
-npm run build
+git clone https://github.com/UVRN-org/uvrn-packages.git
+cd uvrn-packages/uvrn-mcp
+pnpm install
+pnpm run build
 ```
 
 ### Running Tests
@@ -436,11 +442,8 @@ graph LR
 
 MIT
 
-## Related Projects
+## Links
 
-- [Loosechain Delta Engine Core](../uvrn-core) - Core engine functionality
-- [MCP Protocol Specification](https://modelcontextprotocol.io/) - Official MCP docs
-
----
-
-**Loosechain** - _Receipts are truth. Interfaces are untrusted. Verification comes first._
+- [Repository](https://github.com/UVRN-org/uvrn-packages) — monorepo (this package: `uvrn-mcp`)
+- [@uvrn/core](https://www.npmjs.com/package/@uvrn/core) — Delta Engine core
+- [MCP Protocol](https://modelcontextprotocol.io/) — Model Context Protocol specification

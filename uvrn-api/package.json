@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/api",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "UVRN REST API — HTTP access to bundle processing",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

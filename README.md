@@ -37,8 +37,11 @@ uvrn-packages/
 ├── uvrn-api/       # REST API server
 ├── uvrn-mcp/       # MCP server
 ├── uvrn-adapter/   # DRVC3 envelope adapter
-└── docs/           # Shared documentation
+├── docs/           # Shared documentation
+└── guides/         # Workflows and protocols
 ```
+
+**Safe updates (preserve older version):** To make changes while keeping a frozen copy in another folder, use [Git worktrees](guides/Git_Worktree_Protocol_Universal_Template.md). One directory stays at the preserved state; do new work in a second worktree (e.g. `uvrn-packages-next`).
 
 ## Install
 

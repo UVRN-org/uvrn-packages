@@ -1,6 +1,6 @@
 # uvrn-packages
 
-Monorepo for **UVRN** (Universal Verification Receipt Network) protocol packages. Published to npm under the `@uvrn` scope. **Release:** @uvrn/api 1.5.2; others 1.5.1.
+Monorepo for **UVRN** (Universal Verification Receipt Network) protocol packages. Published to npm under the `@uvrn` scope. **Release:** @uvrn/api, @uvrn/sdk, @uvrn/mcp 1.5.2; @uvrn/core, @uvrn/adapter, @uvrn/cli 1.5.1.
 
 **Highlights:** Packed `@uvrn/*` manifests use normal semver (no `workspace:`), so `npm install` works in clean projects. CI (`pack-check.yml`) runs a contract test: build, pack, then install from tarballs and run smoke (createServer + health, MCP library import). **@uvrn/api** 1.5.2: `createServer()` no longer crashes without `pino-pretty`; **@uvrn/mcp** and **@uvrn/sdk** follow default-safe behavior (no side effects on import; SDK `VERSION` from package.json). See [CHANGELOG.md](CHANGELOG.md).
 

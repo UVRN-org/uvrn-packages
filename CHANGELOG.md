@@ -10,8 +10,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
-- **@uvrn/sdk:** `VERSION` is now read from `package.json` at runtime so it stays in sync with the published version (no more hardcoded 1.0.0).
-- **@uvrn/mcp:** Library entry (`main`) no longer starts the server on import. Bin entry is `dist/run.js`; importing the package only exports `createServer` and `startServer`. Run the server via `npx uvrn-mcp` or by calling `startServer()`.
 - **CI:** Pack-check workflow step renamed to "Contract test (clean install from tarballs + smoke)"; comment added that the smoke runs in an isolated temp dir with only packed tarballs.
 - **Docs:** Added [docs/decisions/0001-default-safe-behavior.md](docs/decisions/0001-default-safe-behavior.md) (ADR) for default-safe behavior: no required optional deps, no side effects on import, single source of truth for version.
 
@@ -22,6 +20,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ### Fixed
 
 - **@uvrn/api:** `createServer()` no longer throws when `pino-pretty` is missing. Development pretty logging is optional; the server falls back to standard Pino output so default `createServer()` succeeds in a clean install. See [uvrn-api/CHANGELOG.md](uvrn-api/CHANGELOG.md).
+
+### Changed
+
+- **@uvrn/sdk:** `VERSION` is now read from `package.json` at runtime so it stays in sync with the published version (no more hardcoded 1.0.0). See [uvrn-sdk/CHANGELOG.md](uvrn-sdk/CHANGELOG.md).
+- **@uvrn/mcp:** Library entry (`main`) no longer starts the server on import. Bin entry is `dist/run.js`; importing the package only exports `createServer` and `startServer`. Run the server via `npx uvrn-mcp` or by calling `startServer()`. See [uvrn-mcp/CHANGELOG.md](uvrn-mcp/CHANGELOG.md).
 
 ---
 

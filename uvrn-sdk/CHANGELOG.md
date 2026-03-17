@@ -10,6 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Replaced retired Loosechain brand with UVRN in package copy and LICENSE.
 
+## [1.5.2] - 2026-03-17
+
+### Changed
+- **Versioning:** `VERSION` is now read from `package.json` at runtime so it stays in sync with the published version (no more hardcoded 1.0.0). README documents the Versioning section and default-safe behavior.
+
 ## [1.5.1] - 2026-03-17
 
 Publish fix: packed manifest no longer contains `workspace:` protocol; consumer installs work with npm/yarn. See root [CHANGELOG](../../CHANGELOG.md).

@@ -14,7 +14,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 - Replaced retired Loosechain brand with UVRN across all packages (CLI, core, adapter, SDK, MCP).
-- **@uvrn/adapter:** Replaced `ethers` with `@noble/hashes` and `@noble/secp256k1` for EIP-191 signing; **breaking:** `wrapInDRVC3` and `signHash` now take a private key hex string instead of an ethers Wallet. See [uvrn-adapter/CHANGELOG.md](uvrn-adapter/CHANGELOG.md).
+
+---
+
+## [1.4.0] – 2026-03-17
+
+All packages versioned at 1.4.0. Adapter breaking API change: sign with private key hex instead of ethers Wallet.
+
+### Changed
+- **@uvrn/adapter:** Replaced `ethers` with `@noble/hashes` and `@noble/secp256k1` for EIP-191 signing; dependency footprint reduced from ~1MB+ to ~40KB.
+- **All packages:** Version set to 1.4.0; READMEs and docs updated.
+
+### Breaking
+- **@uvrn/adapter:** `wrapInDRVC3` and `signHash` now take a private key hex string instead of an ethers Wallet. See [uvrn-adapter/CHANGELOG.md](uvrn-adapter/CHANGELOG.md).
 
 ---
 

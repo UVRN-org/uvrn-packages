@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/api",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "publishConfig": { "access": "public" },
   "description": "UVRN REST API — HTTP access to bundle processing",
   "main": "dist/index.js",

@@ -4,6 +4,10 @@ All notable changes to @uvrn/adapter are documented in this file. The format is 
 
 ## [Unreleased]
 
+(No unreleased changes.)
+
+## [1.4.0] – 2026-03-17
+
 ### Changed
 
 - Replaced `ethers` with `@noble/hashes` and `@noble/secp256k1` for EIP-191 signing. Dependency footprint reduced from ~1MB+ to ~40KB. Signing remains fully compatible with EIP-191 (Ethereum Signed Message).

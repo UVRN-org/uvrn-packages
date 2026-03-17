@@ -5,7 +5,7 @@
 [![npm version](https://img.shields.io/npm/v/@uvrn/mcp.svg)](https://www.npmjs.com/package/@uvrn/mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Release:** 1.3.0.
+**Release:** 1.4.0.
 
 **Disclaimer:** UVRN is in Alpha testing. The engine measures whether your sources agree with each other — not whether they’re correct. Final trust of output rests with the user. Use at your own risk. Have fun.
 

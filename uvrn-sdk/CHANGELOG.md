@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Replaced retired Loosechain brand with UVRN in package copy and LICENSE.
 
+## [1.4.0] - 2026-03-17
+
+Monorepo 1.4.0 release; version alignment. @uvrn/adapter has a breaking API change (private key hex instead of ethers Wallet); see adapter CHANGELOG if you use it.
+
 ## [1.0.3] - 2026-03-17
 
 Monorepo 1.0.3 release; npm publish config and version alignment.

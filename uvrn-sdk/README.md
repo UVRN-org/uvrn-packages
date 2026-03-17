@@ -14,6 +14,10 @@ The Delta Engine SDK provides a developer-friendly interface to interact with th
 - **HTTP Mode**: Make REST API calls to a running Delta Engine server
 - **Local Mode**: Direct import and execution of the core engine
 
+## Versioning
+
+The package exports a `VERSION` constant that is read from `package.json` at runtime, so it always matches the published version. See [default-safe behavior](https://github.com/UVRN-org/uvrn-packages/blob/main/docs/decisions/0001-default-safe-behavior.md) (ADR) for the monorepo policy on a single source of truth for version.
+
 ## Installation
 
 ```bash

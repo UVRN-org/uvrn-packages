@@ -26,6 +26,10 @@ The Delta Engine MCP server exposes UVRN's Delta Engine functionality to AI assi
 - **Type-Safe Operations**: Full TypeScript type safety with comprehensive validation
 - **Production Ready**: Battle-tested validation, error handling, and logging
 
+### Library vs. binary (default-safe behavior)
+
+Importing the package (`import '@uvrn/mcp'` or `require('@uvrn/mcp')`) only exposes `createServer` and `startServer` — it does **not** start the server. To run the server, use `npx uvrn-mcp` or call `startServer()` in your code. This keeps library usage side-effect free. See [default-safe behavior](https://github.com/UVRN-org/uvrn-packages/blob/main/docs/decisions/0001-default-safe-behavior.md) (ADR) for the full policy.
+
 ## Features
 
 ### 🔧 Three MCP Tools
@@ -121,7 +125,7 @@ uvrn-mcp
 npx @uvrn/mcp
 
 # Local installation
-node node_modules/@uvrn/mcp/dist/index.js
+node node_modules/@uvrn/mcp/dist/run.js
 ```
 
 ## Tools Reference
@@ -415,7 +419,7 @@ npm test
   "mcpServers": {
     "delta-engine-dev": {
       "command": "node",
-      "args": ["/absolute/path/to/packages/uvrn-mcp/dist/index.js"],
+      "args": ["/absolute/path/to/packages/uvrn-mcp/dist/run.js"],
       "env": {
         "LOG_LEVEL": "debug",
         "VERBOSE_ERRORS": "true"

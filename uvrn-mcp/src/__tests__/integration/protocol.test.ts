@@ -18,9 +18,9 @@ describe('MCP Protocol Compliance', () => {
 
   beforeAll(async () => {
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
-    const distPath = path.resolve(__dirname, '../../../dist/index.js');
+    const distPath = path.resolve(__dirname, '../../../dist/run.js');
     if (!existsSync(distPath)) {
-      throw new Error(`dist/index.js not found at ${distPath}. Run npm run build before tests.`);
+      throw new Error(`dist/run.js not found at ${distPath}. Run npm run build before tests.`);
     }
 
     const transport = new StdioClientTransport({

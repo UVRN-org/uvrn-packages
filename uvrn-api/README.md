@@ -1,6 +1,6 @@
 # @uvrn/api
 
-UVRN REST API — HTTP server for Delta Engine bundle processing. Exposes run, validate, and verify over HTTP so any client (browser, script, or service) can call the engine without installing the core or SDK. **Release:** 1.5.1.
+UVRN REST API — HTTP server for Delta Engine bundle processing. Exposes run, validate, and verify over HTTP so any client (browser, script, or service) can call the engine without installing the core or SDK. **Release:** 1.5.2.
 
 **Disclaimer:** UVRN is in Alpha testing. The engine measures whether your sources agree with each other — not whether they’re correct. Final trust of output rests with the user. Use at your own discretion. Have fun.
 
@@ -48,6 +48,15 @@ curl -X POST http://localhost:3000/api/v1/delta/run \
   -H "Content-Type: application/json" \
   -d '{"bundleId":"example-001","claim":"Compare sources","thresholdPct":0.1,"dataSpecs":[...]}'
 ```
+
+## Logging
+
+Logging uses Pino (via Fastify). Behavior depends on `NODE_ENV`:
+
+- **Production** (`NODE_ENV=production`): JSON logs to stdout; no transport.
+- **Development** (`NODE_ENV=development` or unset): If the optional dependency `pino-pretty` is installed (e.g. as a devDependency), logs are pretty-printed for readability. If `pino-pretty` is not available, the server falls back to standard Pino output and **does not crash** — `createServer()` always succeeds with default config.
+
+To get pretty logs in development, install `pino-pretty` in your project (e.g. `pnpm add -D pino-pretty`). It is optional; the API never requires it to start.
 
 ## Use cases
 

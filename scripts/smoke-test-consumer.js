@@ -84,21 +84,38 @@ const cliPkg = path.join(require.resolve('@uvrn/cli/package.json'), '..');
 const cliPath = path.join(cliPkg, 'dist', 'cli.js');
 execSync('node ' + JSON.stringify(cliPath) + ' --version', { stdio: 'pipe' });
 
-// @uvrn/api (has main)
+// @uvrn/api (has main) + createServer regression (no pino-pretty in consumer install)
 const api = require('@uvrn/api');
-assert(api, 'api exports');
-
-// @uvrn/mcp (may be ESM)
-try {
-  const mcp = require('@uvrn/mcp');
-  assert(mcp, 'mcp exports');
-} catch (e) {
-  if (e.code === 'ERR_REQUIRE_ESM') {
-    require('fs').readFileSync(require.resolve('@uvrn/mcp/package.json'), 'utf8');
-  } else throw e;
-}
-
-console.log('Smoke OK');
+assert(api && api.createServer, 'api exports createServer');
+api.createServer().then(function (server) {
+  assert(server, 'createServer returned server');
+  return server.inject({ method: 'GET', url: '/api/v1/health' }).then(function (res) {
+    assert(res.statusCode === 200 || res.statusCode === 503, 'health 200 or 503, got ' + res.statusCode);
+    const body = JSON.parse(res.payload);
+    assert(body.status !== undefined, 'health has status');
+    return server.close();
+  });
+}).then(function () {
+  // @uvrn/mcp (ESM): import as library — must not start server; only export createServer/startServer
+  return Promise.resolve().then(function () {
+    return import('@uvrn/mcp').then(function (mcp) {
+      assert(typeof mcp.createServer === 'function', 'mcp.createServer');
+      assert(typeof mcp.startServer === 'function', 'mcp.startServer');
+    });
+  }).catch(function (e) {
+    if (e.code === 'ERR_REQUIRE_ESM' || e.message && e.message.includes('Cannot use import')) {
+      require('fs').readFileSync(require.resolve('@uvrn/mcp/package.json'), 'utf8');
+      return;
+    }
+    throw e;
+  });
+}).then(function () {
+  console.log('Smoke OK');
+  process.exit(0);
+}).catch(function (e) {
+  console.error('@uvrn/api createServer smoke failed:', e);
+  process.exit(1);
+});
 `;
 fs.writeFileSync(path.join(tmpDir, 'smoke.js'), testScript.trim());
 run('node smoke.js', { cwd: tmpDir });

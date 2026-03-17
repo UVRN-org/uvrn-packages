@@ -92,7 +92,7 @@ Open `claude_desktop_config.json` in a text editor and add the Delta Engine MCP 
   "mcpServers": {
     "delta-engine": {
       "command": "node",
-      "args": ["/absolute/path/to/node_modules/@uvrn/mcp/dist/index.js"]
+      "args": ["/absolute/path/to/node_modules/@uvrn/mcp/dist/run.js"]
     }
   }
 }

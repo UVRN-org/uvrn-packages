@@ -1,3 +1,6 @@
+# Pack + manifest check + contract test. Contract test runs in an isolated temp dir
+# with only packed tarballs installed (no monorepo node_modules), ensuring default
+# config and import behavior work for consumers.
 name: Pack check
 
 on:
@@ -36,6 +39,6 @@ jobs:
       - name: Check packed manifests for workspace: protocol
         run: node scripts/check-packed-manifests.js
 
-      - name: Smoke test (install from tarballs)
+      - name: Contract test (clean install from tarballs + smoke)
         run: pnpm run smoke:consumer
         timeout-minutes: 5

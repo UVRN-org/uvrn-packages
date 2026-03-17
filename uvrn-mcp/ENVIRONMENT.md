@@ -13,7 +13,7 @@ This document describes all environment variables used by the Delta Engine MCP s
 ```bash
 cp .env.example .env
 # Edit .env with your settings
-# Load it manually: dotenv -- node dist/index.js
+# Load it manually: dotenv -- node dist/run.js
 ```
 
 ## Environment Variables
@@ -174,18 +174,18 @@ console.log(config.maxBundleSize); // From process.env.MAX_BUNDLE_SIZE
 ```bash
 export LOG_LEVEL=debug
 export MAX_BUNDLE_SIZE=20971520
-node dist/index.js
+node dist/run.js
 ```
 
 **Inline (one-time):**
 ```bash
-LOG_LEVEL=debug node dist/index.js
+LOG_LEVEL=debug node dist/run.js
 ```
 
 **Using dotenv-cli (requires installation):**
 ```bash
 npm install -g dotenv-cli
-dotenv -- node dist/index.js
+dotenv -- node dist/run.js
 ```
 
 ### Claude Desktop Integration
@@ -279,7 +279,7 @@ echo $LOG_LEVEL
 
 **Verify values are valid:**
 ```bash
-LOG_LEVEL=invalid node dist/index.js
+LOG_LEVEL=invalid node dist/run.js
 # Error: Invalid LOG_LEVEL: invalid...
 ```
 

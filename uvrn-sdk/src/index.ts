@@ -6,6 +6,9 @@
  * @packageDocumentation
  */
 
+import path from 'path';
+import fs from 'fs';
+
 // Export main client
 export { DeltaEngineClient } from './client';
 
@@ -56,6 +59,15 @@ export type {
 export { DeltaEngineClient as default } from './client';
 
 /**
- * Package version
+ * Package version (read from package.json at runtime so it stays in sync)
  */
-export const VERSION = '1.0.0';
+function readPackageVersion(): string {
+  try {
+    const pkgPath = path.join(__dirname, '..', 'package.json');
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8')) as { version?: string };
+    return typeof pkg.version === 'string' ? pkg.version : '0.0.0';
+  } catch {
+    return '0.0.0';
+  }
+}
+export const VERSION = readPackageVersion();

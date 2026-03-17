@@ -2,6 +2,8 @@
 
 TypeScript SDK for the [UVRN Delta Engine](https://github.com/UVRN-org/uvrn-packages) — programmatic access to deterministic verification and consensus computation.
 
+**Disclaimer:** UVRN is in Alpha testing. The engine measures whether your sources agree with each other — not whether they’re correct. Final trust of output rests with the user. Use at your own risk. Have fun.
+
 ## Overview
 
 The Delta Engine SDK provides a developer-friendly interface to interact with the Delta Engine in multiple execution modes:
@@ -107,7 +109,7 @@ Spawns the Delta Engine CLI as a child process:
 ```typescript
 const client = new DeltaEngineClient({
   mode: 'cli',
-  cliPath: '/usr/local/bin/delta-engine', // or './node_modules/.bin/delta-engine'
+  cliPath: '/usr/local/bin/uvrn', // or './node_modules/.bin/uvrn'
   timeout: 30000
 });
 ```

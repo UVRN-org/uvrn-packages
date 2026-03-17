@@ -7,12 +7,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const CLI_PATH = path.resolve(__dirname, '../dist/cli.js');
+const packageJson = require(path.resolve(__dirname, '../package.json'));
+const expectedVersion = packageJson.version;
 
 describe('Delta Engine CLI', () => {
   describe('Version and Help', () => {
     test('should display version', () => {
       const output = execSync(`node ${CLI_PATH} --version`, { encoding: 'utf-8' });
-      expect(output.trim()).toBe('1.0.0');
+      expect(output.trim()).toBe(expectedVersion);
     });
 
     test('should display help', () => {

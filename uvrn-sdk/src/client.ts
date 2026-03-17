@@ -36,7 +36,7 @@ import { randomBytes } from 'crypto';
  * // CLI mode
  * const client = new DeltaEngineClient({
  *   mode: 'cli',
- *   cliPath: '/usr/local/bin/delta-engine'
+ *   cliPath: '/usr/local/bin/uvrn'
  * });
  *
  * // HTTP mode

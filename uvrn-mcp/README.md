@@ -5,6 +5,8 @@
 [![npm version](https://img.shields.io/npm/v/@uvrn/mcp.svg)](https://www.npmjs.com/package/@uvrn/mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+**Disclaimer:** UVRN is in Alpha testing. The engine measures whether your sources agree with each other — not whether they’re correct. Final trust of output rests with the user. Use at your own risk. Have fun.
+
 ## Overview
 
 The Delta Engine MCP server exposes UVRN's Delta Engine functionality to AI assistants through the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). This enables AI assistants like Claude Desktop to process bundles, validate data structures, and verify receipts without any adapter code.

@@ -2,10 +2,12 @@
 
 Monorepo for **UVRN** (Universal Verification Receipt Network) protocol packages. Published to npm under the `@uvrn` scope.
 
+**Disclaimer:** UVRN is in Alpha testing. The engine measures whether your sources agree with each other — not whether they’re correct. Final trust of output rests with the user. Use at your own risk. Have fun.
+
 ## Getting started
 
 - **Delta Engine (library):** `npm install @uvrn/core @uvrn/sdk`
-- **CLI:** `npm install -g @uvrn/cli` then `delta-engine run bundle.json`
+- **CLI:** `npm install -g @uvrn/cli` then `uvrn run bundle.json`
 - **REST API:** `npm install @uvrn/api` then `npx @uvrn/api` (server on port 3000)
 - **MCP (AI assistants):** `npm install @uvrn/mcp` and add to your MCP client config
 - **DRVC3 signing:** `npm install @uvrn/core @uvrn/adapter` to wrap receipts in signed envelopes

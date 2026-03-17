@@ -3,8 +3,8 @@
  */
 
 import type { DeltaBundle, DeltaReceipt, DataSpec } from '@uvrn/core';
+import { hashReceipt } from '@uvrn/core';
 import type { ValidationResult, ValidationError, ReplayResult } from './types/sdk';
-import { createHash } from 'crypto';
 
 /**
  * Validates a Delta Bundle structure and data
@@ -192,24 +192,12 @@ export function validateReceipt(receipt: unknown): ValidationResult {
  */
 export function verifyReceiptHash(receipt: DeltaReceipt): boolean {
   try {
-    // Compute canonical hash (same algorithm as core engine)
-    const canonical = createCanonicalPayload(receipt);
-    const computedHash = createHash('sha256').update(canonical).digest('hex');
-
-    return computedHash === receipt.hash;
+    const { hash, ...payload } = receipt;
+    const computedHash = hashReceipt(payload);
+    return computedHash === hash;
   } catch (error) {
     return false;
   }
-}
-
-/**
- * Creates a canonical JSON payload for hashing (same as core engine)
- * @internal
- */
-function createCanonicalPayload(receipt: DeltaReceipt): string {
-  // Create payload without hash field (same as core)
-  const { hash, ...payload } = receipt;
-  return JSON.stringify(payload, Object.keys(payload).sort());
 }
 
 /**

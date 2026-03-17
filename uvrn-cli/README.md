@@ -2,6 +2,8 @@
 
 Command-line interface for the UVRN Delta Engine. Transform data bundles into verifiable receipts using deterministic comparison and canonical hashing.
 
+**Disclaimer:** UVRN is in Alpha testing. The engine measures whether your sources agree with each other — not whether they’re correct. Final trust of output rests with the user. Use at your own risk. Have fun.
+
 ## Install
 
 ### Global Installation (Recommended)
@@ -10,10 +12,10 @@ Command-line interface for the UVRN Delta Engine. Transform data bundles into ve
 npm install -g @uvrn/cli
 ```
 
-After installation, the `delta-engine` command will be available globally:
+After installation, the `uvrn` command will be available globally (the `delta-engine` alias also works):
 
 ```bash
-delta-engine --version
+uvrn --version
 ```
 
 ### Local Installation
@@ -25,7 +27,7 @@ npm install @uvrn/cli
 Then use with npx:
 
 ```bash
-npx delta-engine --version
+npx uvrn --version
 ```
 
 ## Quick Start

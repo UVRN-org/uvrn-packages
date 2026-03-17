@@ -2,6 +2,8 @@
 
 UVRN Delta Engine core — deterministic multi-source comparison and verification. Runs the Delta formula on bundles, produces canonical receipts with SHA-256 hashes, and validates or verifies bundles and receipts.
 
+**Disclaimer:** UVRN is in Alpha testing. The engine measures whether your sources agree with each other — not whether they’re correct. Final trust of output rests with the user. Use at your own risk. Have fun.
+
 ## Install
 
 ```bash
@@ -53,7 +55,7 @@ console.log(receipt.hash);      // SHA-256 of canonical receipt
 
 ## Use cases
 
-- **Compare two or more data sources** — Run the Delta formula on metrics (e.g. report A vs report B) and get a deterministic consensus or indeterminate outcome.
+- **Compare two or more data sources** — Run the Delta formula on metrics (e.g. report A vs report B) and get a deterministic consensus or indeterminate outcome. Note: consensus means the sources agree with each other within the threshold — not that either source is correct.
 - **Produce verifiable receipts** — Every receipt has a canonical hash; use `verifyReceipt(receipt)` to recompute and check integrity.
 - **Validate before running** — Use `validateBundle(bundle)` to check structure and threshold without executing the engine.
 - **Integrate into pipelines** — Use as a library in CI, ETL, or any service that needs deterministic comparison and proof.

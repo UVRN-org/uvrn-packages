@@ -8,4 +8,7 @@ dist/
 .cursor
 .cursor/
 
+# TypeScript incremental build cache (do not track; can cause empty dist/ after clean)
+**/tsconfig.tsbuildinfo
+
 

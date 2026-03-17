@@ -12,5 +12,5 @@ export { wrapInDRVC3, extractDeltaReceipt } from './wrapper';
 // Signing utilities
 export { signHash, recoverSigner, verifySignature } from './signer';
 
-// Validation
-export { validateDRVC3, isDRVC3Receipt } from './validator';
+// Validation (validateDRVC3 is schema-only; use verifyDRVC3Integrity for full integrity)
+export { validateDRVC3, isDRVC3Receipt, verifyDRVC3Integrity } from './validator';

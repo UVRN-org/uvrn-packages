@@ -7,8 +7,8 @@
  * and do NOT affect determinism or replay.
  */
 
-import { DeltaReceipt } from '@uvrn/core';
-import { Wallet, HDNodeWallet, Signer } from 'ethers';
+import { DeltaReceipt, verifyReceipt } from '@uvrn/core';
+import { Wallet, HDNodeWallet } from 'ethers';
 import { DRVC3Receipt, WrapOptions } from './types';
 import { signHash } from './signer';
 
@@ -39,17 +39,23 @@ export async function wrapInDRVC3(
   signer: Wallet | HDNodeWallet,
   options: WrapOptions
 ): Promise<DRVC3Receipt> {
-  // 1. Generate receipt_id (ENVELOPE METADATA - non-deterministic, intentional)
+  // 1. Verify receipt integrity before attesting (do not sign tampered payloads)
+  const coreVerify = verifyReceipt(deltaReceipt);
+  if (!coreVerify.verified) {
+    throw new Error(`Cannot wrap invalid receipt: ${coreVerify.error}`);
+  }
+
+  // 2. Generate receipt_id (ENVELOPE METADATA - non-deterministic, intentional)
   const timestamp = new Date().toISOString();
   const receipt_id = `drvc3-${deltaReceipt.bundleId}-${Date.now()}`;
 
-  // 2. Read hash from DeltaReceipt (HASH DOMAIN - read-only from Layer 1)
+  // 3. Read hash from DeltaReceipt (HASH DOMAIN - read-only from Layer 1)
   const hash = deltaReceipt.hash;
 
-  // 3. Sign hash with EIP-191 (ENVELOPE METADATA - certifies "who" and "when")
+  // 4. Sign hash with EIP-191 (ENVELOPE METADATA - certifies "who" and "when")
   const signature = await signHash(hash, signer);
 
-  // 4. Construct DRVC3 envelope
+  // 5. Construct DRVC3 envelope
   const drvc3: DRVC3Receipt = {
     receipt_id,
     issuer: options.issuer,
@@ -93,9 +99,10 @@ export async function wrapInDRVC3(
 }
 
 /**
- * Extracts the original DeltaReceipt from a DRVC3 envelope
- * 
- * @param drvc3 - DRVC3 receipt envelope
+ * Extracts the original DeltaReceipt from a DRVC3 envelope.
+ * Does not verify signature or receipt hash; for untrusted input use verifyDRVC3Integrity() first, then extract.
+ *
+ * @param drvc3 - DRVC3 receipt envelope (must have validation.checks.delta_receipt)
  * @returns The embedded DeltaReceipt
  */
 export function extractDeltaReceipt(drvc3: DRVC3Receipt): DeltaReceipt {

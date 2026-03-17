@@ -4,7 +4,7 @@
   "description": "UVRN CLI — bundle to receipt",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "bin": { "uvrn": "dist/cli.js" },
+  "bin": { "uvrn": "dist/cli.js", "delta-engine": "dist/cli.js" },
   "keywords": ["uvrn", "cli", "verification", "receipt"],
   "license": "MIT",
   "repository": {

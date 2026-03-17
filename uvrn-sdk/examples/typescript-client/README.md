@@ -2,6 +2,8 @@
 
 This directory contains TypeScript examples demonstrating how to use the Delta Engine SDK.
 
+**Disclaimer:** UVRN is in Alpha testing. Accuracy of results is not guaranteed, results should be independently verified. Final trust of output rests with user. Use at your own risk. Have fun.
+
 ## Setup
 
 1. Install dependencies:

@@ -2,8 +2,9 @@
  * Unit tests for validators module
  */
 
-import { validateBundle, validateReceipt, verifyReceiptHash } from '../validators';
+import { runDeltaEngine } from '@uvrn/core';
 import type { DeltaBundle, DeltaReceipt } from '@uvrn/core';
+import { validateBundle, validateReceipt, verifyReceiptHash } from '../validators';
 
 describe('validateBundle', () => {
   test('validates correct bundle', () => {
@@ -274,6 +275,47 @@ describe('validateReceipt', () => {
 });
 
 describe('verifyReceiptHash', () => {
+  test('returns true for receipt produced by core runDeltaEngine (core↔sdk parity)', () => {
+    const bundle: DeltaBundle = {
+      bundleId: 'parity-test',
+      claim: 'Core-SDK hash parity',
+      dataSpecs: [
+        {
+          id: 's1',
+          label: 'Source A',
+          sourceKind: 'report',
+          originDocIds: ['d1'],
+          metrics: [{ key: 'k', value: 10 }]
+        },
+        {
+          id: 's2',
+          label: 'Source B',
+          sourceKind: 'report',
+          originDocIds: ['d2'],
+          metrics: [{ key: 'k', value: 11 }]
+        }
+      ],
+      thresholdPct: 0.1
+    };
+    const receipt = runDeltaEngine(bundle);
+    expect(verifyReceiptHash(receipt)).toBe(true);
+  });
+
+  test('returns false for tampered receipt (core-generated, then hash altered)', () => {
+    const bundle: DeltaBundle = {
+      bundleId: 'tamper-test',
+      claim: 'Tamper',
+      dataSpecs: [
+        { id: 'a', label: 'A', sourceKind: 'report', originDocIds: [], metrics: [{ key: 'x', value: 1 }] },
+        { id: 'b', label: 'B', sourceKind: 'report', originDocIds: [], metrics: [{ key: 'x', value: 2 }] }
+      ],
+      thresholdPct: 0.5
+    };
+    const receipt = runDeltaEngine(bundle);
+    const tampered = { ...receipt, hash: receipt.hash.slice(0, -1) + (receipt.hash.slice(-1) === 'a' ? 'b' : 'a') };
+    expect(verifyReceiptHash(tampered)).toBe(false);
+  });
+
   test('returns false for invalid hash', () => {
     const receipt: DeltaReceipt = {
       bundleId: 'test-123',

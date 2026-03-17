@@ -45,7 +45,7 @@ npm install -g @uvrn/cli
 Verify installation:
 
 ```bash
-delta-engine --version
+uvrn --version
 # Output: 1.0.0
 ```
 
@@ -58,7 +58,7 @@ npm install @uvrn/cli --save-dev
 Use with npx:
 
 ```bash
-npx delta-engine --version
+npx uvrn --version
 ```
 
 ### From Source
@@ -101,13 +101,13 @@ The engine compares metrics across sources and computes variances. If variance s
 
 ## Command Reference
 
-### `delta-engine run`
+### `uvrn run`
 
 **Purpose**: Execute the delta engine on a bundle.
 
 **Syntax**:
 ```bash
-delta-engine run [bundle] [options]
+uvrn run [bundle] [options]
 ```
 
 **Arguments**:
@@ -122,19 +122,19 @@ delta-engine run [bundle] [options]
 
 ```bash
 # File input
-delta-engine run bundle.json
+uvrn run bundle.json
 
 # Pretty output to file
-delta-engine run bundle.json --output receipt.json --pretty
+uvrn run bundle.json --output receipt.json --pretty
 
 # Stdin input
-cat bundle.json | delta-engine run
+cat bundle.json | uvrn run
 
 # URL input
-delta-engine run https://example.com/data/bundle.json
+uvrn run https://example.com/data/bundle.json
 
 # Quiet mode (only JSON output)
-delta-engine run bundle.json --quiet
+uvrn run bundle.json --quiet
 ```
 
 **Exit Codes**:
@@ -145,13 +145,13 @@ delta-engine run bundle.json --quiet
 
 ---
 
-### `delta-engine validate`
+### `uvrn validate`
 
 **Purpose**: Validate bundle structure without running engine.
 
 **Syntax**:
 ```bash
-delta-engine validate [bundle] [options]
+uvrn validate [bundle] [options]
 ```
 
 **Arguments**:
@@ -166,10 +166,10 @@ delta-engine validate [bundle] [options]
 
 ```bash
 # Basic validation
-delta-engine validate bundle.json
+uvrn validate bundle.json
 
 # With detailed output
-delta-engine validate bundle.json --pretty
+uvrn validate bundle.json --pretty
 ```
 
 **Output Format**:
@@ -196,13 +196,13 @@ Invalid bundle:
 
 ---
 
-### `delta-engine verify`
+### `uvrn verify`
 
 **Purpose**: Verify receipt integrity by recomputing hash.
 
 **Syntax**:
 ```bash
-delta-engine verify [receipt] [options]
+uvrn verify [receipt] [options]
 ```
 
 **Arguments**:
@@ -217,10 +217,10 @@ delta-engine verify [receipt] [options]
 
 ```bash
 # Verify receipt
-delta-engine verify receipt.json
+uvrn verify receipt.json
 
 # Pretty output
-delta-engine verify receipt.json --pretty
+uvrn verify receipt.json --pretty
 ```
 
 **Output Format**:
@@ -258,31 +258,31 @@ The CLI supports three input methods:
 
 #### 1. File Path
 ```bash
-delta-engine run /path/to/bundle.json
+uvrn run /path/to/bundle.json
 ```
 
 Both relative and absolute paths work:
 ```bash
-delta-engine run ./data/bundle.json
-delta-engine run ~/bundles/bundle.json
+uvrn run ./data/bundle.json
+uvrn run ~/bundles/bundle.json
 ```
 
 #### 2. Stdin
 ```bash
-cat bundle.json | delta-engine run
-echo '{"bundleId":"test",...}' | delta-engine run
-curl https://api.example.com/bundle | delta-engine run
+cat bundle.json | uvrn run
+echo '{"bundleId":"test",...}' | uvrn run
+curl https://api.example.com/bundle | uvrn run
 ```
 
 Use `-` explicitly:
 ```bash
-delta-engine run - < bundle.json
+uvrn run - < bundle.json
 ```
 
 #### 3. URL
 ```bash
-delta-engine run https://example.com/bundle.json
-delta-engine run http://localhost:3000/api/bundle
+uvrn run https://example.com/bundle.json
+uvrn run http://localhost:3000/api/bundle
 ```
 
 Supports both HTTP and HTTPS.
@@ -291,25 +291,25 @@ Supports both HTTP and HTTPS.
 
 #### 1. Stdout (Default)
 ```bash
-delta-engine run bundle.json
+uvrn run bundle.json
 # Prints JSON to console
 ```
 
 #### 2. File
 ```bash
-delta-engine run bundle.json --output receipt.json
+uvrn run bundle.json --output receipt.json
 # Writes to receipt.json
 ```
 
 #### 3. Pretty Print
 ```bash
-delta-engine run bundle.json --pretty
+uvrn run bundle.json --pretty
 # Formatted JSON with indentation
 ```
 
 #### 4. Quiet Mode
 ```bash
-delta-engine run bundle.json --quiet
+uvrn run bundle.json --quiet
 # No status messages, only JSON
 ```
 
@@ -321,15 +321,15 @@ delta-engine run bundle.json --quiet
 
 ```bash
 # Step 1: Validate bundle structure
-delta-engine validate bundle.json
+uvrn validate bundle.json
 # ✓ Bundle is valid
 
 # Step 2: Run engine
-delta-engine run bundle.json --output receipt.json
+uvrn run bundle.json --output receipt.json
 # Generates receipt
 
 # Step 3: Verify receipt
-delta-engine verify receipt.json
+uvrn verify receipt.json
 # ✓ Receipt is valid
 ```
 
@@ -343,17 +343,17 @@ BUNDLE="security-scan-bundle.json"
 RECEIPT="security-scan-receipt.json"
 
 # Validate bundle
-if ! delta-engine validate "$BUNDLE" --quiet; then
+if ! uvrn validate "$BUNDLE" --quiet; then
   echo "ERROR: Invalid bundle structure"
   exit 1
 fi
 
 # Run engine
-if delta-engine run "$BUNDLE" --output "$RECEIPT" --quiet; then
+if uvrn run "$BUNDLE" --output "$RECEIPT" --quiet; then
   echo "✓ Security scan achieved consensus"
 
   # Verify receipt integrity
-  delta-engine verify "$RECEIPT" --quiet
+  uvrn verify "$RECEIPT" --quiet
 
   # Archive receipt with timestamp
   cp "$RECEIPT" "archive/receipt-$(date +%Y%m%d-%H%M%S).json"
@@ -376,7 +376,7 @@ for bundle in bundles/*.json; do
 
   echo "Processing $name..."
 
-  if delta-engine run "$bundle" --output "$receipt" --quiet; then
+  if uvrn run "$bundle" --output "$receipt" --quiet; then
     echo "  ✓ Generated $receipt"
   else
     echo "  ✗ Failed to process $bundle"
@@ -392,7 +392,7 @@ done
 curl -X POST https://api.example.com/collect \
   -H "Content-Type: application/json" \
   -d '{"sources": ["github", "npm", "security-db"]}' | \
-  delta-engine run --output receipt.json --pretty
+  uvrn run --output receipt.json --pretty
 
 # Then push receipt to storage
 aws s3 cp receipt.json s3://receipts/$(date +%Y-%m-%d)/receipt.json
@@ -420,7 +420,7 @@ fs.writeFileSync('bundle.json', JSON.stringify(bundle));
 
 // Run CLI
 try {
-  const receipt = execSync('delta-engine run bundle.json --quiet', {
+  const receipt = execSync('uvrn run bundle.json --quiet', {
     encoding: 'utf-8'
   });
 
@@ -444,7 +444,7 @@ with open('bundle.json', 'r') as f:
 
 # Run CLI
 result = subprocess.run(
-    ['delta-engine', 'run', 'bundle.json', '--quiet'],
+    ['uvrn', 'run', 'bundle.json', '--quiet'],
     capture_output=True,
     text=True
 )
@@ -467,9 +467,9 @@ verify-bundle() {
   local bundle="$1"
   local receipt="${2:-receipt.json}"
 
-  delta-engine validate "$bundle" && \
-  delta-engine run "$bundle" --output "$receipt" && \
-  delta-engine verify "$receipt"
+  uvrn validate "$bundle" && \
+  uvrn run "$bundle" --output "$receipt" && \
+  uvrn verify "$receipt"
 }
 
 # Usage:
@@ -484,14 +484,14 @@ verify-bundle() {
 
 ```bash
 # Extract specific fields
-delta-engine run bundle.json | jq '.outcome'
+uvrn run bundle.json | jq '.outcome'
 # "consensus"
 
-delta-engine run bundle.json | jq '.deltaFinal'
+uvrn run bundle.json | jq '.deltaFinal'
 # 0.01980198
 
 # Filter rounds
-delta-engine run bundle.json | jq '.rounds[] | select(.withinThreshold == false)'
+uvrn run bundle.json | jq '.rounds[] | select(.withinThreshold == false)'
 ```
 
 ### Environment Variables
@@ -501,7 +501,7 @@ delta-engine run bundle.json | jq '.rounds[] | select(.withinThreshold == false)
 export DELTA_ENGINE_OUTPUT_DIR="./receipts"
 
 # Wrapper script
-delta-engine run bundle.json --output "$DELTA_ENGINE_OUTPUT_DIR/receipt.json"
+uvrn run bundle.json --output "$DELTA_ENGINE_OUTPUT_DIR/receipt.json"
 ```
 
 ### Parallel Execution
@@ -509,7 +509,7 @@ delta-engine run bundle.json --output "$DELTA_ENGINE_OUTPUT_DIR/receipt.json"
 ```bash
 # Process multiple bundles in parallel (GNU parallel)
 ls bundles/*.json | parallel -j 4 \
-  'delta-engine run {} --output receipts/{/.}-receipt.json'
+  'uvrn run {} --output receipts/{/.}-receipt.json'
 ```
 
 ### Streaming JSON
@@ -517,7 +517,7 @@ ls bundles/*.json | parallel -j 4 \
 ```bash
 # Process newline-delimited JSON
 while IFS= read -r bundle; do
-  echo "$bundle" | delta-engine run --quiet
+  echo "$bundle" | uvrn run --quiet
 done < bundles.ndjson > receipts.ndjson
 ```
 
@@ -576,13 +576,13 @@ Enable verbose logging:
 
 ```bash
 # Node.js debug
-NODE_DEBUG=* delta-engine run bundle.json
+NODE_DEBUG=* uvrn run bundle.json
 ```
 
 ### Checking Exit Codes
 
 ```bash
-delta-engine run bundle.json
+uvrn run bundle.json
 case $? in
   0) echo "Success" ;;
   1) echo "Invalid bundle" ;;

@@ -2,6 +2,11 @@
   "name": "uvrn-packages",
   "private": true,
   "description": "UVRN protocol packages — core, SDK, CLI, API, MCP, adapter. Publish to npm under @uvrn scope.",
+  "pnpm": {
+    "overrides": {
+      "hono": ">=4.12.7"
+    }
+  },
   "workspaces": [
     "uvrn-core",
     "uvrn-sdk",

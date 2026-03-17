@@ -2,6 +2,8 @@
 
 UVRN REST API — HTTP server for Delta Engine bundle processing. Exposes run, validate, and verify over HTTP so any client (browser, script, or service) can call the engine without installing the core or SDK.
 
+**Disclaimer:** UVRN is in Alpha testing. The engine measures whether your sources agree with each other — not whether they’re correct. Final trust of output rests with the user. Use at your own risk. Have fun.
+
 ## Install
 
 ```bash
@@ -27,16 +29,20 @@ Or from your app:
 ```typescript
 import { startServer, createServer } from '@uvrn/api';
 
-const server = await createServer();
-await startServer(server);
+// Default: start with default config (port 3000)
+await startServer();
+
+// Or create server with custom config, then listen
+const server = await createServer({ port: 4000 });
+await server.listen({ port: 4000, host: '0.0.0.0' });
 ```
 
-2. **Send a bundle** (e.g. POST to `/delta/run`) and get a receipt in the response. Use `/delta/validate` and `/delta/verify` for validation and verification.
+2. **Send a bundle** (e.g. POST to `/api/v1/delta/run`) and get a receipt in the response. Use `/api/v1/delta/validate` and `/api/v1/delta/verify` for validation and verification.
 
 Example with curl:
 
 ```bash
-curl -X POST http://localhost:3000/delta/run \
+curl -X POST http://localhost:3000/api/v1/delta/run \
   -H "Content-Type: application/json" \
   -d '{"bundleId":"example-001","claim":"Compare sources","thresholdPct":0.1,"dataSpecs":[...]}'
 ```

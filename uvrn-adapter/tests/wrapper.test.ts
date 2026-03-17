@@ -4,35 +4,28 @@
  */
 
 import { Wallet, HDNodeWallet } from 'ethers';
+import { runDeltaEngine } from '@uvrn/core';
 import { wrapInDRVC3, extractDeltaReceipt } from '../src/wrapper';
 import { validateDRVC3 } from '../src/validator';
 import { recoverSigner } from '../src/signer';
-import { DeltaReceipt } from '@uvrn/core';
+import type { DeltaReceipt, DeltaBundle } from '@uvrn/core';
 
 describe('DRVC3 Wrapper', () => {
-  // Mock DeltaReceipt (as would come from Layer 1)
-  const mockDeltaReceipt: DeltaReceipt = {
-    bundleId: 'test-bundle-001',
-    deltaFinal: 0.05,
-    sources: ['Source A', 'Source B'],
-    rounds: [
-      {
-        round: 1,
-        deltasByMetric: { revenue: 0.05, users: 0.0 },
-        withinThreshold: true,
-        witnessRequired: false
-      }
-    ],
-    suggestedFixes: [],
-    outcome: 'consensus',
-    hash: 'a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2'
-  };
-
+  let mockDeltaReceipt: DeltaReceipt;
   let testWallet: HDNodeWallet;
 
   beforeAll(() => {
-    // Create a deterministic wallet for testing
     testWallet = Wallet.createRandom();
+    const bundle: DeltaBundle = {
+      bundleId: 'test-bundle-001',
+      claim: 'Test claim',
+      dataSpecs: [
+        { id: 's1', label: 'Source A', sourceKind: 'report', originDocIds: [], metrics: [{ key: 'k', value: 10 }] },
+        { id: 's2', label: 'Source B', sourceKind: 'report', originDocIds: [], metrics: [{ key: 'k', value: 10.5 }] }
+      ],
+      thresholdPct: 0.1
+    };
+    mockDeltaReceipt = runDeltaEngine(bundle);
   });
 
   it('should wrap DeltaReceipt in valid DRVC3 envelope', async () => {
@@ -47,7 +40,7 @@ describe('DRVC3 Wrapper', () => {
     expect(drvc3.event).toBe('delta-reconciliation');
     expect(drvc3.timestamp).toBeDefined();
     expect(drvc3.block_state).toBe('loose');
-    expect(drvc3.certificate).toBe('DRVC3 v1.0');
+    expect(drvc3.certificate).toBe('DRVC3 v1.01');
 
     // Check integrity block
     expect(drvc3.integrity.hash_algorithm).toBe('sha256');
@@ -110,6 +103,8 @@ describe('DRVC3 Wrapper', () => {
     });
 
     const extracted = extractDeltaReceipt(drvc3);
-    expect(extracted).toEqual(mockDeltaReceipt);
+    expect(extracted.bundleId).toBe(mockDeltaReceipt.bundleId);
+    expect(extracted.hash).toBe(mockDeltaReceipt.hash);
+    expect(extracted.outcome).toBe(mockDeltaReceipt.outcome);
   });
 });

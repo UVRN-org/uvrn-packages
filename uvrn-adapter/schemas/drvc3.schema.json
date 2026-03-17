@@ -10,6 +10,7 @@
     "event",
     "timestamp",
     "integrity",
+    "validation",
     "block_state",
     "certificate"
   ],
@@ -80,12 +81,14 @@
     },
     "validation": {
       "type": "object",
+      "required": ["v_score", "checks"],
       "properties": {
         "v_score": {
           "type": "number"
         },
         "checks": {
-          "type": "object"
+          "type": "object",
+          "required": ["delta_receipt"]
         }
       }
     },

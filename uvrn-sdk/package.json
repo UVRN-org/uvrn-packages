@@ -21,7 +21,7 @@
   "scripts": {
     "build": "npm run clean && tsc",
     "build:watch": "tsc --watch",
-    "clean": "rm -rf dist dist-esm",
+    "clean": "rm -rf dist dist-esm tsconfig.tsbuildinfo",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",

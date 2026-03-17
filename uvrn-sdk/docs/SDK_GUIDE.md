@@ -51,7 +51,7 @@ import { DeltaEngineClient } from '@uvrn/sdk';
 
 const client = new DeltaEngineClient({
   mode: 'cli',
-  cliPath: '/usr/local/bin/delta-engine',
+  cliPath: '/usr/local/bin/uvrn',
   timeout: 30000
 });
 ```
@@ -89,9 +89,9 @@ const client = new DeltaEngineClient({
 
 **Setup Requirements:**
 ```bash
-# Start the API server
-npm install -g @uvrn/api
-uvrn-api start --port 3000
+# Start the API server (default port 3000)
+npm install @uvrn/api
+npx @uvrn/api
 ```
 
 **Pros:**
@@ -518,7 +518,7 @@ function createClient(env: string): DeltaEngineClient {
   } else {
     return new DeltaEngineClient({
       mode: 'cli',
-      cliPath: './node_modules/.bin/delta-engine'
+      cliPath: './node_modules/.bin/uvrn'
     });
   }
 }
@@ -734,7 +734,7 @@ npm install @uvrn/core
 ```typescript
 // Check if CLI exists
 import { access } from 'fs/promises';
-const cliPath = '/usr/local/bin/delta-engine';
+const cliPath = '/usr/local/bin/uvrn';
 await access(cliPath); // Throws if doesn't exist
 
 const client = new DeltaEngineClient({ mode: 'cli', cliPath });

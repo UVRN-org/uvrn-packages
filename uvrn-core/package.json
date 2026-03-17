@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/core",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "publishConfig": { "access": "public" },
   "description": "UVRN engine core — deterministic protocol infrastructure",
   "main": "dist/index.js",

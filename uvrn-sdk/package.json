@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/sdk",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "publishConfig": { "access": "public" },
   "description": "UVRN TypeScript SDK — programmatic access to deterministic verification",
   "main": "dist/index.js",
@@ -26,7 +26,9 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "lint": "eslint src --ext .ts"
+    "lint": "eslint src --ext .ts",
+    "prepack": "node ../scripts/rewrite-workspace-deps.js",
+    "postpack": "node ../scripts/restore-workspace-deps.js"
   },
   "peerDependencies": {
     "@uvrn/core": "^1.0.0"

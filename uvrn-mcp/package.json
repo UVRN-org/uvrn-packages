@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/mcp",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "publishConfig": { "access": "public" },
   "description": "UVRN MCP server — AI-native bundle processing",
   "main": "dist/index.js",
@@ -24,7 +24,9 @@
     "start": "node dist/index.js",
     "clean": "rm -rf dist",
     "lint": "eslint src --ext .ts",
-    "format": "prettier --write \"src/**/*.ts\""
+    "format": "prettier --write \"src/**/*.ts\"",
+    "prepack": "node ../scripts/rewrite-workspace-deps.js",
+    "postpack": "node ../scripts/restore-workspace-deps.js"
   },
   "dependencies": {
     "@uvrn/core": "workspace:^",

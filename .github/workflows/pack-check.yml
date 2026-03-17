@@ -1,0 +1,41 @@
+name: Pack check
+
+on:
+  push:
+    branches: [main, feature/updates]
+  pull_request:
+    branches: [main, feature/updates]
+
+jobs:
+  check-packed-manifests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Pack all packages
+        run: |
+          for dir in uvrn-core uvrn-sdk uvrn-adapter uvrn-mcp uvrn-api uvrn-cli; do
+            (cd "$dir" && pnpm pack)
+          done
+
+      - name: Check packed manifests for workspace: protocol
+        run: node scripts/check-packed-manifests.js
+
+      - name: Smoke test (install from tarballs)
+        run: pnpm run smoke:consumer
+        timeout-minutes: 5

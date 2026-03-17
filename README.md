@@ -1,6 +1,6 @@
 # uvrn-packages
 
-Monorepo for **UVRN** (Universal Verification Receipt Network) protocol packages. Published to npm under the `@uvrn` scope. **Release:** 1.5.0.
+Monorepo for **UVRN** (Universal Verification Receipt Network) protocol packages. Published to npm under the `@uvrn` scope. **Release:** 1.5.1.
 
 **Disclaimer:** UVRN is in Alpha testing. The engine measures whether your sources agree with each other — not whether they’re correct. Final trust of output rests with the user. Use at your own discretion. Have fun.
 
@@ -57,7 +57,7 @@ pnpm run build
 
 ## Publish
 
-Publish in dependency order: **@uvrn/core** first, then **@uvrn/sdk**, **@uvrn/adapter**, **@uvrn/mcp**, **@uvrn/api**, **@uvrn/cli**. See [CHANGELOG.md](CHANGELOG.md) for version history.
+Publish in dependency order: **@uvrn/core** first, then **@uvrn/sdk**, **@uvrn/adapter**, **@uvrn/mcp**, **@uvrn/api**, **@uvrn/cli**. Before publishing, run `pnpm run smoke:consumer` to verify install-from-tarball; prepack/postpack scripts rewrite workspace deps to semver in packed manifests. See [CHANGELOG.md](CHANGELOG.md) for version history.
 
 ## Open source
 

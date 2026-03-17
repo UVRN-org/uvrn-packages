@@ -10,6 +10,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.5.1] – 2026-03-17
+
+Publish fix: packed manifests no longer contain `workspace:` protocol; consumer installs work with npm/yarn.
+
+### Fixed
+- **Published packages:** No longer contain `workspace:` protocol in `dependencies`, `peerDependencies`, or `optionalDependencies`. Consumers can install with npm/yarn without `EUNSUPPORTEDPROTOCOL Unsupported URL Type "workspace:"`. Prepack/postpack scripts rewrite `@uvrn/core` to a semver range (e.g. `^1.5.1`) in packed manifests while keeping `workspace:^` in source for monorepo dev.
+
+### Changed
+- **All packages:** Version bumped to 1.5.1; READMEs and package CHANGELOGs updated. Added `scripts/rewrite-workspace-deps.js`, `scripts/restore-workspace-deps.js`, `scripts/check-packed-manifests.js`, `scripts/smoke-test-consumer.js`; CI workflow `.github/workflows/pack-check.yml`; root script `smoke:consumer` for install-from-tarball verification.
+
+---
+
 ## [1.5.0] – 2026-03-17 (stabilization pass included)
 
 Workspace lint alignment, code quality hardening, and CI stabilization. All packages versioned at 1.5.0.

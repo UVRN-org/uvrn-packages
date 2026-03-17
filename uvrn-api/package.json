@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/api",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "publishConfig": { "access": "public" },
   "description": "UVRN REST API — HTTP access to bundle processing",
   "main": "dist/index.js",
@@ -20,7 +20,9 @@
     "start": "node dist/server.js",
     "test": "jest",
     "lint": "eslint src --ext .ts",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "prepack": "node ../scripts/rewrite-workspace-deps.js",
+    "postpack": "node ../scripts/restore-workspace-deps.js"
   },
   "dependencies": {
     "@uvrn/core": "workspace:^",

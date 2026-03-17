@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/cli",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "publishConfig": { "access": "public" },
   "description": "UVRN CLI — bundle to receipt",
   "main": "dist/index.js",
@@ -20,7 +20,9 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "lint": "eslint src --ext .ts",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "prepack": "node ../scripts/rewrite-workspace-deps.js",
+    "postpack": "node ../scripts/restore-workspace-deps.js"
   },
   "dependencies": {
     "@uvrn/core": "workspace:^",

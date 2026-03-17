@@ -10,11 +10,16 @@ dist/
 .cursor/
 docs
 docs/
+!docs/reports/
 guides
 guides/
 
 
 # TypeScript incremental build cache (do not track; can cause empty dist/ after clean)
 **/tsconfig.tsbuildinfo
+
+# Pack artifacts and prepack backup
+*.tgz
+package.json.orig
 
 

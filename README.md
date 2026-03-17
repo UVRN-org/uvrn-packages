@@ -1,8 +1,8 @@
 # uvrn-packages
 
-Monorepo for **UVRN** (Universal Verification Receipt Network) protocol packages. Published to npm under the `@uvrn` scope. **Release:** @uvrn/api, @uvrn/sdk, @uvrn/mcp 1.5.2; @uvrn/core, @uvrn/adapter, @uvrn/cli 1.5.1.
+Monorepo for **UVRN** (Universal Verification Receipt Network) protocol packages. Published to npm under the `@uvrn` scope. **Release:** @uvrn/sdk, @uvrn/mcp 1.5.3; @uvrn/api 1.5.2; @uvrn/core, @uvrn/adapter, @uvrn/cli 1.5.1.
 
-**Highlights:** Packed `@uvrn/*` manifests use normal semver (no `workspace:`), so `npm install` works in clean projects. CI (`pack-check.yml`) runs a contract test: build, pack, then install from tarballs and run smoke (createServer + health, MCP library import). **@uvrn/api** 1.5.2: `createServer()` no longer crashes without `pino-pretty`; **@uvrn/mcp** and **@uvrn/sdk** follow default-safe behavior (no side effects on import; SDK `VERSION` from package.json). See [CHANGELOG.md](CHANGELOG.md).
+**Highlights:** Packed `@uvrn/*` manifests use normal semver (no `workspace:`), so `npm install` works in clean projects. CI runs build, **test** (unit + integration), pack, manifest check, and contract smoke (install from tarballs + API/MCP/replay checks). **@uvrn/sdk** 1.5.3: `replayReceipt(receipt, bundle, executeFn)` implemented (determinism verification). **@uvrn/mcp** 1.5.3: lifecycle and exit codes documented; bin exits 0 when stdin closes. Smoke asserts behavior (exit codes, API results), not log text. See [CHANGELOG.md](CHANGELOG.md).
 
 **Disclaimer:** UVRN is in Alpha testing. The engine measures whether your sources agree with each other — not whether they’re correct. Final trust of output rests with the user. Use at your own discretion. Have fun.
 

@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/mcp",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "publishConfig": { "access": "public" },
   "description": "UVRN MCP server — AI-native bundle processing",
   "main": "dist/index.js",

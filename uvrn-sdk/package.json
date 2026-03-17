@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/sdk",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "publishConfig": { "access": "public" },
   "description": "UVRN TypeScript SDK — programmatic access to deterministic verification",
   "main": "dist/index.js",

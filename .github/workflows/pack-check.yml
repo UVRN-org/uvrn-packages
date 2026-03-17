@@ -30,6 +30,11 @@ jobs:
       - name: Build
         run: pnpm run build
 
+      - name: Test
+        run: pnpm run test
+        env:
+          CI: 1
+
       - name: Pack all packages
         run: |
           for dir in uvrn-core uvrn-sdk uvrn-adapter uvrn-mcp uvrn-api uvrn-cli; do

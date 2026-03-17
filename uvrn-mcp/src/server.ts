@@ -280,6 +280,10 @@ export function createServer(): Server {
 
 /**
  * Start the MCP server
+ *
+ * Uses stdio transport. When the transport closes (e.g. stdin closed or client
+ * disconnects), the process should exit with code 0; that is handled in run.ts
+ * via process.stdin.on('close').
  */
 export async function startServer(): Promise<void> {
   logger.info('Starting Delta Engine MCP Server...');

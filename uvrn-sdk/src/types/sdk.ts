@@ -147,9 +147,24 @@ export interface ReplayResult {
   differences?: string[];
 
   /**
-   * Error message if replay failed
+   * Error message or error code if replay failed (e.g. MISSING_BUNDLE, INVALID_BUNDLE, BUNDLE_ID_MISMATCH, EXECUTION_FAILED)
    */
   error?: string;
+
+  /**
+   * Original receipt hash (for comparison)
+   */
+  originalHash?: string;
+
+  /**
+   * Recomputed hash from replayed receipt
+   */
+  recomputedHash?: string;
+
+  /**
+   * Optional details for validation or execution errors
+   */
+  details?: Record<string, unknown>;
 }
 
 /**

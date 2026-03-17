@@ -2,6 +2,15 @@
 
 All notable changes to @uvrn/mcp are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.3] – 2026-03-17
+
+### Added
+- **Run modes and lifecycle:** README now documents intended run mode (stdio with MCP client), non-interactive behavior (stdin closed → exit 0), and exit codes (0 = clean shutdown, non-zero = startup/error). Tests and automation should rely on exit codes, not log text.
+- **Lifecycle test:** Integration test spawns the MCP bin with stdin closed and asserts exit code 0 (behavior-based, no log assertion).
+
+### Changed
+- **Bin behavior:** When stdin closes (no client or client disconnected), the process exits with code 0 deterministically (`process.stdin.on('close', () => process.exit(0))` in run.ts).
+
 ## [1.5.2] – 2026-03-17
 
 ### Changed

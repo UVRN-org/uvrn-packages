@@ -4,7 +4,7 @@
 
 import { runDeltaEngine } from '@uvrn/core';
 import type { DeltaBundle, DeltaReceipt } from '@uvrn/core';
-import { validateBundle, validateReceipt, verifyReceiptHash } from '../validators';
+import { validateBundle, validateReceipt, verifyReceiptHash, replayReceipt } from '../validators';
 
 describe('validateBundle', () => {
   test('validates correct bundle', () => {
@@ -335,5 +335,114 @@ describe('verifyReceiptHash', () => {
     const receipt = {} as DeltaReceipt;
     const result = verifyReceiptHash(receipt);
     expect(result).toBe(false);
+  });
+});
+
+describe('replayReceipt', () => {
+  test('returns success and deterministic when receipt matches replayed result', async () => {
+    const bundle: DeltaBundle = {
+      bundleId: 'replay-test',
+      claim: 'Replay determinism',
+      dataSpecs: [
+        { id: 'a', label: 'A', sourceKind: 'report', originDocIds: [], metrics: [{ key: 'x', value: 10 }] },
+        { id: 'b', label: 'B', sourceKind: 'report', originDocIds: [], metrics: [{ key: 'x', value: 11 }] }
+      ],
+      thresholdPct: 0.1
+    };
+    const receipt = runDeltaEngine(bundle);
+    const result = await replayReceipt(receipt, bundle, async (b) => runDeltaEngine(b));
+    expect(result.success).toBe(true);
+    expect(result.deterministic).toBe(true);
+    expect(result.replayedReceipt).toBeDefined();
+    expect(result.originalHash).toBe(receipt.hash);
+    expect(result.recomputedHash).toBe(receipt.hash);
+  });
+
+  test('returns success false and BUNDLE_ID_MISMATCH when bundleId does not match receipt', async () => {
+    const bundle: DeltaBundle = {
+      bundleId: 'replay-test',
+      claim: 'Replay',
+      dataSpecs: [
+        { id: 'a', label: 'A', sourceKind: 'report', originDocIds: [], metrics: [{ key: 'x', value: 10 }] },
+        { id: 'b', label: 'B', sourceKind: 'report', originDocIds: [], metrics: [{ key: 'x', value: 11 }] }
+      ],
+      thresholdPct: 0.1
+    };
+    const receipt = runDeltaEngine(bundle);
+    const otherBundle: DeltaBundle = { ...bundle, bundleId: 'other-id' };
+    const result = await replayReceipt(receipt, otherBundle, async (b) => runDeltaEngine(b));
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('BUNDLE_ID_MISMATCH');
+    expect(result.deterministic).toBe(false);
+  });
+
+  test('returns success false for invalid bundle', async () => {
+    const receipt: DeltaReceipt = {
+      bundleId: 'test-123',
+      deltaFinal: 0.02,
+      sources: ['A', 'B'],
+      rounds: [{ round: 1, deltasByMetric: {}, withinThreshold: true, witnessRequired: false }],
+      suggestedFixes: [],
+      outcome: 'consensus',
+      hash: 'abc123'
+    };
+    const invalidBundle = { bundleId: 'test-123', claim: '', dataSpecs: [], thresholdPct: 0.05 } as unknown as DeltaBundle;
+    const result = await replayReceipt(receipt, invalidBundle, async () => receipt);
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('INVALID_BUNDLE');
+  });
+
+  test('returns success false for missing bundle', async () => {
+    const receipt: DeltaReceipt = {
+      bundleId: 'test-123',
+      deltaFinal: 0.02,
+      sources: ['A', 'B'],
+      rounds: [],
+      suggestedFixes: [],
+      outcome: 'consensus',
+      hash: 'abc123'
+    };
+    const result = await replayReceipt(receipt, null as unknown as DeltaBundle, async () => receipt);
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('MISSING_BUNDLE');
+  });
+
+  test('returns deterministic false when replayed receipt differs (e.g. different outcome)', async () => {
+    const bundle: DeltaBundle = {
+      bundleId: 'replay-test',
+      claim: 'Replay',
+      dataSpecs: [
+        { id: 'a', label: 'A', sourceKind: 'report', originDocIds: [], metrics: [{ key: 'x', value: 10 }] },
+        { id: 'b', label: 'B', sourceKind: 'report', originDocIds: [], metrics: [{ key: 'x', value: 11 }] }
+      ],
+      thresholdPct: 0.1
+    };
+    const receipt = runDeltaEngine(bundle);
+    const result = await replayReceipt(receipt, bundle, async () => ({
+      ...receipt,
+      outcome: 'indeterminate' as const
+    }));
+    expect(result.success).toBe(true);
+    expect(result.deterministic).toBe(false);
+    expect(result.differences).toBeDefined();
+    expect(result.differences?.some(d => d.includes('outcome'))).toBe(true);
+  });
+
+  test('returns EXECUTION_FAILED when executeFn throws', async () => {
+    const bundle: DeltaBundle = {
+      bundleId: 'replay-test',
+      claim: 'Replay',
+      dataSpecs: [
+        { id: 'a', label: 'A', sourceKind: 'report', originDocIds: [], metrics: [{ key: 'x', value: 10 }] },
+        { id: 'b', label: 'B', sourceKind: 'report', originDocIds: [], metrics: [{ key: 'x', value: 11 }] }
+      ],
+      thresholdPct: 0.1
+    };
+    const receipt = runDeltaEngine(bundle);
+    const result = await replayReceipt(receipt, bundle, async () => {
+      throw new Error('Engine unavailable');
+    });
+    expect(result.success).toBe(false);
+    expect(result.error).toBe('EXECUTION_FAILED');
   });
 });

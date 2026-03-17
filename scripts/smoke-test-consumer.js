@@ -3,7 +3,7 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
+const { execSync, spawn } = require('child_process');
 const os = require('os');
 
 const root = path.resolve(__dirname, '..');
@@ -18,7 +18,12 @@ console.log('Building...');
 run('pnpm run build');
 console.log('Packing...');
 for (const dir of packageDirs) {
-  run('pnpm pack', { cwd: path.join(root, dir) });
+  const dirPath = path.join(root, dir);
+  // Remove any existing tarballs so we pack fresh (avoid stale tgz from prior runs)
+  try {
+    fs.readdirSync(dirPath).filter((f) => f.endsWith('.tgz')).forEach((f) => fs.unlinkSync(path.join(dirPath, f)));
+  } catch (_) {}
+  run('pnpm pack', { cwd: dirPath });
 }
 
 const tarballs = {};
@@ -96,6 +101,23 @@ api.createServer().then(function (server) {
     return server.close();
   });
 }).then(function () {
+  // @uvrn/sdk replayReceipt (behavior: success + deterministic with core engine)
+  const replayBundle = {
+    bundleId: 'smoke-replay',
+    claim: 'Smoke replay',
+    dataSpecs: [
+      { id: '1', label: 'L', sourceKind: 'report', originDocIds: [], metrics: [{ key: 'k', value: 10 }] },
+      { id: '2', label: 'L2', sourceKind: 'metric', originDocIds: [], metrics: [{ key: 'k', value: 11 }] }
+    ],
+    thresholdPct: 0.05
+  };
+  const receipt = core.runDeltaEngine(replayBundle);
+  assert(receipt && receipt.hash, 'core.runDeltaEngine returns receipt');
+  return sdk.replayReceipt(receipt, replayBundle, function (b) { return Promise.resolve(core.runDeltaEngine(b)); });
+}).then(function (replayResult) {
+  assert(replayResult.success === true, 'replayReceipt success');
+  assert(replayResult.deterministic === true, 'replayReceipt deterministic');
+}).then(function () {
   // @uvrn/mcp (ESM): import as library — must not start server; only export createServer/startServer
   return Promise.resolve().then(function () {
     return import('@uvrn/mcp').then(function (mcp) {
@@ -119,5 +141,34 @@ api.createServer().then(function (server) {
 `;
 fs.writeFileSync(path.join(tmpDir, 'smoke.js'), testScript.trim());
 run('node smoke.js', { cwd: tmpDir });
-console.log('Smoke test passed.');
-process.exit(0);
+
+// MCP bin lifecycle: run with stdin closed, assert exit code 0 (behavior, not log text)
+const mcpRunPath = path.join(tmpDir, 'node_modules/@uvrn/mcp/dist/run.js');
+new Promise((resolve, reject) => {
+  const child = spawn(process.execPath, [mcpRunPath], {
+    stdio: ['pipe', 'pipe', 'pipe'],
+    cwd: tmpDir,
+    env: { ...process.env, LOG_LEVEL: 'error' }
+  });
+  child.stdin.end();
+  const t = setTimeout(() => {
+    child.kill('SIGTERM');
+    reject(new Error('MCP bin did not exit within 5s'));
+  }, 5000);
+  child.on('close', (code) => {
+    clearTimeout(t);
+    resolve(code);
+  });
+  child.on('error', reject);
+}).then(function (exitCode) {
+  if (exitCode !== 0) {
+    console.error('MCP bin lifecycle: expected exit 0, got', exitCode);
+    process.exit(1);
+  }
+  console.log('MCP bin lifecycle OK (exit 0).');
+  console.log('Smoke test passed.');
+  process.exit(0);
+}).catch(function (e) {
+  console.error(e);
+  process.exit(1);
+});

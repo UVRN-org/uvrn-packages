@@ -201,45 +201,110 @@ export function verifyReceiptHash(receipt: DeltaReceipt): boolean {
 }
 
 /**
- * Replays a receipt's bundle through the engine to verify determinism
+ * Replays a receipt's bundle through the engine to verify determinism.
+ * Requires the original bundle that produced the receipt.
  *
- * Note: This requires the engine to be available (local mode recommended)
- *
- * @param receipt - The receipt containing the bundle to replay
- * @param executeFn - Function to execute bundle (provided by client)
- * @returns ReplayResult with determinism check
+ * @param receipt - The receipt to verify (must match the bundle)
+ * @param bundle - The original DeltaBundle that produced the receipt (required)
+ * @param executeFn - Function to execute the bundle (e.g. runDeltaEngine); must return a DeltaReceipt
+ * @returns ReplayResult with success, deterministic flag, and optional differences
  *
  * @example
  * ```typescript
- * const result = await replayReceipt(receipt, (bundle) => client.runEngine(bundle));
+ * const result = await replayReceipt(receipt, bundle, (b) => runDeltaEngine(b));
  * if (!result.deterministic) {
- *   console.error('Non-deterministic execution detected!');
+ *   console.error('Non-deterministic execution:', result.differences);
  * }
  * ```
  */
 export async function replayReceipt(
   receipt: DeltaReceipt,
-  _executeFn: (bundle: DeltaBundle) => Promise<DeltaReceipt>
+  bundle: DeltaBundle,
+  executeFn: (bundle: DeltaBundle) => Promise<DeltaReceipt>
 ): Promise<ReplayResult> {
-  try {
-    // Note: We would need the original bundle to replay
-    // In a real implementation, this might be stored with the receipt
-    // or reconstructed from receipt metadata
-    // The _executeFn parameter is prefixed with _ to indicate it will be used in future
+  const baseResult: ReplayResult = {
+    success: false,
+    originalReceipt: receipt,
+    deterministic: false
+  };
 
-    // For now, return a structure that indicates we need the bundle
+  const receiptValidation = validateReceipt(receipt);
+  if (!receiptValidation.valid) {
     return {
-      success: false,
-      originalReceipt: receipt,
-      deterministic: false,
-      error: 'Replay not yet implemented - requires original bundle or bundle reconstruction'
-    };
-  } catch (error) {
-    return {
-      success: false,
-      originalReceipt: receipt,
-      deterministic: false,
-      error: error instanceof Error ? error.message : 'Unknown error during replay'
+      ...baseResult,
+      error: 'INVALID_RECEIPT',
+      details: { errors: receiptValidation.errors }
     };
   }
+
+  if (bundle == null || typeof bundle !== 'object') {
+    return { ...baseResult, error: 'MISSING_BUNDLE' };
+  }
+
+  const bundleValidation = validateBundle(bundle);
+  if (!bundleValidation.valid) {
+    return {
+      ...baseResult,
+      error: 'INVALID_BUNDLE',
+      details: { errors: bundleValidation.errors }
+    };
+  }
+
+  if (receipt.bundleId !== bundle.bundleId) {
+    return {
+      ...baseResult,
+      error: 'BUNDLE_ID_MISMATCH',
+      details: { receiptBundleId: receipt.bundleId, bundleBundleId: bundle.bundleId }
+    };
+  }
+
+  let replayedReceipt: DeltaReceipt;
+  try {
+    replayedReceipt = await executeFn(bundle);
+  } catch (error) {
+    return {
+      ...baseResult,
+      error: 'EXECUTION_FAILED',
+      details: { message: error instanceof Error ? error.message : String(error) }
+    };
+  }
+
+  const replayedValidation = validateReceipt(replayedReceipt);
+  if (!replayedValidation.valid) {
+    return {
+      ...baseResult,
+      replayedReceipt,
+      error: 'REPLAYED_RECEIPT_INVALID',
+      details: { errors: replayedValidation.errors }
+    };
+  }
+
+  const differences: string[] = [];
+  const originalHash = receipt.hash;
+  const { hash: _replayedHash, ...replayedPayload } = replayedReceipt;
+  const recomputedHash = hashReceipt(replayedPayload);
+
+  if (originalHash !== recomputedHash) {
+    differences.push(`hash: original ${originalHash} !== recomputed ${recomputedHash}`);
+  }
+  if (receipt.deltaFinal !== replayedReceipt.deltaFinal) {
+    differences.push(`deltaFinal: ${receipt.deltaFinal} !== ${replayedReceipt.deltaFinal}`);
+  }
+  if (receipt.outcome !== replayedReceipt.outcome) {
+    differences.push(`outcome: ${receipt.outcome} !== ${replayedReceipt.outcome}`);
+  }
+  if (receipt.rounds.length !== replayedReceipt.rounds.length) {
+    differences.push(`rounds.length: ${receipt.rounds.length} !== ${replayedReceipt.rounds.length}`);
+  }
+
+  const deterministic = differences.length === 0;
+  return {
+    success: true,
+    originalReceipt: receipt,
+    replayedReceipt,
+    deterministic,
+    differences: deterministic ? undefined : differences,
+    originalHash,
+    recomputedHash
+  };
 }

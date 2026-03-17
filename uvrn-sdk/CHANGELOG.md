@@ -10,6 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Replaced retired Loosechain brand with UVRN in package copy and LICENSE.
 
+## [1.5.3] - 2026-03-17
+
+### Added
+- **replayReceipt:** Full implementation. Replays a receipt's bundle through the engine to verify determinism. Requires the original bundle as input: `replayReceipt(receipt, bundle, executeFn)`. Validates inputs, runs `executeFn(bundle)`, and compares hash, `deltaFinal`, `outcome`, and rounds. Returns typed error codes: `MISSING_BUNDLE`, `INVALID_BUNDLE`, `BUNDLE_ID_MISMATCH`, `EXECUTION_FAILED`, `REPLAYED_RECEIPT_INVALID`. `ReplayResult` now includes `originalHash`, `recomputedHash`, and optional `details`.
+
+### Breaking
+- **replayReceipt:** Signature changed from `replayReceipt(receipt, executeFn)` to `replayReceipt(receipt, bundle, executeFn)`. The bundle that produced the receipt is required; callers must pass it explicitly.
+
 ## [1.5.2] - 2026-03-17
 
 ### Changed
@@ -45,7 +53,7 @@ First public npm release under `@uvrn/sdk` (2026-03-08).
   - `validateBundle()` - Bundle structure validation
   - `validateReceipt()` - Receipt structure validation
   - `verifyReceiptHash()` - Hash integrity verification
-  - `replayReceipt()` - Determinism verification (stub)
+  - `replayReceipt()` - Determinism verification (implemented in 1.5.3; requires receipt + bundle + executeFn)
 - Custom error classes:
   - `DeltaEngineError` - Base error
   - `ValidationError` - Validation failures
@@ -76,7 +84,7 @@ First public npm release under `@uvrn/sdk` (2026-03-08).
 ## Future Releases
 
 ### Planned for 1.1.0
-- Full replay/determinism verification implementation
+- ~~Full replay/determinism verification implementation~~ (done in 1.5.3)
 - Bundle compression for large data sets
 - Streaming support for large receipts
 - Browser compatibility (if needed)

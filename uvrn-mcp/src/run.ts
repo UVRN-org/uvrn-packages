@@ -28,6 +28,10 @@ process.on('unhandledRejection', (reason) => {
   process.exit(1);
 });
 
+// When stdin closes (no client attached or client disconnected), exit cleanly with code 0.
+// This makes non-interactive runs (e.g. pipe closed) deterministic.
+process.stdin.on('close', () => process.exit(0));
+
 startServer().catch((error) => {
   logger.error('Failed to start server:', error);
   process.exit(1);

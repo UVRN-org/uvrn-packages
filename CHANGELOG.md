@@ -15,6 +15,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.5.3] – 2026-03-17
+
+Stabilization pass (post-publish validation): MCP lifecycle contract, SDK replay implementation, smoke and CI hardening.
+
+### Added
+- **CI:** Test step in pack-check workflow; failures in unit/integration tests (including SDK replay, MCP lifecycle) now block the run before pack and smoke.
+- **Smoke:** Behavior-based checks: SDK `replayReceipt(receipt, bundle, executeFn)` smoke (success + deterministic); MCP bin lifecycle (run with stdin closed, assert exit 0). No log-text assertions. Stale tarballs removed before pack so consumer install uses fresh builds.
+
+### Changed
+- **@uvrn/sdk 1.5.3:** `replayReceipt(receipt, bundle, executeFn)` fully implemented; validation and determinism checks; typed error codes. Breaking: signature now requires `bundle`. See [uvrn-sdk/CHANGELOG.md](uvrn-sdk/CHANGELOG.md).
+- **@uvrn/mcp 1.5.3:** Run modes, lifecycle, and exit codes documented in README; bin exits 0 when stdin closes; integration test for lifecycle (exit code only). See [uvrn-mcp/CHANGELOG.md](uvrn-mcp/CHANGELOG.md).
+
+---
+
 ## [1.5.2] – 2026-03-17
 
 ### Fixed

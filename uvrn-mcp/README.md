@@ -5,7 +5,7 @@
 [![npm version](https://img.shields.io/npm/v/@uvrn/mcp.svg)](https://www.npmjs.com/package/@uvrn/mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**Release:** 1.5.2.
+**Release:** 1.5.3.
 
 **Disclaimer:** UVRN is in Alpha testing. The engine measures whether your sources agree with each other — not whether they’re correct. Final trust of output rests with the user. Use at your own discretion. Have fun.
 
@@ -29,6 +29,20 @@ The Delta Engine MCP server exposes UVRN's Delta Engine functionality to AI assi
 ### Library vs. binary (default-safe behavior)
 
 Importing the package (`import '@uvrn/mcp'` or `require('@uvrn/mcp')`) only exposes `createServer` and `startServer` — it does **not** start the server. To run the server, use `npx uvrn-mcp` or call `startServer()` in your code. This keeps library usage side-effect free. See [default-safe behavior](https://github.com/UVRN-org/uvrn-packages/blob/main/docs/decisions/0001-default-safe-behavior.md) (ADR) for the full policy.
+
+### Run modes and lifecycle
+
+- **Stdio (MCP usage):** The server is intended to be run with stdio connected to an MCP client (e.g. Claude Desktop). The client spawns the process and communicates over stdin/stdout. The server runs until the transport closes or the process receives SIGINT/SIGTERM.
+- **Non-interactive:** When launched with no client (e.g. stdin closed or pipe closed), the process exits cleanly with code **0** after the transport closes. No specific stdout/stderr output is required for this case.
+
+**Exit codes**
+
+| Code | Meaning |
+|------|--------|
+| **0** | Clean shutdown (SIGINT, SIGTERM, or stdin/transport closed). |
+| **Non-zero (e.g. 1)** | Startup failure, uncaught exception, or unhandled rejection. |
+
+Tests and automation should rely on exit codes only, not on log text.
 
 ## Features
 

@@ -1,6 +1,7 @@
 {
   "name": "@uvrn/api",
-  "version": "1.0.2",
+  "version": "1.0.3",
+  "publishConfig": { "access": "public" },
   "description": "UVRN REST API — HTTP access to bundle processing",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -22,7 +23,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@uvrn/core": "workspace:*",
+    "@uvrn/core": "workspace:^",
     "fastify": "^5.7.3",
     "@fastify/cors": "^10.0.0",
     "@fastify/rate-limit": "^10.0.0",
@@ -40,5 +41,6 @@
     "tsx": "^4.7.0",
     "typescript": "^5.3.0"
   },
-  "engines": { "node": ">=20.0.0" }
+  "engines": { "node": ">=20.0.0" },
+  "files": ["dist", "README.md"]
 }

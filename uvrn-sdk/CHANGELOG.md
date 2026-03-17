@@ -5,6 +5,13 @@ All notable changes to the Delta Engine SDK will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 2026-03-17
+
+Monorepo 1.0.3 release; npm publish config and version alignment.
+
+### Changed
+- Version 1.0.3; `publishConfig.access: "public"` for @uvrn scope.
+
 ## [1.0.0] - 2026-01-15
 
 First public npm release under `@uvrn/sdk` (2026-03-08).
@@ -70,6 +77,7 @@ First public npm release under `@uvrn/sdk` (2026-03-08).
 
 | Version | Release Date | Support Status | End of Life |
 |---------|--------------|----------------|-------------|
+| 1.0.3   | 2026-03-17   | ✅ Active      | TBD         |
 | 1.0.0   | 2026-01-15   | ✅ Active      | TBD         |
 
 ---

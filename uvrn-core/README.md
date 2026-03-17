@@ -60,6 +60,18 @@ console.log(receipt.hash);      // SHA-256 of canonical receipt
 - **Validate before running** — Use `validateBundle(bundle)` to check structure and threshold without executing the engine.
 - **Integrate into pipelines** — Use as a library in CI, ETL, or any service that needs deterministic comparison and proof.
 
+### Use case: Product / content research
+
+Your audience and market data often live in multiple places: platform analytics (e.g. YouTube, Spotify), surveys, CRM exports, or APIs. When one source says +41%, another +35%, and a third +38%, it’s hard to know if you can safely pivot or ship — **who do you trust?**
+
+UVRN helps **content creators, product teams, and designers** reconcile that split. You feed **2 to 100+ data sources** into the Delta Engine (each with comparable metrics). The engine:
+
+1. **Canonically serializes** the inputs, runs a **deterministic delta comparison**, and checks whether the spread is within your **threshold** (e.g. 8%).
+2. Produces a **verifiable receipt** with a clear outcome: **consensus** (sources agree within threshold — e.g. “Both signals agree. Pivot with proof.”) or **indeterminate** (outside threshold — time to investigate).
+3. The receipt is **hash-verified** and **reproducible**; you can share it with partners or your team so anyone can verify the same result.
+
+**Example:** Three sources — YouTube Analytics (+41% how-to views), a subscriber survey (+35% demand), and a platform API (+38% engagement). The engine returns **consensus** with a 4.83% delta (within an 8% threshold), so the designer or creator can confidently decide to pivot or ship, backed by a receipt — not just a hunch.
+
 ## Links
 
 **Open source:** Source code and issues: [GitHub (uvrn-packages)](https://github.com/UVRN-org/uvrn-packages). Project landing: [UVRN](https://github.com/UVRN-org/uvrn).

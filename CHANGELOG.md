@@ -14,6 +14,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.0.3] – 2026-03-17 (npm publish readiness)
+
+All packages published to npm at 1.0.3 with public access under the `@uvrn` scope.
+
+### Changed
+- **All packages:** Added `publishConfig.access: "public"` for scoped public publish; version set to 1.0.3.
+- **@uvrn/core, adapter, cli, api:** Added explicit `files` (dist, README) for tarball contents.
+- **@uvrn/adapter, cli, api, mcp:** `@uvrn/core` dependency uses `workspace:^` so published manifest has `^1.0.3` for patch compatibility.
+
+---
+
 ## [1.0.2] – 2026-03-17 (Audit remediation)
 
 Major updates from the [2026-03-17 monorepo audit](docs/reports/2026-03-17-monorepo-audit.md) remediation. Full build log: [docs/reports/2026-03-17-audit-remediation-build-log.md](docs/reports/2026-03-17-audit-remediation-build-log.md).

@@ -27,19 +27,18 @@ npm install @uvrn/core @uvrn/adapter
 ## Usage
 
 1. Obtain a **DeltaReceipt** from `@uvrn/core` (e.g. `runDeltaEngine(bundle)`).
-2. Use **wrapInDRVC3** with an ethers signer and options to produce a DRVC3 envelope.
+2. Use **wrapInDRVC3** with a signer private key (hex string) and options to produce a DRVC3 envelope.
 3. Use **validateDRVC3** / **extractDeltaReceipt** to validate envelopes and read back the core receipt.
 
 ```typescript
 import { runDeltaEngine } from '@uvrn/core';
 import { wrapInDRVC3, validateDRVC3, extractDeltaReceipt } from '@uvrn/adapter';
-import { Wallet } from 'ethers';
 
 const bundle = { /* ... DeltaBundle ... */ };
 const receipt = runDeltaEngine(bundle);
 
-const wallet = new Wallet(process.env.SIGNER_PRIVATE_KEY);
-const drvc3 = await wrapInDRVC3(receipt, wallet, {
+const privateKeyHex = process.env.SIGNER_PRIVATE_KEY!; // 64 hex chars, optional 0x prefix
+const drvc3 = await wrapInDRVC3(receipt, privateKeyHex, {
   issuer: 'my-service',
   event: 'delta-reconciliation',
 });
@@ -69,7 +68,7 @@ You can set these options when wrapping a receipt (no code changes to this packa
 Example:
 
 ```typescript
-const drvc3 = await wrapInDRVC3(receipt, wallet, {
+const drvc3 = await wrapInDRVC3(receipt, privateKeyHex, {
   issuer: 'acme-corp',
   event: 'price-attestation',
   certificate: 'Acme Receipt v1',

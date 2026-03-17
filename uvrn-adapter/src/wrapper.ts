@@ -8,15 +8,14 @@
  */
 
 import { DeltaReceipt, verifyReceipt } from '@uvrn/core';
-import { Wallet, HDNodeWallet } from 'ethers';
 import { DRVC3Receipt, WrapOptions } from './types';
-import { signHash } from './signer';
+import { signHash, privateKeyToAddress } from './signer';
 
 /**
  * Wraps a DeltaReceipt in a DRVC3 envelope
  * 
  * @param deltaReceipt - Layer 1 DeltaReceipt (deterministic, hash-covered)
- * @param signer - ethers Wallet for EIP-191 signing
+ * @param signerPrivateKeyHex - Raw hex private key (64 hex chars, optional 0x prefix) for EIP-191 signing
  * @param options - Envelope options (issuer, event, etc.)
  * @returns Promise resolving to complete DRVC3 receipt
  * 
@@ -24,11 +23,9 @@ import { signHash } from './signer';
  * ```typescript
  * import { runDeltaEngine } from '@uvrn/core';
  * import { wrapInDRVC3 } from '@uvrn/adapter';
- * import { Wallet } from 'ethers';
  * 
  * const deltaReceipt = runDeltaEngine(bundle);
- * const wallet = new Wallet(privateKey);
- * const drvc3 = await wrapInDRVC3(deltaReceipt, wallet, {
+ * const drvc3 = await wrapInDRVC3(deltaReceipt, process.env.SIGNER_PRIVATE_KEY!, {
  *   issuer: 'uvrn',
  *   event: 'delta-reconciliation'
  * });
@@ -36,7 +33,7 @@ import { signHash } from './signer';
  */
 export async function wrapInDRVC3(
   deltaReceipt: DeltaReceipt,
-  signer: Wallet | HDNodeWallet,
+  signerPrivateKeyHex: string,
   options: WrapOptions
 ): Promise<DRVC3Receipt> {
   // 1. Verify receipt integrity before attesting (do not sign tampered payloads)
@@ -53,7 +50,8 @@ export async function wrapInDRVC3(
   const hash = deltaReceipt.hash;
 
   // 4. Sign hash with EIP-191 (ENVELOPE METADATA - certifies "who" and "when")
-  const signature = await signHash(hash, signer);
+  const signature = await signHash(hash, signerPrivateKeyHex);
+  const signer_address = privateKeyToAddress(signerPrivateKeyHex);
 
   // 5. Construct DRVC3 envelope
   const drvc3: DRVC3Receipt = {
@@ -66,7 +64,7 @@ export async function wrapInDRVC3(
       hash,
       signature_method: 'eip191',
       signature,
-      signer_address: signer.address
+      signer_address
     },
     validation: {
       v_score: deltaReceipt.deltaFinal,

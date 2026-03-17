@@ -3,19 +3,22 @@
  * Tests the wrapInDRVC3 function and schema validation
  */
 
-import { Wallet, HDNodeWallet } from 'ethers';
 import { runDeltaEngine } from '@uvrn/core';
 import { wrapInDRVC3, extractDeltaReceipt } from '../src/wrapper';
 import { validateDRVC3 } from '../src/validator';
-import { recoverSigner } from '../src/signer';
+import { recoverSigner, privateKeyToAddress } from '../src/signer';
 import type { DeltaReceipt, DeltaBundle } from '@uvrn/core';
+
+// Fixed test private key (deterministic); address derived via privateKeyToAddress
+const TEST_PRIVATE_KEY_HEX =
+  '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
 
 describe('DRVC3 Wrapper', () => {
   let mockDeltaReceipt: DeltaReceipt;
-  let testWallet: HDNodeWallet;
+  let expectedAddress: string;
 
   beforeAll(() => {
-    testWallet = Wallet.createRandom();
+    expectedAddress = privateKeyToAddress(TEST_PRIVATE_KEY_HEX);
     const bundle: DeltaBundle = {
       bundleId: 'test-bundle-001',
       claim: 'Test claim',
@@ -29,7 +32,7 @@ describe('DRVC3 Wrapper', () => {
   });
 
   it('should wrap DeltaReceipt in valid DRVC3 envelope', async () => {
-    const drvc3 = await wrapInDRVC3(mockDeltaReceipt, testWallet, {
+    const drvc3 = await wrapInDRVC3(mockDeltaReceipt, TEST_PRIVATE_KEY_HEX, {
       issuer: 'uvrn-test',
       event: 'delta-reconciliation'
     });
@@ -47,7 +50,7 @@ describe('DRVC3 Wrapper', () => {
     expect(drvc3.integrity.hash).toBe(mockDeltaReceipt.hash);
     expect(drvc3.integrity.signature_method).toBe('eip191');
     expect(drvc3.integrity.signature).toBeDefined();
-    expect(drvc3.integrity.signer_address).toBe(testWallet.address);
+    expect(drvc3.integrity.signer_address).toBe(expectedAddress);
 
     // Check validation block
     expect(drvc3.validation.v_score).toBe(mockDeltaReceipt.deltaFinal);
@@ -55,7 +58,7 @@ describe('DRVC3 Wrapper', () => {
   });
 
   it('should produce schema-valid DRVC3 receipt', async () => {
-    const drvc3 = await wrapInDRVC3(mockDeltaReceipt, testWallet, {
+    const drvc3 = await wrapInDRVC3(mockDeltaReceipt, TEST_PRIVATE_KEY_HEX, {
       issuer: 'uvrn',
       event: 'test'
     });
@@ -66,7 +69,7 @@ describe('DRVC3 Wrapper', () => {
   });
 
   it('should include optional fields when provided', async () => {
-    const drvc3 = await wrapInDRVC3(mockDeltaReceipt, testWallet, {
+    const drvc3 = await wrapInDRVC3(mockDeltaReceipt, TEST_PRIVATE_KEY_HEX, {
       issuer: 'uvrn',
       event: 'delta-reconciliation',
       blockState: 'blocked',
@@ -82,7 +85,7 @@ describe('DRVC3 Wrapper', () => {
   });
 
   it('should create verifiable signature', async () => {
-    const drvc3 = await wrapInDRVC3(mockDeltaReceipt, testWallet, {
+    const drvc3 = await wrapInDRVC3(mockDeltaReceipt, TEST_PRIVATE_KEY_HEX, {
       issuer: 'uvrn',
       event: 'test'
     });
@@ -93,11 +96,11 @@ describe('DRVC3 Wrapper', () => {
       drvc3.integrity.signature
     );
 
-    expect(recoveredAddress.toLowerCase()).toBe(testWallet.address.toLowerCase());
+    expect(recoveredAddress.toLowerCase()).toBe(expectedAddress.toLowerCase());
   });
 
   it('should extract original DeltaReceipt from envelope', async () => {
-    const drvc3 = await wrapInDRVC3(mockDeltaReceipt, testWallet, {
+    const drvc3 = await wrapInDRVC3(mockDeltaReceipt, TEST_PRIVATE_KEY_HEX, {
       issuer: 'uvrn',
       event: 'test'
     });

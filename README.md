@@ -59,6 +59,8 @@ pnpm install
 pnpm run build
 ```
 
+**Troubleshooting:** If you see `npm warn Unknown env config "..."` during build, those come from your environment (e.g. `npm_config_*` variables), not from this repo. The build still succeeds; you can ignore the warnings or unset those variables to silence them.
+
 ## Publish
 
 Publish in dependency order: **@uvrn/core** first, then **@uvrn/sdk**, **@uvrn/adapter**, **@uvrn/mcp**, **@uvrn/api**, **@uvrn/cli**. See `docs/reports/` for publish notes (e.g. `2026-03-08-npm-first-publish.md`).

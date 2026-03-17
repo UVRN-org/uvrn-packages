@@ -1,6 +1,6 @@
 # @uvrn/core
 
-UVRN Delta Engine core — deterministic multi-source comparison and verification. Runs the Delta formula on bundles, produces canonical receipts with SHA-256 hashes, and validates or verifies bundles and receipts. **Release:** 1.5.1.
+UVRN Delta Engine core — deterministic multi-source comparison and verification. Runs the Delta formula on bundles, produces canonical receipts with SHA-256 hashes, and validates or verifies bundles and receipts. **Release:** 1.6.0.
 
 **Disclaimer:** UVRN is in Alpha testing. The engine measures whether your sources agree with each other — not whether they’re correct. Final trust of output rests with the user. Use at your own discretion. Have fun.
 
@@ -61,6 +61,20 @@ console.log(receipt.hash);      // SHA-256 of canonical receipt
 - **Produce verifiable receipts** — Every receipt has a canonical hash; use `verifyReceipt(receipt)` to recompute and check integrity.
 - **Validate before running** — Use `validateBundle(bundle)` to check structure and threshold without executing the engine.
 - **Integrate into pipelines** — Use as a library in CI, ETL, or any service that needs deterministic comparison and proof.
+
+### Validation (shared contract)
+
+Bundle validation is the protocol source of truth. All consumers (SDK, API, MCP, CLI) align to these rules:
+
+- **dataSpecs**: array with **at least 2** items; each item must have `id`, `label`, `sourceKind`, `originDocIds`, and non-empty `metrics`.
+- **thresholdPct**: number **greater than 0 and at most 1** (exclusive zero).
+- **Metrics**: each metric must have a non-empty string `key` and a numeric `value` (no NaN).
+
+The SDK delegates to core `validateBundle` so pass/fail is identical everywhere.
+
+### Replay determinism and timestamp
+
+Receipts may include an optional `ts` (ISO timestamp). **Replay determinism** compares the canonical receipt payload **excluding** `ts`: two runs are considered deterministic if their normalized payloads (without `ts`) match. The stored `receipt.hash` remains over the full payload for integrity. This allows replay verification regardless of who added or omitted a timestamp.
 
 ### Use case: Product / content research
 

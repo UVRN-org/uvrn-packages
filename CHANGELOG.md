@@ -15,6 +15,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.6.0] – 2026-03-17
+
+Validation parity and replay timestamp policy. Core is the single source of truth for bundle validation; SDK delegates and replay determinism uses canonical payload excluding `ts`.
+
+### Added
+
+- **@uvrn/core 1.6.0:** `hashReceiptPayloadWithoutTs(payload)` for replay determinism (normalized hash without `ts`). See [uvrn-core/CHANGELOG.md](uvrn-core/CHANGELOG.md).
+- **@uvrn/sdk 1.6.0:** Validation parity with core; replay determinism contract (canonical payload excluding `ts`); `ReplayResult.timestampNormalized`; parity and replay matrix tests. See [uvrn-sdk/CHANGELOG.md](uvrn-sdk/CHANGELOG.md).
+- **Docs:** Core and SDK READMEs document shared validation expectations and replay determinism (timestamp behavior). Report and build log under `docs/reports/`.
+
+### Changed
+
+- **Validation:** SDK `validateBundle` now delegates to core; pass/fail identical for single dataSpec, threshold=0, NaN/missing key/non-number metric. Breaking for callers that relied on previous looser SDK rules.
+- **Replay:** Determinism comparison uses normalized payload (excluding `ts`); when only timestamp differs, result is still deterministic and `timestampNormalized` is set.
+
+---
+
 ## [1.5.3] – 2026-03-17
 
 Stabilization pass (post-publish validation): MCP lifecycle contract, SDK replay implementation, smoke and CI hardening.

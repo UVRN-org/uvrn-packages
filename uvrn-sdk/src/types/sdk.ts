@@ -137,12 +137,17 @@ export interface ReplayResult {
   replayedReceipt?: DeltaReceipt;
 
   /**
-   * Whether the results match exactly
+   * Whether the results match exactly (based on canonical payload excluding optional ts).
    */
   deterministic: boolean;
 
   /**
-   * Differences found (if any)
+   * True when determinism used normalized hash (ts stripped); full receipt hashes differed due to timestamp context only.
+   */
+  timestampNormalized?: boolean;
+
+  /**
+   * Differences found (if any). When timestampNormalized is true, may include an informational line about hash/timestamp.
    */
   differences?: string[];
 

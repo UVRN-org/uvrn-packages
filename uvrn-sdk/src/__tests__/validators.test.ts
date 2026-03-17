@@ -52,7 +52,7 @@ describe('validateBundle', () => {
 
     const result = validateBundle(bundle);
     expect(result.valid).toBe(false);
-    expect(result.errors?.some(e => e.field === 'bundleId')).toBe(true);
+    expect(result.errors?.some(e => e.field === 'bundle')).toBe(true);
   });
 
   test('rejects bundle without claim', () => {
@@ -65,7 +65,7 @@ describe('validateBundle', () => {
 
     const result = validateBundle(bundle);
     expect(result.valid).toBe(false);
-    expect(result.errors?.some(e => e.field === 'claim')).toBe(true);
+    expect(result.errors?.some(e => e.field === 'bundle')).toBe(true);
   });
 
   test('rejects bundle with empty dataSpecs', () => {
@@ -78,7 +78,7 @@ describe('validateBundle', () => {
 
     const result = validateBundle(bundle);
     expect(result.valid).toBe(false);
-    expect(result.errors?.some(e => e.field === 'dataSpecs')).toBe(true);
+    expect(result.errors?.some(e => e.field === 'bundle')).toBe(true);
   });
 
   test('rejects bundle with invalid threshold (negative)', () => {
@@ -99,7 +99,7 @@ describe('validateBundle', () => {
 
     const result = validateBundle(bundle);
     expect(result.valid).toBe(false);
-    expect(result.errors?.some(e => e.field === 'thresholdPct')).toBe(true);
+    expect(result.errors?.some(e => e.field === 'bundle')).toBe(true);
   });
 
   test('rejects bundle with invalid threshold (> 1)', () => {
@@ -120,7 +120,7 @@ describe('validateBundle', () => {
 
     const result = validateBundle(bundle);
     expect(result.valid).toBe(false);
-    expect(result.errors?.some(e => e.field === 'thresholdPct')).toBe(true);
+    expect(result.errors?.some(e => e.field === 'bundle')).toBe(true);
   });
 
   test('validates bundle with optional maxRounds', () => {
@@ -128,13 +128,8 @@ describe('validateBundle', () => {
       bundleId: 'test',
       claim: 'Test',
       dataSpecs: [
-        {
-          id: 'spec-1',
-          label: 'Test',
-          sourceKind: 'report',
-          originDocIds: ['doc-1'],
-          metrics: [{ key: 'value', value: 100 }]
-        }
+        { id: 'spec-1', label: 'Test', sourceKind: 'report', originDocIds: ['doc-1'], metrics: [{ key: 'value', value: 100 }] },
+        { id: 'spec-2', label: 'Test 2', sourceKind: 'report', originDocIds: ['doc-2'], metrics: [{ key: 'value', value: 105 }] }
       ],
       thresholdPct: 0.05,
       maxRounds: 10
@@ -161,7 +156,7 @@ describe('validateBundle', () => {
 
     const result = validateBundle(bundle);
     expect(result.valid).toBe(false);
-    expect(result.errors?.some(e => e.field.includes('.id'))).toBe(true);
+    expect(result.errors?.some(e => e.field === 'bundle')).toBe(true);
   });
 
   test('rejects invalid sourceKind', () => {
@@ -182,7 +177,7 @@ describe('validateBundle', () => {
 
     const result = validateBundle(bundle);
     expect(result.valid).toBe(false);
-    expect(result.errors?.some(e => e.field.includes('.sourceKind'))).toBe(true);
+    expect(result.errors?.some(e => e.field === 'bundle')).toBe(true);
   });
 
   test('rejects DataSpec with empty metrics', () => {
@@ -203,7 +198,7 @@ describe('validateBundle', () => {
 
     const result = validateBundle(bundle);
     expect(result.valid).toBe(false);
-    expect(result.errors?.some(e => e.field.includes('.metrics'))).toBe(true);
+    expect(result.errors?.some(e => e.field === 'bundle')).toBe(true);
   });
 });
 
@@ -444,5 +439,61 @@ describe('replayReceipt', () => {
     });
     expect(result.success).toBe(false);
     expect(result.error).toBe('EXECUTION_FAILED');
+  });
+
+  describe('replay timestamp matrix (determinism uses canonical payload excluding ts)', () => {
+    const baseBundle: DeltaBundle = {
+      bundleId: 'replay-ts',
+      claim: 'Timestamp matrix',
+      dataSpecs: [
+        { id: 'a', label: 'A', sourceKind: 'report', originDocIds: [], metrics: [{ key: 'x', value: 10 }] },
+        { id: 'b', label: 'B', sourceKind: 'report', originDocIds: [], metrics: [{ key: 'x', value: 11 }] }
+      ],
+      thresholdPct: 0.1
+    };
+    const fixedTs = '2020-01-01T00:00:00.000Z';
+
+    test('receipt no ts, replay no ts: deterministic true', async () => {
+      const receipt = runDeltaEngine(baseBundle);
+      const result = await replayReceipt(receipt, baseBundle, async (b) => runDeltaEngine(b));
+      expect(result.success).toBe(true);
+      expect(result.deterministic).toBe(true);
+      expect(result.originalHash).toBe(result.recomputedHash);
+    });
+
+    test('receipt no ts, replay with ts: deterministic true, timestampNormalized', async () => {
+      const receipt = runDeltaEngine(baseBundle);
+      const result = await replayReceipt(receipt, baseBundle, async (b) => runDeltaEngine(b, { timestamp: fixedTs }));
+      expect(result.success).toBe(true);
+      expect(result.deterministic).toBe(true);
+      expect(result.timestampNormalized).toBe(true);
+    });
+
+    test('receipt with ts, replay no ts: deterministic true, timestampNormalized', async () => {
+      const receipt = runDeltaEngine(baseBundle, { timestamp: fixedTs });
+      const result = await replayReceipt(receipt, baseBundle, async (b) => runDeltaEngine(b));
+      expect(result.success).toBe(true);
+      expect(result.deterministic).toBe(true);
+      expect(result.timestampNormalized).toBe(true);
+    });
+
+    test('receipt with ts, replay with ts (same): deterministic true, full hash match', async () => {
+      const receipt = runDeltaEngine(baseBundle, { timestamp: fixedTs });
+      const result = await replayReceipt(receipt, baseBundle, async (b) => runDeltaEngine(b, { timestamp: fixedTs }));
+      expect(result.success).toBe(true);
+      expect(result.deterministic).toBe(true);
+      expect(result.originalHash).toBe(result.recomputedHash);
+    });
+
+    test('outcome differs: deterministic false, reason is not timestamp policy', async () => {
+      const receipt = runDeltaEngine(baseBundle);
+      const result = await replayReceipt(receipt, baseBundle, async () => ({
+        ...receipt,
+        outcome: 'indeterminate' as const
+      }));
+      expect(result.success).toBe(true);
+      expect(result.deterministic).toBe(false);
+      expect(result.differences?.some(d => d.includes('outcome'))).toBe(true);
+    });
   });
 });

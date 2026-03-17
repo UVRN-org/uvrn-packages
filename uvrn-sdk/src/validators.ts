@@ -1,13 +1,22 @@
 /**
  * Validation and Verification Functions for Delta Engine SDK
+ * Bundle validation delegates to @uvrn/core for parity; replay determinism uses
+ * canonical payload excluding optional ts (see ReplayResult.timestampNormalized).
  */
 
-import type { DeltaBundle, DeltaReceipt, DataSpec } from '@uvrn/core';
-import { hashReceipt } from '@uvrn/core';
+import type { DeltaBundle, DeltaReceipt } from '@uvrn/core';
+import { validateBundle as validateBundleCore, hashReceipt } from '@uvrn/core';
+
+/** Normalized hash (payload without ts) for replay determinism. Uses same contract as core hashReceiptPayloadWithoutTs. */
+function normalizedReceiptHash(payload: Omit<DeltaReceipt, 'hash'>): string {
+  const { ts: _ts, ...rest } = payload;
+  return hashReceipt(rest);
+}
 import type { ValidationResult, ValidationError, ReplayResult } from './types/sdk';
 
 /**
- * Validates a Delta Bundle structure and data
+ * Validates a Delta Bundle using core protocol rules (source of truth).
+ * Pass/fail is identical to @uvrn/core validateBundle; errors are mapped to SDK shape.
  *
  * @param bundle - The bundle to validate
  * @returns ValidationResult with errors if invalid
@@ -21,9 +30,6 @@ import type { ValidationResult, ValidationError, ReplayResult } from './types/sd
  * ```
  */
 export function validateBundle(bundle: unknown): ValidationResult {
-  const errors: ValidationError[] = [];
-
-  // Check if bundle is an object
   if (!bundle || typeof bundle !== 'object') {
     return {
       valid: false,
@@ -31,95 +37,14 @@ export function validateBundle(bundle: unknown): ValidationResult {
     };
   }
 
-  const b = bundle as Partial<DeltaBundle>;
-
-  // Validate bundleId
-  if (!b.bundleId || typeof b.bundleId !== 'string' || b.bundleId.trim() === '') {
-    errors.push({ field: 'bundleId', message: 'bundleId is required and must be a non-empty string', expected: 'string', actual: b.bundleId });
+  const coreResult = validateBundleCore(bundle as DeltaBundle);
+  if (!coreResult.valid) {
+    return {
+      valid: false,
+      errors: [{ field: 'bundle', message: coreResult.error ?? 'Bundle validation failed', expected: 'valid DeltaBundle', actual: bundle }]
+    };
   }
-
-  // Validate claim
-  if (!b.claim || typeof b.claim !== 'string' || b.claim.trim() === '') {
-    errors.push({ field: 'claim', message: 'claim is required and must be a non-empty string', expected: 'string', actual: b.claim });
-  }
-
-  // Validate dataSpecs
-  if (!Array.isArray(b.dataSpecs)) {
-    errors.push({ field: 'dataSpecs', message: 'dataSpecs must be an array', expected: 'array', actual: typeof b.dataSpecs });
-  } else {
-    if (b.dataSpecs.length === 0) {
-      errors.push({ field: 'dataSpecs', message: 'dataSpecs must contain at least one DataSpec', expected: 'non-empty array', actual: 'empty array' });
-    }
-
-    // Validate each DataSpec
-    b.dataSpecs.forEach((spec: unknown, index: number) => {
-      const specErrors = validateDataSpec(spec, `dataSpecs[${index}]`);
-      errors.push(...specErrors);
-    });
-  }
-
-  // Validate thresholdPct
-  if (typeof b.thresholdPct !== 'number') {
-    errors.push({ field: 'thresholdPct', message: 'thresholdPct must be a number', expected: 'number', actual: typeof b.thresholdPct });
-  } else if (b.thresholdPct < 0 || b.thresholdPct > 1) {
-    errors.push({ field: 'thresholdPct', message: 'thresholdPct must be between 0.0 and 1.0', expected: '0.0 to 1.0', actual: b.thresholdPct });
-  }
-
-  // Validate maxRounds (optional)
-  if (b.maxRounds !== undefined) {
-    if (typeof b.maxRounds !== 'number' || b.maxRounds < 1 || !Number.isInteger(b.maxRounds)) {
-      errors.push({ field: 'maxRounds', message: 'maxRounds must be a positive integer', expected: 'positive integer', actual: b.maxRounds });
-    }
-  }
-
-  return {
-    valid: errors.length === 0,
-    errors: errors.length > 0 ? errors : undefined
-  };
-}
-
-/**
- * Validates a DataSpec object
- * @internal
- */
-function validateDataSpec(spec: unknown, fieldPath: string): ValidationError[] {
-  const errors: ValidationError[] = [];
-
-  if (!spec || typeof spec !== 'object') {
-    return [{ field: fieldPath, message: 'DataSpec must be an object', expected: 'object', actual: typeof spec }];
-  }
-
-  const s = spec as Partial<DataSpec>;
-
-  // Validate id
-  if (!s.id || typeof s.id !== 'string') {
-    errors.push({ field: `${fieldPath}.id`, message: 'id is required and must be a string', expected: 'string', actual: s.id });
-  }
-
-  // Validate label
-  if (!s.label || typeof s.label !== 'string') {
-    errors.push({ field: `${fieldPath}.label`, message: 'label is required and must be a string', expected: 'string', actual: s.label });
-  }
-
-  // Validate sourceKind
-  const validSourceKinds = ['report', 'metric', 'chart', 'meta'];
-  if (!s.sourceKind || !validSourceKinds.includes(s.sourceKind)) {
-    errors.push({ field: `${fieldPath}.sourceKind`, message: `sourceKind must be one of: ${validSourceKinds.join(', ')}`, expected: validSourceKinds.join('|'), actual: s.sourceKind });
-  }
-
-  // Validate originDocIds
-  if (!Array.isArray(s.originDocIds)) {
-    errors.push({ field: `${fieldPath}.originDocIds`, message: 'originDocIds must be an array', expected: 'array', actual: typeof s.originDocIds });
-  }
-
-  // Validate metrics
-  if (!Array.isArray(s.metrics)) {
-    errors.push({ field: `${fieldPath}.metrics`, message: 'metrics must be an array', expected: 'array', actual: typeof s.metrics });
-  } else if (s.metrics.length === 0) {
-    errors.push({ field: `${fieldPath}.metrics`, message: 'metrics must contain at least one MetricPoint', expected: 'non-empty array', actual: 'empty array' });
-  }
-
-  return errors;
+  return { valid: true };
 }
 
 /**
@@ -202,12 +127,14 @@ export function verifyReceiptHash(receipt: DeltaReceipt): boolean {
 
 /**
  * Replays a receipt's bundle through the engine to verify determinism.
- * Requires the original bundle that produced the receipt.
+ * Determinism is based on canonical payload excluding optional ts; receipt.hash
+ * remains over the full payload for integrity. When only ts differs, result
+ * is still deterministic and timestampNormalized is set.
  *
  * @param receipt - The receipt to verify (must match the bundle)
  * @param bundle - The original DeltaBundle that produced the receipt (required)
  * @param executeFn - Function to execute the bundle (e.g. runDeltaEngine); must return a DeltaReceipt
- * @returns ReplayResult with success, deterministic flag, and optional differences
+ * @returns ReplayResult with success, deterministic flag, optional timestampNormalized, and differences
  *
  * @example
  * ```typescript
@@ -284,9 +211,7 @@ export async function replayReceipt(
   const { hash: _replayedHash, ...replayedPayload } = replayedReceipt;
   const recomputedHash = hashReceipt(replayedPayload);
 
-  if (originalHash !== recomputedHash) {
-    differences.push(`hash: original ${originalHash} !== recomputed ${recomputedHash}`);
-  }
+  // Semantic comparison
   if (receipt.deltaFinal !== replayedReceipt.deltaFinal) {
     differences.push(`deltaFinal: ${receipt.deltaFinal} !== ${replayedReceipt.deltaFinal}`);
   }
@@ -297,13 +222,35 @@ export async function replayReceipt(
     differences.push(`rounds.length: ${receipt.rounds.length} !== ${replayedReceipt.rounds.length}`);
   }
 
-  const deterministic = differences.length === 0;
+  // Determinism: compare canonical payload excluding ts (replay timestamp policy)
+  const { hash: _origHash, ...originalPayload } = receipt;
+  const originalNormalizedHash = normalizedReceiptHash(originalPayload);
+  const replayedNormalizedHash = normalizedReceiptHash(replayedPayload);
+  const normalizedHashesMatch = originalNormalizedHash === replayedNormalizedHash;
+  const fullHashesMatch = originalHash === recomputedHash;
+  const semanticMatch = differences.length === 0;
+
+  const deterministic = normalizedHashesMatch && semanticMatch;
+  let timestampNormalized = false;
+  let finalDifferences: string[] | undefined;
+
+  if (deterministic && !fullHashesMatch) {
+    timestampNormalized = true;
+    finalDifferences = ['hash (timestamp context differed; normalized hash match)'];
+  } else if (!deterministic) {
+    if (!fullHashesMatch) {
+      differences.push(`hash: original ${originalHash} !== recomputed ${recomputedHash}`);
+    }
+    finalDifferences = differences;
+  }
+
   return {
     success: true,
     originalReceipt: receipt,
     replayedReceipt,
     deterministic,
-    differences: deterministic ? undefined : differences,
+    timestampNormalized: timestampNormalized || undefined,
+    differences: finalDifferences,
     originalHash,
     recomputedHash
   };

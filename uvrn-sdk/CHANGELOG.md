@@ -10,6 +10,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Replaced retired Loosechain brand with UVRN in package copy and LICENSE.
 
+## [1.6.0] - 2026-03-17
+
+### Added
+
+- **Validation parity:** `validateBundle` now delegates to @uvrn/core so pass/fail is identical across SDK, API, MCP, and CLI. Parity test suite runs identical fixtures through core and SDK and fails on any disagreement.
+- **Replay timestamp policy:** Replay determinism is based on the canonical receipt payload **excluding** the optional `ts` field. When only timestamp context differs, replay is still `deterministic: true` and `ReplayResult.timestampNormalized` is set. Ensures replay verification is robust regardless of who added or omitted `ts`.
+- **ReplayResult.timestampNormalized:** Optional flag indicating that full receipt hashes differed due to `ts` but normalized hashes matched.
+
+### Breaking
+
+- **validateBundle:** Stricter rules (aligned with core). Bundles that previously passed SDK but failed core will now fail SDK validation: e.g. single dataSpec, threshold=0, NaN metric, missing metric key, non-number metric value. Validation errors are returned with `field: 'bundle'` and the core error message.
+
+### Changed
+
+- README: Documented validation contract and replay determinism (including timestamp behavior). Added "Why this matters" for audit/compliance workflows.
+
 ## [1.5.3] - 2026-03-17
 
 ### Added

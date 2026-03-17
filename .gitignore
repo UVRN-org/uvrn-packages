@@ -11,6 +11,7 @@ dist/
 docs
 docs/
 !docs/reports/
+!docs/decisions/
 guides
 guides/
 

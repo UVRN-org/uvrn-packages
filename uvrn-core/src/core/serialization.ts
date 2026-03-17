@@ -40,3 +40,14 @@ export function hashReceipt(receiptPayload: Omit<DeltaReceipt, 'hash'>): string 
   const canonical = canonicalSerialize(receiptPayload);
   return createHash('sha256').update(canonical).digest('hex');
 }
+
+/**
+ * Computes hash of the receipt payload excluding the optional `ts` field.
+ * Used for replay determinism: when comparing original vs replayed receipt,
+ * normalized hashes (without ts) determine determinism; receipt.hash remains
+ * over the full payload for integrity.
+ */
+export function hashReceiptPayloadWithoutTs(payload: Omit<DeltaReceipt, 'hash'>): string {
+  const { ts: _ts, ...rest } = payload;
+  return hashReceipt(rest);
+}

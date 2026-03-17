@@ -1,8 +1,8 @@
 # uvrn-packages
 
-Monorepo for **UVRN** (Universal Verification Receipt Network) protocol packages. Published to npm under the `@uvrn` scope. **Release:** @uvrn/sdk, @uvrn/mcp 1.5.3; @uvrn/api 1.5.2; @uvrn/core, @uvrn/adapter, @uvrn/cli 1.5.1.
+Monorepo for **UVRN** (Universal Verification Receipt Network) protocol packages. Published to npm under the `@uvrn` scope. **Release:** @uvrn/core, @uvrn/sdk 1.6.0; @uvrn/mcp 1.5.3; @uvrn/api 1.5.2; @uvrn/adapter, @uvrn/cli 1.5.1.
 
-**Highlights:** Packed `@uvrn/*` manifests use normal semver (no `workspace:`), so `npm install` works in clean projects. CI runs build, **test** (unit + integration), pack, manifest check, and contract smoke (install from tarballs + API/MCP/replay checks). **@uvrn/sdk** 1.5.3: `replayReceipt(receipt, bundle, executeFn)` implemented (determinism verification). **@uvrn/mcp** 1.5.3: lifecycle and exit codes documented; bin exits 0 when stdin closes. Smoke asserts behavior (exit codes, API results), not log text. See [CHANGELOG.md](CHANGELOG.md).
+**Highlights:** Packed `@uvrn/*` manifests use normal semver (no `workspace:`), so `npm install` works in clean projects. CI runs build, **test** (unit + integration), pack, manifest check, and contract smoke (install from tarballs + API/MCP/replay checks). **1.6.0:** Validation parity (core = source of truth, SDK delegates); replay determinism uses canonical payload excluding `ts`; parity and replay matrix tests. See [CHANGELOG.md](CHANGELOG.md).
 
 **Disclaimer:** UVRN is in Alpha testing. The engine measures whether your sources agree with each other — not whether they’re correct. Final trust of output rests with the user. Use at your own discretion. Have fun.
 

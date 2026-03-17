@@ -1,6 +1,6 @@
 # @uvrn/sdk
 
-TypeScript SDK for the [UVRN Delta Engine](https://github.com/UVRN-org/uvrn-packages) — programmatic access to deterministic verification and consensus computation. **Release:** 1.5.3.
+TypeScript SDK for the [UVRN Delta Engine](https://github.com/UVRN-org/uvrn-packages) — programmatic access to deterministic verification and consensus computation. **Release:** 1.6.0.
 
 **Disclaimer:** UVRN is in Alpha testing. The engine measures whether your sources agree with each other — not whether they’re correct. Final trust of output rests with the user. Use at your own discretion. Have fun.
 
@@ -250,11 +250,17 @@ Builds and returns the bundle (throws if invalid).
 - **Validate and verify in pipelines** — Validate bundles before run; verify receipt hashes after run for integrity checks.
 - **Integrate into any service** — Same API whether you use CLI, HTTP, or local; switch modes via config.
 
+### Validation and replay contract
+
+**Bundle validation** is aligned with @uvrn/core: the SDK delegates to core so pass/fail is identical (e.g. single dataSpec, threshold=0, NaN or non-number metrics are invalid in both). See core README for the full validation contract.
+
+**Replay determinism** uses the canonical receipt payload **excluding** the optional `ts` field. `replayReceipt(receipt, bundle, executeFn)` returns `deterministic: true` when the normalized payloads match, even if the original and replayed receipts differ only by `ts`; in that case `timestampNormalized` is set. This matters for audit/compliance: you can verify that a receipt was produced deterministically from a bundle without requiring that every executor use the same timestamp.
+
 ### Validators
 
 **`validateBundle(bundle: unknown): ValidationResult`**
 
-Validates bundle structure.
+Validates bundle structure (delegates to core; same pass/fail as API/MCP/CLI).
 
 **`validateReceipt(receipt: unknown): ValidationResult`**
 

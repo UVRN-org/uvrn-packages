@@ -316,4 +316,4 @@ LOG_LEVEL=debug
 
 ---
 
-**Loosechain** - _Receipts are truth. Interfaces are untrusted. Verification comes first._
+**UVRN** - _Receipts are truth. Interfaces are untrusted. Verification comes first._

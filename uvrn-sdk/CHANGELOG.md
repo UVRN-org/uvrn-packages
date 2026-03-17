@@ -5,6 +5,11 @@ All notable changes to the Delta Engine SDK will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+- Replaced retired Loosechain brand with UVRN in package copy and LICENSE.
+
 ## [1.0.3] - 2026-03-17
 
 Monorepo 1.0.3 release; npm publish config and version alignment.

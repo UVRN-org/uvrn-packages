@@ -1,5 +1,5 @@
 /**
- * Loosechain UVRN Adapter
+ * UVRN Adapter
  * Layer 2 - Wraps Delta Engine Core receipts in DRVC3 envelopes
  */
 

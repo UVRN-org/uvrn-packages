@@ -1,7 +1,7 @@
 /**
  * @uvrn/sdk
  *
- * TypeScript SDK for interacting with Loosechain Delta Engine
+ * TypeScript SDK for interacting with UVRN Delta Engine
  *
  * @packageDocumentation
  */

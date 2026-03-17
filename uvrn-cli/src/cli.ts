@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Loosechain Delta Engine CLI
+ * UVRN Delta Engine CLI
  * Command-line interface for running delta engine operations
  */
 
@@ -251,7 +251,7 @@ function main(): void {
 
   program
     .name('delta-engine')
-    .description('CLI for Loosechain Delta Engine - Bundle → Receipt')
+    .description('CLI for UVRN Delta Engine - Bundle → Receipt')
     .version(packageJson.version);
 
   program

@@ -12,6 +12,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Root [CHANGELOG.md](CHANGELOG.md) (this file) for monorepo-wide major updates.
 - Alpha disclaimer added to all READMEs across the repo.
 
+### Changed
+- Replaced retired Loosechain brand with UVRN across all packages (CLI, core, adapter, SDK, MCP).
+
 ---
 
 ## [1.0.3] – 2026-03-17 (npm publish readiness)

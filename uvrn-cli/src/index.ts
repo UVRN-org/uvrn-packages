@@ -1,5 +1,5 @@
 /**
- * Loosechain Delta Engine CLI
+ * UVRN Delta Engine CLI
  * Public exports
  */
 

@@ -1,5 +1,5 @@
 /**
- * Loosechain Delta Engine Core
+ * UVRN Delta Engine Core
  * Layer 1 Protocol Infrastructure
  */
 

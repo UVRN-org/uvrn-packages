@@ -19,7 +19,7 @@ describe('Delta Engine CLI', () => {
 
     test('should display help', () => {
       const output = execSync(`node ${CLI_PATH} --help`, { encoding: 'utf-8' });
-      expect(output).toContain('CLI for Loosechain Delta Engine');
+      expect(output).toContain('CLI for UVRN Delta Engine');
       expect(output).toContain('run');
       expect(output).toContain('validate');
       expect(output).toContain('verify');

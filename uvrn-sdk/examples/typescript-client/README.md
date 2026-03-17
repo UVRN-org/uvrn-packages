@@ -1,6 +1,6 @@
 # TypeScript Client Examples
 
-This directory contains TypeScript examples demonstrating how to use the Delta Engine SDK.
+This directory contains TypeScript examples demonstrating how to use the Delta Engine SDK. **Release:** 1.3.0.
 
 **Disclaimer:** UVRN is in Alpha testing. Accuracy of results is not guaranteed, results should be independently verified. Final trust of output rests with user. Use at your own risk. Have fun.
 

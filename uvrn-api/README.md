@@ -1,6 +1,6 @@
 # @uvrn/api
 
-UVRN REST API — HTTP server for Delta Engine bundle processing. Exposes run, validate, and verify over HTTP so any client (browser, script, or service) can call the engine without installing the core or SDK.
+UVRN REST API — HTTP server for Delta Engine bundle processing. Exposes run, validate, and verify over HTTP so any client (browser, script, or service) can call the engine without installing the core or SDK. **Release:** 1.3.0.
 
 **Disclaimer:** UVRN is in Alpha testing. The engine measures whether your sources agree with each other — not whether they’re correct. Final trust of output rests with the user. Use at your own risk. Have fun.
 

@@ -1,6 +1,6 @@
 # @uvrn/adapter
 
-UVRN DRVC3 envelope adapter — wraps Delta Engine receipts in DRVC3 envelopes with EIP-191 signatures. Use this when you need to attach issuer identity and signing to core receipts without changing their deterministic hash.
+UVRN DRVC3 envelope adapter — wraps Delta Engine receipts in DRVC3 envelopes with EIP-191 signatures. Use this when you need to attach issuer identity and signing to core receipts without changing their deterministic hash. **Release:** 1.3.0.
 
 **Disclaimer:** UVRN is in Alpha testing. The engine measures whether your sources agree with each other — not whether they’re correct. Final trust of output rests with the user. Use at your own risk. Have fun.
 

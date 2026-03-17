@@ -11,6 +11,7 @@ import * as path from 'path';
 import { runDeltaEngine, validateBundle, verifyReceipt } from '@uvrn/core';
 import type { DeltaBundle, DeltaReceipt } from '@uvrn/core';
 
+// eslint-disable-next-line @typescript-eslint/no-var-requires
 const packageJson = require('../package.json');
 
 // Exit codes
@@ -74,14 +75,15 @@ async function readStdin(): Promise<string> {
  * Fetch from URL
  */
 async function fetchUrl(url: string): Promise<string> {
-  const https = url.startsWith('https://') ? require('https') : require('http');
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const httpModule = url.startsWith('https://') ? require('https') : require('http');
 
   return new Promise((resolve, reject) => {
-    https.get(url, (res: any) => {
+    httpModule.get(url, (res: { statusCode: number; statusMessage: string; on: (event: string, cb: (data: string | Buffer) => void) => void }) => {
       let data = '';
 
-      res.on('data', (chunk: string) => {
-        data += chunk;
+      res.on('data', (chunk: string | Buffer) => {
+        data += chunk.toString();
       });
 
       res.on('end', () => {
@@ -111,7 +113,7 @@ function parseJson<T>(jsonString: string, type: string): T {
 /**
  * Write output to file or stdout
  */
-function writeOutput(data: any, options: CliOptions): void {
+function writeOutput(data: unknown, options: CliOptions): void {
   const output = options.pretty
     ? JSON.stringify(data, null, 2)
     : JSON.stringify(data);

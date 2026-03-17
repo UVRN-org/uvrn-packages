@@ -5,7 +5,7 @@ module.exports = {
     tsconfigRootDir: __dirname
   },
   rules: {
-    '@typescript-eslint/no-explicit-any': 'error',
-    'no-console': 'warn'
+    // CLI entrypoint — console output is intentional user-facing I/O
+    'no-console': 'off'
   }
 };

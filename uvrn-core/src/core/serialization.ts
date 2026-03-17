@@ -11,7 +11,7 @@ import { DeltaReceipt } from '../types';
  * - Object keys sorted lexicographically.
  * - No whitespace.
  */
-export function canonicalSerialize(obj: any): string {
+export function canonicalSerialize(obj: unknown): string {
   if (obj === undefined) {
     return '';
   }
@@ -20,13 +20,14 @@ export function canonicalSerialize(obj: any): string {
   }
 
   if (Array.isArray(obj)) {
-    return '[' + obj.map((item) => canonicalSerialize(item)).join(',') + ']';
+    return '[' + obj.map((item: unknown) => canonicalSerialize(item)).join(',') + ']';
   }
 
-  const keys = Object.keys(obj).sort();
+  const record = obj as Record<string, unknown>;
+  const keys = Object.keys(record).sort();
   const acc: string[] = [];
   for (const key of keys) {
-    acc.push(JSON.stringify(key) + ':' + canonicalSerialize(obj[key]));
+    acc.push(JSON.stringify(key) + ':' + canonicalSerialize(record[key]));
   }
   return '{' + acc.join(',') + '}';
 }

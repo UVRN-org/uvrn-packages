@@ -8,12 +8,47 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
-### Added
-- Root [CHANGELOG.md](CHANGELOG.md) (this file) for monorepo-wide major updates.
-- Alpha disclaimer added to all READMEs across the repo.
+---
+
+## [1.5.0] – 2026-03-17 (stabilization pass included)
+
+Workspace lint alignment, code quality hardening, and CI stabilization. All packages versioned at 1.5.0.
+
+### Fixed
+- **Lint alignment:** ESLint was non-functional across all 6 packages. Added shared root `.eslintrc.js` with consistent rules; all packages now extend it.
+- **@uvrn/sdk, @uvrn/cli, @uvrn/api:** Missing `.eslintrc` config files created.
+- **@uvrn/core, @uvrn/mcp:** `.d.ts` and test files excluded from lint glob via `ignorePatterns` — eliminates "TSConfig does not include this file" parser errors.
+- **@uvrn/adapter:** Added missing `eslint`, `@typescript-eslint/eslint-plugin`, and `@typescript-eslint/parser` devDependencies; created `.eslintrc.js`.
+- **@uvrn/core:** `canonicalSerialize(obj: any)` → `canonicalSerialize(obj: unknown)` with proper narrowing.
+- **@uvrn/mcp:** Converted `.eslintrc.json` to `.eslintrc.js` for `__dirname` support in `tsconfigRootDir`.
+- **Root parser resolution:** Added `@typescript-eslint/parser`, `@typescript-eslint/eslint-plugin`, and `eslint` to root `devDependencies` so the shared root `.eslintrc.js` can always resolve its declared parser/plugin regardless of pnpm hoisting behavior.
+- **esbuild version split:** Added `"esbuild": ">=0.25.0"` to root `pnpm.overrides`, collapsing the dual `0.21.5`/`0.27.x` split in the lockfile. Eliminates "Host version does not match binary version" errors in `@uvrn/mcp` tests on affected pnpm store states.
+- **@uvrn/mcp:** Test script changed from `vitest` (watch mode, hangs) to `vitest run` — clean exit in CI and from root `pnpm run test`. `test:watch` added for local dev.
+- **@uvrn/cli:** `fetchUrl` response typed properly (`string | Buffer` chunk); `writeOutput(data: any)` → `writeOutput(data: unknown)`; `no-console` set to `off` in CLI eslintrc (console output is intentional for a CLI entrypoint).
+- **Root scripts:** `test` and `lint` switched from `npm --workspaces` to `pnpm -r run`; root `test` prefixed with `CI=1` so `vitest run` and jest both exit cleanly without a TTY.
+- **@uvrn/sdk build:** `npm run clean && tsc` → `rm -rf dist dist-esm tsconfig.tsbuildinfo && tsc` — removes npm subprocess and associated env warning noise.
+- **Lint glob normalization:** All packages changed from `eslint src/**/*.ts` to `eslint src --ext .ts` — directory-walk form respects `ignorePatterns` before file enumeration, eliminating "File ignored" warning noise.
+- **Lockfile:** Regenerated to reflect all manifest changes, including adapter eslint deps and esbuild override.
 
 ### Changed
-- Replaced retired Loosechain brand with UVRN across all packages (CLI, core, adapter, SDK, MCP).
+- **All packages:** Version bumped to 1.5.0; READMEs updated.
+
+---
+
+## [1.5.0-original] – 2026-03-17
+
+Workspace lint alignment and code quality hardening. All packages versioned at 1.5.0.
+
+### Fixed
+- **Lint alignment:** ESLint was non-functional across all 6 packages. Added shared root `.eslintrc.js` with consistent rules; all packages now extend it. All packages lint cleanly (0 errors).
+- **@uvrn/sdk, @uvrn/cli, @uvrn/api:** Missing `.eslintrc` config files created (previously `eslint` errored with "couldn't find a configuration file").
+- **@uvrn/core, @uvrn/mcp:** `.d.ts` and test files no longer cause "TSConfig does not include this file" errors — added to `ignorePatterns`.
+- **@uvrn/adapter:** Added missing `eslint`, `@typescript-eslint/eslint-plugin`, and `@typescript-eslint/parser` devDependencies; created `.eslintrc.js`.
+- **@uvrn/core:** `canonicalSerialize(obj: any)` changed to `canonicalSerialize(obj: unknown)` with proper narrowing — resolves `@typescript-eslint/no-explicit-any` error.
+- **@uvrn/mcp:** Converted `.eslintrc.json` to `.eslintrc.js` to support `__dirname` in `tsconfigRootDir`.
+
+### Changed
+- **All packages:** Version bumped to 1.5.0; READMEs updated.
 
 ---
 

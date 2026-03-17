@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/sdk",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "publishConfig": { "access": "public" },
   "description": "UVRN TypeScript SDK — programmatic access to deterministic verification",
   "main": "dist/index.js",
@@ -20,13 +20,13 @@
   },
   "homepage": "https://github.com/UVRN-org/uvrn-packages#readme",
   "scripts": {
-    "build": "npm run clean && tsc",
+    "build": "rm -rf dist dist-esm tsconfig.tsbuildinfo && tsc",
     "build:watch": "tsc --watch",
     "clean": "rm -rf dist dist-esm tsconfig.tsbuildinfo",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "lint": "eslint src/**/*.ts"
+    "lint": "eslint src --ext .ts"
   },
   "peerDependencies": {
     "@uvrn/core": "^1.0.0"

@@ -1,8 +1,8 @@
 # @uvrn/sdk
 
-TypeScript SDK for the [UVRN Delta Engine](https://github.com/UVRN-org/uvrn-packages) — programmatic access to deterministic verification and consensus computation. **Release:** 1.4.0.
+TypeScript SDK for the [UVRN Delta Engine](https://github.com/UVRN-org/uvrn-packages) — programmatic access to deterministic verification and consensus computation. **Release:** 1.5.0.
 
-**Disclaimer:** UVRN is in Alpha testing. The engine measures whether your sources agree with each other — not whether they’re correct. Final trust of output rests with the user. Use at your own risk. Have fun.
+**Disclaimer:** UVRN is in Alpha testing. The engine measures whether your sources agree with each other — not whether they’re correct. Final trust of output rests with the user. Use at your own discretion. Have fun.
 
 *UVRN makes no claims to "truth", the "verification" is the output of math — it is up to any user to decide if claim is actually "true" — Research and testing are absolutely recommended per use case and individual system!!*
 

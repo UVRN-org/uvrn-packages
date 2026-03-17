@@ -1,8 +1,8 @@
 # uvrn-packages
 
-Monorepo for **UVRN** (Universal Verification Receipt Network) protocol packages. Published to npm under the `@uvrn` scope. **Release:** 1.4.0.
+Monorepo for **UVRN** (Universal Verification Receipt Network) protocol packages. Published to npm under the `@uvrn` scope. **Release:** 1.5.0.
 
-**Disclaimer:** UVRN is in Alpha testing. The engine measures whether your sources agree with each other — not whether they’re correct. Final trust of output rests with the user. Use at your own risk. Have fun.
+**Disclaimer:** UVRN is in Alpha testing. The engine measures whether your sources agree with each other — not whether they’re correct. Final trust of output rests with the user. Use at your own discretion. Have fun.
 
 *UVRN makes no claims to "truth", the "verification" is the output of math — it is up to any user to decide if claim is actually "true" — Research and testing are absolutely recommended per use case and individual system!!*
 
@@ -14,7 +14,7 @@ Monorepo for **UVRN** (Universal Verification Receipt Network) protocol packages
 - **MCP (AI assistants):** `npm install @uvrn/mcp` and add to your MCP client config
 - **DRVC3 signing:** `npm install @uvrn/core @uvrn/adapter` to wrap receipts in signed envelopes
 
-See each package README for install, usage, and use cases.
+See each package README for install, usage, and use cases. For version history and notable changes see [CHANGELOG.md](CHANGELOG.md).
 
 ## Packages on npm
 

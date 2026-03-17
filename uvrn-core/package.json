@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/core",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "publishConfig": { "access": "public" },
   "description": "UVRN engine core — deterministic protocol infrastructure",
   "main": "dist/index.js",
@@ -18,7 +18,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "lint": "eslint src/**/*.ts",
+    "lint": "eslint src --ext .ts",
     "clean": "rm -rf dist"
   },
   "devDependencies": {

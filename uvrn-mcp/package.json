@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/mcp",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "publishConfig": { "access": "public" },
   "description": "UVRN MCP server — AI-native bundle processing",
   "main": "dist/index.js",
@@ -18,7 +18,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "test": "vitest",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "test:coverage": "vitest --coverage",
     "start": "node dist/index.js",
     "clean": "rm -rf dist",

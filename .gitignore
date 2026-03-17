@@ -1,4 +1,5 @@
 node_modules/
+.pnpm-store/
 dist/
 *.log
 .DS_Store
@@ -7,6 +8,11 @@ dist/
 !.env.example
 .cursor
 .cursor/
+docs
+docs/
+guides
+guides/
+
 
 # TypeScript incremental build cache (do not track; can cause empty dist/ after clean)
 **/tsconfig.tsbuildinfo

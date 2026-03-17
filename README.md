@@ -18,6 +18,8 @@ See each package README for install, usage, and use cases. For version history a
 
 ## Packages on npm
 
+This repo contains six packages published under the `@uvrn` scope:
+
 | Package | What it is | Install |
 | -------- | ---------- | ------- |
 | [@uvrn/core](https://www.npmjs.com/package/@uvrn/core) | Delta Engine core (run, validate, verify) | `npm install @uvrn/core` |
@@ -26,26 +28,18 @@ See each package README for install, usage, and use cases. For version history a
 | [@uvrn/api](https://www.npmjs.com/package/@uvrn/api) | REST API server | `npm install @uvrn/api` |
 | [@uvrn/mcp](https://www.npmjs.com/package/@uvrn/mcp) | MCP server for AI assistants | `npm install @uvrn/mcp` |
 | [@uvrn/adapter](https://www.npmjs.com/package/@uvrn/adapter) | DRVC3 envelope adapter (EIP-191) | `npm install @uvrn/adapter` |
-| [@uvrn/delta-engine-core](https://www.npmjs.com/package/@uvrn/delta-engine-core) | Same as @uvrn/core | Use `@uvrn/core` for consistency |
-| [@uvrn/delta-engine-sdk](https://www.npmjs.com/package/@uvrn/delta-engine-sdk) | Same as @uvrn/sdk (programmatic) | Use `@uvrn/sdk` for consistency |
-
-**Naming:** `@uvrn/core` and `@uvrn/delta-engine-core` are the same package (Delta Engine core). `@uvrn/sdk` and `@uvrn/delta-engine-sdk` (programmatic client) are the same. Prefer **@uvrn/core** and **@uvrn/sdk** for consistency.
 
 ## Structure
 
 ```
 uvrn-packages/
-├── uvrn-core/      # Engine core (deterministic protocol)
-├── uvrn-sdk/       # TypeScript SDK
-├── uvrn-cli/       # CLI (bundle → receipt)
-├── uvrn-api/       # REST API server
-├── uvrn-mcp/       # MCP server
-├── uvrn-adapter/   # DRVC3 envelope adapter
-├── docs/           # Shared documentation
-└── guides/         # Workflows and protocols
+├── uvrn-core/      # @uvrn/core — Engine core (deterministic protocol)
+├── uvrn-sdk/       # @uvrn/sdk — TypeScript SDK
+├── uvrn-cli/       # @uvrn/cli — CLI (bundle → receipt)
+├── uvrn-api/       # @uvrn/api — REST API server
+├── uvrn-mcp/       # @uvrn/mcp — MCP server for AI assistants
+└── uvrn-adapter/   # @uvrn/adapter — DRVC3 envelope adapter
 ```
-
-**Safe updates (preserve older version):** To make changes while keeping a frozen copy in another folder, use [Git worktrees](guides/Git_Worktree_Protocol_Universal_Template.md). One directory stays at the preserved state; do new work in a second worktree (e.g. `uvrn-packages-next`).
 
 ## Install
 
@@ -63,7 +57,7 @@ pnpm run build
 
 ## Publish
 
-Publish in dependency order: **@uvrn/core** first, then **@uvrn/sdk**, **@uvrn/adapter**, **@uvrn/mcp**, **@uvrn/api**, **@uvrn/cli**. See `docs/reports/` for publish notes (e.g. `2026-03-08-npm-first-publish.md`).
+Publish in dependency order: **@uvrn/core** first, then **@uvrn/sdk**, **@uvrn/adapter**, **@uvrn/mcp**, **@uvrn/api**, **@uvrn/cli**. See [CHANGELOG.md](CHANGELOG.md) for version history.
 
 ## Open source
 

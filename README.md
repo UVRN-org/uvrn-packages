@@ -10,10 +10,10 @@ Monorepo for **UVRN** (Universal Verification Receipt Network) protocol packages
 
 ## Getting started
 
-- **Delta Engine (library):** `npm install @uvrn/core @uvrn/sdk`
+- **MCP (AI assistants):** `npm install -g @uvrn/mcp` — connect the engine to your AI assistant (add `"uvrn"` to your MCP client config, then ask your AI)
 - **CLI:** `npm install -g @uvrn/cli` then `uvrn run bundle.json`
-- **REST API:** `npm install @uvrn/api` then `npx @uvrn/api` (server on port 3000)
-- **MCP (AI assistants):** `npm install @uvrn/mcp` and add to your MCP client config
+- **Delta Engine (library):** `npm install @uvrn/core @uvrn/sdk`
+- **REST API (self-hosted):** `npm install @uvrn/api` then `npx @uvrn/api` (server on port 3000) — for teams running their own deployment
 - **DRVC3 signing:** `npm install @uvrn/core @uvrn/adapter` to wrap receipts in signed envelopes
 
 See each package README for install, usage, and use cases. For version history and notable changes see [CHANGELOG.md](CHANGELOG.md).
@@ -24,12 +24,12 @@ This repo contains six packages published under the `@uvrn` scope:
 
 | Package | What it is | Install |
 | -------- | ---------- | ------- |
+| [@uvrn/mcp](https://www.npmjs.com/package/@uvrn/mcp) | Connect the engine to your AI assistant (MCP server) | `npm install -g @uvrn/mcp` |
 | [@uvrn/core](https://www.npmjs.com/package/@uvrn/core) | Delta Engine core (run, validate, verify) | `npm install @uvrn/core` |
-| [@uvrn/sdk](https://www.npmjs.com/package/@uvrn/sdk) | TypeScript SDK (CLI / HTTP / local modes) | `npm install @uvrn/sdk` |
 | [@uvrn/cli](https://www.npmjs.com/package/@uvrn/cli) | Command-line (bundle → receipt) | `npm install -g @uvrn/cli` |
-| [@uvrn/api](https://www.npmjs.com/package/@uvrn/api) | REST API server | `npm install @uvrn/api` |
-| [@uvrn/mcp](https://www.npmjs.com/package/@uvrn/mcp) | MCP server for AI assistants | `npm install @uvrn/mcp` |
+| [@uvrn/sdk](https://www.npmjs.com/package/@uvrn/sdk) | TypeScript SDK (CLI / HTTP / local modes) | `npm install @uvrn/sdk` |
 | [@uvrn/adapter](https://www.npmjs.com/package/@uvrn/adapter) | DRVC3 envelope adapter (EIP-191) | `npm install @uvrn/adapter` |
+| [@uvrn/api](https://www.npmjs.com/package/@uvrn/api) | REST API server (self-hosted deployments) | `npm install @uvrn/api` |
 
 ## Structure
 

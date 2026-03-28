@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/cli",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "publishConfig": { "access": "public" },
   "description": "UVRN CLI — bundle to receipt",
   "main": "dist/index.js",

@@ -71,7 +71,8 @@ export class DeltaEngineClient {
       cliPath: options.cliPath || '',
       apiUrl: options.apiUrl || '',
       timeout: options.timeout || 30000,
-      retries: options.retries || 3
+      retries: options.retries || 3,
+      apiKey: options.apiKey || ''
     };
   }
 
@@ -222,11 +223,16 @@ export class DeltaEngineClient {
     const url = `${this.options.apiUrl}/api/v1/delta/run`;
 
     try {
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      if (this.options.apiKey) {
+        headers['X-UVRN-API-Key'] = this.options.apiKey;
+      }
+
       const response = await this.fetchWithRetry(url, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers,
         body: JSON.stringify(bundle)
       });
 

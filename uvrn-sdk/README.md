@@ -31,11 +31,9 @@ npm install @uvrn/sdk
 ```typescript
 import { DeltaEngineClient, BundleBuilder } from '@uvrn/sdk';
 
-// Create a client (choose your mode)
+// Create a client using local mode (runs the engine in-process — no server needed)
 const client = new DeltaEngineClient({
-  mode: 'http',
-  apiUrl: 'http://localhost:3000',
-  timeout: 30000
+  mode: 'local'
 });
 
 // Build a bundle
@@ -108,6 +106,19 @@ const { DeltaEngineClient, BundleBuilder } = require('@uvrn/sdk');
 
 ## Client Modes
 
+### Local Mode
+
+Directly imports and executes the core engine:
+
+```typescript
+const client = new DeltaEngineClient({
+  mode: 'local'
+});
+```
+
+**Requirements:**
+- `@uvrn/core` must be installed
+
 ### CLI Mode
 
 Spawns the Delta Engine CLI as a child process:
@@ -126,6 +137,8 @@ const client = new DeltaEngineClient({
 
 ### HTTP Mode
 
+HTTP mode is for teams running a self-hosted `@uvrn/api` instance — not required for local use.
+
 Makes REST API calls to a running Delta Engine server:
 
 ```typescript
@@ -140,19 +153,6 @@ const client = new DeltaEngineClient({
 **Requirements:**
 - Delta Engine API server must be running
 - Server must be accessible at `apiUrl`
-
-### Local Mode
-
-Directly imports and executes the core engine:
-
-```typescript
-const client = new DeltaEngineClient({
-  mode: 'local'
-});
-```
-
-**Requirements:**
-- `@uvrn/core` must be installed
 
 ## API Reference
 

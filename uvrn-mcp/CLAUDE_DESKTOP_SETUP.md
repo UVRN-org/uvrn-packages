@@ -60,26 +60,26 @@ The configuration file location varies by operating system:
 
 Open `claude_desktop_config.json` in a text editor and add the Delta Engine MCP server:
 
-#### Option A: Using npx (Recommended - No Installation Required)
+#### Option A: Using Global Installation (Recommended)
 
 ```json
 {
   "mcpServers": {
-    "delta-engine": {
-      "command": "npx",
-      "args": ["-y", "@uvrn/mcp"]
+    "uvrn": {
+      "command": "uvrn-mcp"
     }
   }
 }
 ```
 
-#### Option B: Using Global Installation
+#### Option B: Using npx (if not installed globally)
 
 ```json
 {
   "mcpServers": {
-    "delta-engine": {
-      "command": "uvrn-mcp"
+    "uvrn": {
+      "command": "npx",
+      "args": ["-y", "@uvrn/mcp"]
     }
   }
 }
@@ -90,7 +90,7 @@ Open `claude_desktop_config.json` in a text editor and add the Delta Engine MCP 
 ```json
 {
   "mcpServers": {
-    "delta-engine": {
+    "uvrn": {
       "command": "node",
       "args": ["/absolute/path/to/node_modules/@uvrn/mcp/dist/run.js"]
     }
@@ -103,9 +103,8 @@ Open `claude_desktop_config.json` in a text editor and add the Delta Engine MCP 
 ```json
 {
   "mcpServers": {
-    "delta-engine": {
-      "command": "npx",
-      "args": ["-y", "@uvrn/mcp"],
+    "uvrn": {
+      "command": "uvrn-mcp",
       "env": {
         "LOG_LEVEL": "debug",
         "STORAGE_PATH": "/path/to/receipts",
@@ -253,9 +252,8 @@ tail -f ~/Library/Logs/Claude/mcp*.log
 ```json
 {
   "mcpServers": {
-    "delta-engine": {
-      "command": "npx",
-      "args": ["-y", "@uvrn/mcp"],
+    "uvrn": {
+      "command": "uvrn-mcp",
       "env": {
         "LOG_LEVEL": "debug"
       }
@@ -296,9 +294,8 @@ You can run multiple MCP servers simultaneously:
 ```json
 {
   "mcpServers": {
-    "delta-engine": {
-      "command": "npx",
-      "args": ["-y", "@uvrn/mcp"]
+    "uvrn": {
+      "command": "uvrn-mcp"
     },
     "other-server": {
       "command": "other-mcp-server"
@@ -312,9 +309,8 @@ You can run multiple MCP servers simultaneously:
 ```json
 {
   "mcpServers": {
-    "delta-engine": {
-      "command": "npx",
-      "args": ["-y", "@uvrn/mcp"],
+    "uvrn": {
+      "command": "uvrn-mcp",
       "env": {
         "LOG_LEVEL": "debug"
       }

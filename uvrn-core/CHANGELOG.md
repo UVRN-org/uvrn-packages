@@ -5,6 +5,12 @@ All notable changes to @uvrn/core are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.1] - 2026-03-28
+
+### Changed
+
+- Docs: MCP-first alignment and publishing notes (no runtime API change).
+
 ## [1.6.0] - 2026-03-17
 
 ### Added

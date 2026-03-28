@@ -63,7 +63,7 @@ npx uvrn --version
 2. **Run the engine**:
 
 ```bash
-delta-engine run bundle.json
+uvrn run bundle.json
 ```
 
 3. **Get your receipt** (with deterministic hash). Example output:
@@ -81,14 +81,14 @@ delta-engine run bundle.json
 
 ## Commands
 
-### `delta-engine run [bundle]`
+### `uvrn run [bundle]`
 
 Execute the delta engine on a bundle and generate a receipt.
 
 **Input Sources:**
-- File path: `delta-engine run bundle.json`
-- Stdin: `cat bundle.json | delta-engine run`
-- URL: `delta-engine run https://example.com/bundle.json`
+- File path: `uvrn run bundle.json`
+- Stdin: `cat bundle.json | uvrn run`
+- URL: `uvrn run https://example.com/bundle.json`
 
 **Options:**
 - `-o, --output <file>` - Write output to file instead of stdout
@@ -99,16 +99,16 @@ Execute the delta engine on a bundle and generate a receipt.
 
 ```bash
 # Basic usage
-delta-engine run bundle.json
+uvrn run bundle.json
 
 # Save receipt to file with pretty formatting
-delta-engine run bundle.json --output receipt.json --pretty
+uvrn run bundle.json --output receipt.json --pretty
 
 # Pipe from stdin
-cat bundle.json | delta-engine run --pretty
+cat bundle.json | uvrn run --pretty
 
 # Fetch bundle from URL
-delta-engine run https://api.example.com/bundle.json
+uvrn run https://api.example.com/bundle.json
 ```
 
 **Exit Codes:**
@@ -117,7 +117,7 @@ delta-engine run https://api.example.com/bundle.json
 - `2` - Engine error
 - `3` - I/O error
 
-### `delta-engine validate [bundle]`
+### `uvrn validate [bundle]`
 
 Validate bundle structure without running the engine.
 
@@ -130,13 +130,13 @@ Validate bundle structure without running the engine.
 
 ```bash
 # Validate bundle structure
-delta-engine validate bundle.json
+uvrn validate bundle.json
 
 # Quiet mode (only output JSON)
-delta-engine validate bundle.json --quiet
+uvrn validate bundle.json --quiet
 
 # Output validation result to file
-delta-engine validate bundle.json --output validation.json
+uvrn validate bundle.json --output validation.json
 ```
 
 **Output:**
@@ -156,7 +156,7 @@ Or if invalid:
 }
 ```
 
-### `delta-engine verify [receipt]`
+### `uvrn verify [receipt]`
 
 Verify receipt integrity by replaying hash computation.
 
@@ -169,10 +169,10 @@ Verify receipt integrity by replaying hash computation.
 
 ```bash
 # Verify receipt integrity
-delta-engine verify receipt.json
+uvrn verify receipt.json
 
 # Verify with pretty output
-delta-engine verify receipt.json --pretty
+uvrn verify receipt.json --pretty
 ```
 
 **Output:**
@@ -240,18 +240,18 @@ A DeltaReceipt includes:
 
 ```bash
 # Validate → Run → Verify pipeline
-delta-engine validate bundle.json && \
-delta-engine run bundle.json --output receipt.json && \
-delta-engine verify receipt.json
+uvrn validate bundle.json && \
+uvrn run bundle.json --output receipt.json && \
+uvrn verify receipt.json
 ```
 
 ### CI/CD Integration
 
 ```bash
 # In your CI script
-if delta-engine run security-scan.json --output receipt.json --quiet; then
+if uvrn run security-scan.json --output receipt.json --quiet; then
   echo "Security scan passed consensus threshold"
-  delta-engine verify receipt.json
+  uvrn verify receipt.json
 else
   echo "Security scan failed - investigate discrepancies"
   exit 1
@@ -264,7 +264,7 @@ fi
 # Process multiple bundles
 for bundle in data/*.json; do
   echo "Processing $bundle..."
-  delta-engine run "$bundle" --output "receipts/$(basename $bundle .json)-receipt.json"
+  uvrn run "$bundle" --output "receipts/$(basename $bundle .json)-receipt.json"
 done
 ```
 
@@ -274,7 +274,7 @@ The CLI uses standard exit codes and provides clear error messages:
 
 ```bash
 # Check exit code
-delta-engine run bundle.json
+uvrn run bundle.json
 if [ $? -eq 0 ]; then
   echo "Success"
 elif [ $? -eq 1 ]; then
@@ -289,9 +289,11 @@ fi
 ## Use cases
 
 - **Run comparisons from the shell** — Pass a bundle file, stdin, or URL; get a receipt with outcome and hash.
-- **Validate before running** — Use `delta-engine validate bundle.json` to check structure without executing.
-- **Verify receipts** — Use `delta-engine verify receipt.json` to recompute the hash and confirm integrity.
+- **Validate before running** — Use `uvrn validate bundle.json` to check structure without executing.
+- **Verify receipts** — Use `uvrn verify receipt.json` to recompute the hash and confirm integrity.
 - **CI and scripts** — Pipe bundles in and receipts out; use exit codes for success or failure.
+
+The `delta-engine` command is also available as an alias.
 
 ## Protocol compliance
 
@@ -326,7 +328,7 @@ cat bundle.json | jq .
 Make the CLI executable:
 
 ```bash
-chmod +x node_modules/.bin/delta-engine
+chmod +x node_modules/.bin/uvrn
 ```
 
 ## License

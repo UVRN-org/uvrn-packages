@@ -15,6 +15,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [1.6.1] – 2026-03-28
+
+MCP-first alignment across packages. Patch bumps on every scoped package so npm accepts republish (docs-only packages included). **@uvrn/sdk** adds optional `apiKey` on client config.
+
+- **@uvrn/core 1.6.1**, **@uvrn/sdk 1.6.1**, **@uvrn/adapter 1.5.2**, **@uvrn/mcp 1.5.4**, **@uvrn/api 1.5.3**, **@uvrn/cli 1.5.2**
+
+---
+
 ## [1.6.0] – 2026-03-17
 
 Validation parity and replay timestamp policy. Core is the single source of truth for bundle validation; SDK delegates and replay determinism uses canonical payload excluding `ts`.

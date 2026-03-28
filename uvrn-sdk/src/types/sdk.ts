@@ -40,6 +40,11 @@ export interface ClientOptions {
    * @default 3
    */
   retries?: number;
+
+  /**
+   * API key sent as `X-UVRN-API-Key` header in HTTP mode. Only needed if the target server requires auth.
+   */
+  apiKey?: string;
 }
 
 /**

@@ -6,6 +6,12 @@ All notable changes to @uvrn/adapter are documented in this file. The format is 
 
 (No unreleased changes.)
 
+## [1.5.2] – 2026-03-28
+
+### Changed
+
+- Docs: MCP-first alignment (no runtime API change). Version bump for npm republish.
+
 ## [1.5.1] – 2026-03-17
 
 Publish fix: packed manifest no longer contains `workspace:` protocol; consumer installs work with npm/yarn. See root [CHANGELOG](../../CHANGELOG.md).

@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/adapter",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "publishConfig": { "access": "public" },
   "description": "UVRN DRVC3 envelope adapter — wraps core receipts with EIP-191 signatures",
   "main": "dist/index.js",

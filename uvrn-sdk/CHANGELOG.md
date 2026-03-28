@@ -10,6 +10,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Replaced retired Loosechain brand with UVRN in package copy and LICENSE.
 
+## [1.6.1] - 2026-03-28
+
+### Added
+
+- **MCP-first alignment:** Optional `apiKey` on SDK client config for consumers that pass API keys to HTTP adapters or MCP transports (additive, non-breaking).
+
 ## [1.6.0] - 2026-03-17
 
 ### Added

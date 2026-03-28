@@ -2,6 +2,12 @@
 
 All notable changes to @uvrn/api are documented in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.3] – 2026-03-28
+
+### Changed
+
+- Docs: MCP-first alignment (no runtime API change). Version bump for npm republish.
+
 ## [1.5.2] – 2026-03-17
 
 ### Fixed

@@ -73,7 +73,7 @@ Tests and automation should rely on exit codes only, not on log text.
 
 ## Installation
 
-### Global Installation (Recommended for CLI use)
+### Global Installation (Recommended)
 
 ```bash
 npm install -g @uvrn/mcp
@@ -96,13 +96,25 @@ npm install @uvrn/mcp
 
 Add to your `claude_desktop_config.json`:
 
-**macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`  
+**macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
 **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
 
 ```json
 {
   "mcpServers": {
-    "delta-engine": {
+    "uvrn": {
+      "command": "uvrn-mcp"
+    }
+  }
+}
+```
+
+**If not installed globally (npx variant):**
+
+```json
+{
+  "mcpServers": {
+    "uvrn": {
       "command": "npx",
       "args": ["-y", "@uvrn/mcp"]
     }
@@ -115,9 +127,8 @@ Add to your `claude_desktop_config.json`:
 ```json
 {
   "mcpServers": {
-    "delta-engine": {
-      "command": "npx",
-      "args": ["-y", "@uvrn/mcp"],
+    "uvrn": {
+      "command": "uvrn-mcp",
       "env": {
         "LOG_LEVEL": "info",
         "MAX_BUNDLE_SIZE": "10485760"
@@ -132,10 +143,10 @@ Restart Claude Desktop, and the Delta Engine tools will be available!
 ### Running Standalone
 
 ```bash
-# Global installation
+# Global installation (recommended)
 uvrn-mcp
 
-# Using npx
+# If not installed globally
 npx @uvrn/mcp
 
 # Local installation
@@ -349,7 +360,7 @@ See [ENVIRONMENT.md](./ENVIRONMENT.md) for detailed configuration options.
 
 **Example:**
 ```bash
-LOG_LEVEL=debug MAX_BUNDLE_SIZE=20971520 npx @uvrn/mcp
+LOG_LEVEL=debug MAX_BUNDLE_SIZE=20971520 uvrn-mcp
 ```
 
 ## Use cases
@@ -398,7 +409,7 @@ tail -f ~/Library/Logs/Claude/mcp*.log
 
 **Enable debug logging:**
 ```bash
-LOG_LEVEL=debug npx @uvrn/mcp
+LOG_LEVEL=debug uvrn-mcp
 ```
 
 ### Type errors in TypeScript projects

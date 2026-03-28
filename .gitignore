@@ -8,6 +8,8 @@ dist/
 !.env.example
 .cursor
 .cursor/
+.admin/
+.admin 
 docs
 docs/
 !docs/reports/

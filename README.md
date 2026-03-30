@@ -31,6 +31,38 @@ This repo contains six packages published under the `@uvrn` scope:
 | [@uvrn/adapter](https://www.npmjs.com/package/@uvrn/adapter) | DRVC3 envelope adapter (EIP-191) | `npm install @uvrn/adapter` |
 | [@uvrn/api](https://www.npmjs.com/package/@uvrn/api) | REST API server (self-hosted deployments) | `npm install @uvrn/api` |
 
+## What we're building — the full 20-package protocol
+
+UVRN is expanding from 6 live packages to a full 20-package open protocol covering data ingestion, consensus scoring, temporal lifecycle, and distribution. We're publishing the complete technical specs for every upcoming package so the community can start building compatible implementations now — hand any package spec to an AI agent and it has everything it needs to build it.
+
+**See [ROADMAP.md](ROADMAP.md) for full specs** — API sketches, interface contracts, dependency graphs, and authoring notes for every package.
+
+### UVRN Official Pre-Release (built, audited — shipping next)
+
+| Package | Layer | What it does |
+|---------|-------|--------------|
+| `@uvrn/drift` | Temporal & Lifecycle | Temporal decay scoring — models how a V-Score degrades over time using configurable decay curves per claim type |
+| `@uvrn/agent` | Temporal & Lifecycle | Continuous claim monitoring loop — registers claims, polls on intervals, emits unsigned AgentDriftReceipts |
+| `@uvrn/canon` | Temporal & Lifecycle | Canonization engine — locks receipts as permanent, human-confirmed, signed canonical records |
+
+### Roadmap (design specs published — open for community builds)
+
+| Package | Layer | What it does |
+|---------|-------|--------------|
+| `@uvrn/farm` | Data & Consensus | Standardized connectors for external data sources (news, financial, research, on-chain) |
+| `@uvrn/consensus` | Data & Consensus | Multi-source signal aggregation — weights and collates raw signals into claim bundles |
+| `@uvrn/normalize` | Data & Consensus | Normalizes raw source data across providers into a common schema |
+| `@uvrn/signal` | Data & Consensus | Typed internal event bus — lightweight pub/sub connecting packages without tight coupling |
+| `@uvrn/timeline` | Temporal & Lifecycle | Time-series queries — reconstruct the full consensus history of any claim |
+| `@uvrn/score` | Receipt & Verification | V-Score composition internals and domain-specific scoring profiles |
+| `@uvrn/compare` | Receipt & Verification | Cross-receipt comparison — track how consensus shifts between competing claims |
+| `@uvrn/identity` | Receipt & Verification | Signer reputation layer — weight receipts by issuer credibility and track record |
+| `@uvrn/test` | Receipt & Verification | Centralized mocks, fixtures, and factory functions for building on UVRN |
+| `@uvrn/watch` | Distribution & Access | Subscription API for threshold alerts — webhooks, Slack, Discord when drift crosses boundaries |
+| `@uvrn/embed` | Distribution & Access | Drop-in React component and plain JS snippet for live consensus badges on any webpage |
+
+> **Want to build one of these?** Each package spec in [ROADMAP.md](ROADMAP.md) includes the public API sketch, interface contracts, dependencies, and design constraints. Build against the contracts and your implementation will interoperate with the official UVRN ecosystem when it ships.
+
 ## Structure
 
 ```

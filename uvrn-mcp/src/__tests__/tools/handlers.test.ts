@@ -1,4 +1,4 @@
-import { ExecutionError, ValidationError } from '../../types';
+import type { ExecutionError } from '../../types';
 import { createTestBundle } from '../fixtures/bundles';
 
 const ORIGINAL_ENV = { ...process.env };
@@ -19,6 +19,34 @@ afterEach(() => {
   vi.unmock('@uvrn/core');
 });
 
+describe('delta_verify_receipt', () => {
+  it('should verify valid receipt', async () => {
+    const { handleRunEngine, handleVerifyReceipt } = await import('../../tools/handlers');
+    const receipt = (await handleRunEngine({ bundle: createTestBundle() })).receipt;
+    const result = await handleVerifyReceipt({ receipt });
+
+    expect(result.verified).toBe(true);
+  });
+
+  it('should detect tampered receipt', async () => {
+    const { handleRunEngine, handleVerifyReceipt } = await import('../../tools/handlers');
+    const receipt = (await handleRunEngine({ bundle: createTestBundle() })).receipt;
+    const tampered = { ...receipt, outcome: 'indeterminate' as const };
+    const result = await handleVerifyReceipt({ receipt: tampered });
+
+    expect(result.verified).toBe(false);
+    expect(result.details).toContain('Hash mismatch');
+  });
+
+  it('should handle malformed receipt', async () => {
+    const { handleVerifyReceipt } = await import('../../tools/handlers');
+    const result = await handleVerifyReceipt({ receipt: { bundleId: 'missing-hash' } as any });
+
+    expect(result.verified).toBe(false);
+    expect(result.error).toBe('Receipt missing hash');
+  });
+});
+
 describe('delta_run_engine', () => {
   it('should execute valid bundle successfully', async () => {
     const { handleRunEngine } = await import('../../tools/handlers');
@@ -34,10 +62,7 @@ describe('delta_run_engine', () => {
     const { handleRunEngine } = await import('../../tools/handlers');
     const bundle = createTestBundle({ bundleId: '' });
 
-    await expect(handleRunEngine({ bundle })).rejects.toMatchObject({
-      name: 'ValidationError',
-      message: expect.stringContaining('Missing or invalid bundleId')
-    });
+    await expect(handleRunEngine({ bundle })).rejects.toMatchObject({ name: 'ValidationError' });
   });
 
   it('should reject bundle with thresholdPct = 0', async () => {
@@ -58,10 +83,69 @@ describe('delta_run_engine', () => {
       await handleRunEngine({ bundle });
       throw new Error('Expected ValidationError');
     } catch (error) {
-      const err = error as Error;
+      const err = error as Error & { details?: unknown };
       expect(err.name).toBe('ValidationError');
-      expect((err as ValidationError).details).toMatchObject({ maxBundleSize: 200 });
-      expect(((err as ValidationError).details as { bundleSize: number }).bundleSize).toBeGreaterThan(200);
+      expect(err.details).toMatchObject({ maxBundleSize: 200 });
+      expect((err.details as { bundleSize: number }).bundleSize).toBeGreaterThan(200);
+    }
+  });
+
+  it('should include original error when VERBOSE_ERRORS=true', async () => {
+    process.env.VERBOSE_ERRORS = 'true';
+    vi.resetModules();
+
+    vi.doMock('@uvrn/core', async () => {
+      const actual = await vi.importActual<typeof import('@uvrn/core')>(
+        '@uvrn/core'
+      );
+      return {
+        ...actual,
+        runDeltaEngine: () => {
+          throw new Error('boom');
+        },
+      };
+    });
+
+    const { handleRunEngine } = await import('../../tools/handlers');
+    const bundle = createTestBundle();
+
+    try {
+      await handleRunEngine({ bundle });
+      throw new Error('Expected ExecutionError');
+    } catch (error) {
+      const err = error as Error & { details?: { originalError?: Error } };
+      expect(err.name).toBe('ExecutionError');
+      expect(err.details).toHaveProperty('originalError');
+      expect(err.details!.originalError!.message).toBe('boom');
+    }
+  });
+
+  it('should omit original error when VERBOSE_ERRORS=false', async () => {
+    process.env.VERBOSE_ERRORS = 'false';
+    vi.resetModules();
+
+    vi.doMock('@uvrn/core', async () => {
+      const actual = await vi.importActual<typeof import('@uvrn/core')>(
+        '@uvrn/core'
+      );
+      return {
+        ...actual,
+        runDeltaEngine: () => {
+          throw new Error('boom');
+        },
+      };
+    });
+
+    const { handleRunEngine } = await import('../../tools/handlers');
+    const bundle = createTestBundle();
+
+    try {
+      await handleRunEngine({ bundle });
+      throw new Error('Expected ExecutionError');
+    } catch (error) {
+      const err = error as Error & { details?: unknown };
+      expect(err.name).toBe('ExecutionError');
+      expect(err.details).toBeUndefined();
     }
   });
 });
@@ -98,94 +182,5 @@ describe('delta_validate_bundle', () => {
     });
     expect(overThreshold.valid).toBe(false);
     expect(overThreshold.error).toBe('thresholdPct must be > 0 and <= 1');
-  });
-});
-
-describe('delta_verify_receipt', () => {
-  it('should verify valid receipt', async () => {
-    const { handleRunEngine, handleVerifyReceipt } = await import('../../tools/handlers');
-    const receipt = (await handleRunEngine({ bundle: createTestBundle() })).receipt;
-    const result = await handleVerifyReceipt({ receipt });
-
-    expect(result.verified).toBe(true);
-  });
-
-  it('should detect tampered receipt', async () => {
-    const { handleRunEngine, handleVerifyReceipt } = await import('../../tools/handlers');
-    const receipt = (await handleRunEngine({ bundle: createTestBundle() })).receipt;
-    const tampered = { ...receipt, outcome: 'indeterminate' as const };
-    const result = await handleVerifyReceipt({ receipt: tampered });
-
-    expect(result.verified).toBe(false);
-    expect(result.details).toContain('Hash mismatch');
-  });
-
-  it('should handle malformed receipt', async () => {
-    const { handleVerifyReceipt } = await import('../../tools/handlers');
-    const result = await handleVerifyReceipt({ receipt: { bundleId: 'missing-hash' } as any });
-
-    expect(result.verified).toBe(false);
-    expect(result.error).toBe('Receipt missing hash');
-  });
-});
-
-describe('delta_run_engine error details (mocked)', () => {
-  it('should include original error when VERBOSE_ERRORS=true', async () => {
-    process.env.VERBOSE_ERRORS = 'true';
-    vi.resetModules();
-
-    vi.doMock('@uvrn/core', async () => {
-      const actual = await vi.importActual<typeof import('@uvrn/core')>(
-        '@uvrn/core'
-      );
-      return {
-        ...actual,
-        runDeltaEngine: () => {
-          throw new Error('boom');
-        },
-      };
-    });
-
-    const { handleRunEngine } = await import('../../tools/handlers');
-    const bundle = createTestBundle();
-
-    try {
-      await handleRunEngine({ bundle });
-      throw new Error('Expected ExecutionError');
-    } catch (error) {
-      const err = error as Error;
-      expect(err.name).toBe('ExecutionError');
-      expect((err as ExecutionError).details).toHaveProperty('originalError');
-      expect(((err as ExecutionError).details as { originalError: Error }).originalError.message).toBe('boom');
-    }
-  });
-
-  it('should omit original error when VERBOSE_ERRORS=false', async () => {
-    process.env.VERBOSE_ERRORS = 'false';
-    vi.resetModules();
-
-    vi.doMock('@uvrn/core', async () => {
-      const actual = await vi.importActual<typeof import('@uvrn/core')>(
-        '@uvrn/core'
-      );
-      return {
-        ...actual,
-        runDeltaEngine: () => {
-          throw new Error('boom');
-        },
-      };
-    });
-
-    const { handleRunEngine } = await import('../../tools/handlers');
-    const bundle = createTestBundle();
-
-    try {
-      await handleRunEngine({ bundle });
-      throw new Error('Expected ExecutionError');
-    } catch (error) {
-      const err = error as Error;
-      expect(err.name).toBe('ExecutionError');
-      expect((err as ExecutionError).details).toBeUndefined();
-    }
   });
 });

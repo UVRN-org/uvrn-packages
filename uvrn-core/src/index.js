@@ -1,6 +1,6 @@
 "use strict";
 /**
- * UVRN Delta Engine Core
+ * Loosechain Delta Engine Core
  * Layer 1 Protocol Infrastructure
  */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {

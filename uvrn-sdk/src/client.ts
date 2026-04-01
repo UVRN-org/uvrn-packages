@@ -36,7 +36,7 @@ import { randomBytes } from 'crypto';
  * // CLI mode
  * const client = new DeltaEngineClient({
  *   mode: 'cli',
- *   cliPath: '/usr/local/bin/uvrn'
+ *   cliPath: '/usr/local/bin/delta-engine'
  * });
  *
  * // HTTP mode
@@ -71,8 +71,7 @@ export class DeltaEngineClient {
       cliPath: options.cliPath || '',
       apiUrl: options.apiUrl || '',
       timeout: options.timeout || 30000,
-      retries: options.retries || 3,
-      apiKey: options.apiKey || ''
+      retries: options.retries || 3
     };
   }
 
@@ -223,16 +222,11 @@ export class DeltaEngineClient {
     const url = `${this.options.apiUrl}/api/v1/delta/run`;
 
     try {
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json'
-      };
-      if (this.options.apiKey) {
-        headers['X-UVRN-API-Key'] = this.options.apiKey;
-      }
-
       const response = await this.fetchWithRetry(url, {
         method: 'POST',
-        headers,
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify(bundle)
       });
 

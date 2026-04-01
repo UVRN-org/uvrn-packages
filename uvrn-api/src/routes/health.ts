@@ -23,7 +23,7 @@ export async function registerHealthRoutes(server: FastifyInstance): Promise<voi
     // Check if engine is available by attempting to import it
     let engineAvailable = true;
     try {
-      require('@uvrn/core'); // eslint-disable-line @typescript-eslint/no-var-requires
+      require('@uvrn/core');
     } catch {
       engineAvailable = false;
     }
@@ -48,7 +48,7 @@ export async function registerHealthRoutes(server: FastifyInstance): Promise<voi
   }>('/api/v1/version', async (_request: FastifyRequest, reply: FastifyReply) => {
     let engineVersion = 'unknown';
     try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      // eslint-disable-next-line @typescript-eslint/no-var-requires -- runtime read of peer package.json
       const enginePkg = require('@uvrn/core/package.json');
       engineVersion = enginePkg.version;
     } catch {

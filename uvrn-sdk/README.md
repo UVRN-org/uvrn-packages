@@ -1,10 +1,6 @@
 # @uvrn/sdk
 
-TypeScript SDK for the [UVRN Delta Engine](https://github.com/UVRN-org/uvrn-packages) — programmatic access to deterministic verification and consensus computation. **Release:** 1.6.0.
-
-**Disclaimer:** UVRN is in Alpha testing. The engine measures whether your sources agree with each other — not whether they’re correct. Final trust of output rests with the user. Use at your own discretion. Have fun.
-
-*UVRN makes no claims to "truth", the "verification" is the output of math — it is up to any user to decide if claim is actually "true" — Research and testing are absolutely recommended per use case and individual system!!*
+TypeScript SDK for the [UVRN Delta Engine](https://github.com/UVRN-org/uvrn-packages) — programmatic access to deterministic verification and consensus computation.
 
 ## Overview
 
@@ -14,9 +10,9 @@ The Delta Engine SDK provides a developer-friendly interface to interact with th
 - **HTTP Mode**: Make REST API calls to a running Delta Engine server
 - **Local Mode**: Direct import and execution of the core engine
 
-## Versioning
+**Package provides:** `DeltaEngineClient`, `BundleBuilder`, `validateBundle`, `validateReceipt`, `verifyReceiptHash`; types and error classes. Works in CLI, HTTP, or local mode.
 
-The package exports a `VERSION` constant that is read from `package.json` at runtime, so it always matches the published version. See [default-safe behavior](https://github.com/UVRN-org/uvrn-packages/blob/main/docs/decisions/0001-default-safe-behavior.md) (ADR) for the monorepo policy on a single source of truth for version.
+**You provide:** In HTTP mode — API base URL (e.g. a running `@uvrn/api`). In CLI mode — path to the `uvrn` executable. Bundle data. No signer or storage.
 
 ## Installation
 
@@ -31,9 +27,11 @@ npm install @uvrn/sdk
 ```typescript
 import { DeltaEngineClient, BundleBuilder } from '@uvrn/sdk';
 
-// Create a client using local mode (runs the engine in-process — no server needed)
+// Create a client (choose your mode)
 const client = new DeltaEngineClient({
-  mode: 'local'
+  mode: 'http',
+  apiUrl: 'http://localhost:3000',
+  timeout: 30000
 });
 
 // Build a bundle
@@ -106,19 +104,6 @@ const { DeltaEngineClient, BundleBuilder } = require('@uvrn/sdk');
 
 ## Client Modes
 
-### Local Mode
-
-Directly imports and executes the core engine:
-
-```typescript
-const client = new DeltaEngineClient({
-  mode: 'local'
-});
-```
-
-**Requirements:**
-- `@uvrn/core` must be installed
-
 ### CLI Mode
 
 Spawns the Delta Engine CLI as a child process:
@@ -126,7 +111,7 @@ Spawns the Delta Engine CLI as a child process:
 ```typescript
 const client = new DeltaEngineClient({
   mode: 'cli',
-  cliPath: '/usr/local/bin/uvrn', // or './node_modules/.bin/uvrn'
+  cliPath: '/usr/local/bin/delta-engine', // or './node_modules/.bin/delta-engine'
   timeout: 30000
 });
 ```
@@ -136,8 +121,6 @@ const client = new DeltaEngineClient({
 - `cliPath` must point to the executable
 
 ### HTTP Mode
-
-HTTP mode is for teams running a self-hosted `@uvrn/api` instance — not required for local use.
 
 Makes REST API calls to a running Delta Engine server:
 
@@ -153,6 +136,19 @@ const client = new DeltaEngineClient({
 **Requirements:**
 - Delta Engine API server must be running
 - Server must be accessible at `apiUrl`
+
+### Local Mode
+
+Directly imports and executes the core engine:
+
+```typescript
+const client = new DeltaEngineClient({
+  mode: 'local'
+});
+```
+
+**Requirements:**
+- `@uvrn/core` must be installed
 
 ## API Reference
 
@@ -250,17 +246,11 @@ Builds and returns the bundle (throws if invalid).
 - **Validate and verify in pipelines** — Validate bundles before run; verify receipt hashes after run for integrity checks.
 - **Integrate into any service** — Same API whether you use CLI, HTTP, or local; switch modes via config.
 
-### Validation and replay contract
-
-**Bundle validation** is aligned with @uvrn/core: the SDK delegates to core so pass/fail is identical (e.g. single dataSpec, threshold=0, NaN or non-number metrics are invalid in both). See core README for the full validation contract.
-
-**Replay determinism** uses the canonical receipt payload **excluding** the optional `ts` field. `replayReceipt(receipt, bundle, executeFn)` returns `deterministic: true` when the normalized payloads match, even if the original and replayed receipts differ only by `ts`; in that case `timestampNormalized` is set. This matters for audit/compliance: you can verify that a receipt was produced deterministically from a bundle without requiring that every executor use the same timestamp.
-
 ### Validators
 
 **`validateBundle(bundle: unknown): ValidationResult`**
 
-Validates bundle structure (delegates to core; same pass/fail as API/MCP/CLI).
+Validates bundle structure.
 
 **`validateReceipt(receipt: unknown): ValidationResult`**
 

@@ -1,4 +1,4 @@
-# UVRN Delta Engine CLI - Comprehensive Guide
+# Loosechain Delta Engine CLI - Comprehensive Guide
 
 ## Table of Contents
 
@@ -16,7 +16,7 @@
 
 ## Introduction
 
-The UVRN Delta Engine CLI provides command-line access to Layer-1 protocol functionality. It transforms data bundles into cryptographically verifiable receipts without requiring any adapter code or external data sources.
+The Loosechain Delta Engine CLI provides command-line access to Layer-1 protocol functionality. It transforms data bundles into cryptographically verifiable receipts without requiring any adapter code or external data sources.
 
 ### What Does It Do?
 

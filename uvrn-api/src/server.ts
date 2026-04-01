@@ -9,7 +9,6 @@ import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
 import { loadConfig } from './config/loader';
 import { ServerConfig } from './config/types';
-import { buildLoggerOptions } from './logger';
 import { registerDeltaRoutes } from './routes/delta';
 import { registerHealthRoutes } from './routes/health';
 import { registerErrorHandler } from './middleware/errorHandler';
@@ -21,9 +20,18 @@ export async function createServer(config?: ServerConfig): Promise<FastifyInstan
   // Load configuration
   const serverConfig = config || loadConfig();
 
-  // Create Fastify instance with logging (pretty transport only when pino-pretty is available)
+  // Create Fastify instance with logging
   const server = Fastify({
-    logger: buildLoggerOptions(serverConfig)
+    logger: {
+      level: serverConfig.logLevel,
+      transport: serverConfig.nodeEnv === 'development' ? {
+        target: 'pino-pretty',
+        options: {
+          translateTime: 'HH:MM:ss Z',
+          ignore: 'pid,hostname'
+        }
+      } : undefined
+    }
   });
 
   // Register plugins

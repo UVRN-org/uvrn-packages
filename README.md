@@ -1,102 +1,147 @@
-# uvrn-packages
+# uvrn-packages-next
 
-Monorepo for **UVRN** (Universal Verification Receipt Network) protocol packages. Published to npm under the `@uvrn` scope. **Release:** @uvrn/core, @uvrn/sdk 1.6.0; @uvrn/mcp 1.5.3; @uvrn/api 1.5.2; @uvrn/adapter, @uvrn/cli 1.5.1.
+Active development worktree for the **UVRN** (Universal Verification Receipt Network) full 20-package protocol.
 
-**Highlights:** Packed `@uvrn/*` manifests use normal semver (no `workspace:`), so `npm install` works in clean projects. CI runs build, **test** (unit + integration), pack, manifest check, and contract smoke (install from tarballs + API/MCP/replay checks). **1.6.0:** Validation parity (core = source of truth, SDK delegates); replay determinism uses canonical payload excluding `ts`; parity and replay matrix tests. See [CHANGELOG.md](CHANGELOG.md).
+**This is the active build branch.** The sibling directory `uvrn-packages/` is the stable reference (live npm packages).
 
-**Disclaimer:** UVRN is in Alpha testing. The engine measures whether your sources agree with each other — not whether they’re correct. Final trust of output rests with the user. Use at your own discretion. Have fun.
+**Build standard**: Bloom Protocol v1.7 → `admin/docs/protocols/BLOOM-PROTOCOL.md`
+**Agent context**: `AGENTS.md` (Cursor/Codex) | `CLAUDE.md` (Claude Code)
+**Build plans**: `admin/docs/build-plans/`
 
-*UVRN makes no claims to "truth", the "verification" is the output of math — it is up to any user to decide if claim is actually "true" — Research and testing are absolutely recommended per use case and individual system!!*
+---
 
-## Getting started
+## Protocol Overview
 
-- **MCP (AI assistants):** `npm install -g @uvrn/mcp` — connect the engine to your AI assistant (add `"uvrn"` to your MCP client config, then ask your AI)
-- **CLI:** `npm install -g @uvrn/cli` then `uvrn run bundle.json`
-- **Delta Engine (library):** `npm install @uvrn/core @uvrn/sdk`
-- **REST API (self-hosted):** `npm install @uvrn/api` then `npx @uvrn/api` (server on port 3000) — for teams running their own deployment
-- **DRVC3 signing:** `npm install @uvrn/core @uvrn/adapter` to wrap receipts in signed envelopes
+UVRN is an open protocol for scoring claim consensus using the **V-Score formula**:
 
-See each package README for install, usage, and use cases. For version history and notable changes see [CHANGELOG.md](CHANGELOG.md).
+```
+V-Score = (Completeness × 0.35) + (Parity × 0.35) + (Freshness × 0.30)
+```
 
-## Packages on npm
+This formula is defined once, in `@uvrn/core`, and referenced everywhere else. Never redefined.
 
-This repo contains six packages published under the `@uvrn` scope:
+---
 
-| Package | What it is | Install |
-| -------- | ---------- | ------- |
-| [@uvrn/mcp](https://www.npmjs.com/package/@uvrn/mcp) | Connect the engine to your AI assistant (MCP server) | `npm install -g @uvrn/mcp` |
-| [@uvrn/core](https://www.npmjs.com/package/@uvrn/core) | Delta Engine core (run, validate, verify) | `npm install @uvrn/core` |
-| [@uvrn/cli](https://www.npmjs.com/package/@uvrn/cli) | Command-line (bundle → receipt) | `npm install -g @uvrn/cli` |
-| [@uvrn/sdk](https://www.npmjs.com/package/@uvrn/sdk) | TypeScript SDK (CLI / HTTP / local modes) | `npm install @uvrn/sdk` |
-| [@uvrn/adapter](https://www.npmjs.com/package/@uvrn/adapter) | DRVC3 envelope adapter (EIP-191) | `npm install @uvrn/adapter` |
-| [@uvrn/api](https://www.npmjs.com/package/@uvrn/api) | REST API server (self-hosted deployments) | `npm install @uvrn/api` |
+## Protocol Layer Model
 
-## What we're building — the full 20-package protocol
+```
+┌─────────────────────────────────────────────────────────────────┐
+│  Layer 4 — Distribution & Access                                │
+│  @uvrn/embed  @uvrn/watch  @uvrn/mcp  @uvrn/api  @uvrn/cli    │
+├─────────────────────────────────────────────────────────────────┤
+│  Layer 3 — Temporal & Lifecycle                                 │
+│  @uvrn/drift  @uvrn/agent  @uvrn/canon  @uvrn/timeline         │
+├─────────────────────────────────────────────────────────────────┤
+│  Layer 2 — Receipt & Verification                               │
+│  @uvrn/core  @uvrn/sdk  @uvrn/adapter  @uvrn/score             │
+│  @uvrn/compare  @uvrn/identity  @uvrn/test                     │
+├─────────────────────────────────────────────────────────────────┤
+│  Layer 1 — Data & Consensus                                     │
+│  @uvrn/farm  @uvrn/consensus  @uvrn/normalize  @uvrn/signal    │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-UVRN is expanding from 6 live packages to a full 20-package open protocol covering data ingestion, consensus scoring, temporal lifecycle, and distribution. We're publishing the complete technical specs for every upcoming package so the community can start building compatible implementations now — hand any package spec to an AI agent and it has everything it needs to build it.
+---
 
-**See [ROADMAP.md](ROADMAP.md) for full specs** — API sketches, interface contracts, dependency graphs, and authoring notes for every package.
+## Full Package Status
 
-### UVRN Official Pre-Release (built, audited — shipping next)
+| Package | Layer | Status | Description |
+|---------|-------|--------|-------------|
+| `@uvrn/core` | 2 | ✅ Live | Delta engine — V-Score math, validation, DRVC3 receipts |
+| `@uvrn/sdk` | 2 | ✅ Live | TypeScript SDK — submit claims, read receipts |
+| `@uvrn/adapter` | 2 | ✅ Live | DRVC3 envelope adapter — EIP-191 signatures |
+| `@uvrn/mcp` | 4 | ✅ Live | MCP server — AI agent native access |
+| `@uvrn/api` | 4 | ✅ Live | Fastify REST API — self-hosted deployments |
+| `@uvrn/cli` | 4 | ✅ Live | CLI — `uvrn run bundle.json` → receipt |
+| `@uvrn/drift` | 3 | 🔜 Pre-release | Temporal decay scoring |
+| `@uvrn/agent` | 3 | 🔜 Pre-release | Continuous claim monitoring loop |
+| `@uvrn/canon` | 3 | 🔜 Pre-release | Canonization engine — permanent signed records |
+| `@uvrn/signal` | 1 | 🔨 Building | Typed internal event bus — zero deps |
+| `@uvrn/score` | 2 | 🔨 Building | V-Score breakdown + domain profiles |
+| `@uvrn/test` | 2 | 🔨 Building | Mocks, fixtures, factory functions |
+| `@uvrn/farm` | 1 | 🔨 Building | Data source connectors (news, financial, on-chain) |
+| `@uvrn/normalize` | 1 | 🔨 Building | Source normalization layer |
+| `@uvrn/consensus` | 1 | 🔨 Building | Multi-source signal aggregation |
+| `@uvrn/compare` | 2 | 🔨 Building | Cross-receipt comparison |
+| `@uvrn/identity` | 2 | 🔨 Building | Signer reputation layer |
+| `@uvrn/timeline` | 3 | 🔨 Building | Time-series query layer |
+| `@uvrn/watch` | 4 | 🔨 Building | Subscription & threshold alerts |
+| `@uvrn/embed` | 4 | 🔨 Building | Embeddable React badge + UMD script |
 
-| Package | Layer | What it does |
-|---------|-------|--------------|
-| `@uvrn/drift` | Temporal & Lifecycle | Temporal decay scoring — models how a V-Score degrades over time using configurable decay curves per claim type |
-| `@uvrn/agent` | Temporal & Lifecycle | Continuous claim monitoring loop — registers claims, polls on intervals, emits unsigned AgentDriftReceipts |
-| `@uvrn/canon` | Temporal & Lifecycle | Canonization engine — locks receipts as permanent, human-confirmed, signed canonical records |
+---
 
-### Roadmap (design specs published — open for community builds)
+## Build Waves
 
-| Package | Layer | What it does |
-|---------|-------|--------------|
-| `@uvrn/farm` | Data & Consensus | Standardized connectors for external data sources (news, financial, research, on-chain) |
-| `@uvrn/consensus` | Data & Consensus | Multi-source signal aggregation — weights and collates raw signals into claim bundles |
-| `@uvrn/normalize` | Data & Consensus | Normalizes raw source data across providers into a common schema |
-| `@uvrn/signal` | Data & Consensus | Typed internal event bus — lightweight pub/sub connecting packages without tight coupling |
-| `@uvrn/timeline` | Temporal & Lifecycle | Time-series queries — reconstruct the full consensus history of any claim |
-| `@uvrn/score` | Receipt & Verification | V-Score composition internals and domain-specific scoring profiles |
-| `@uvrn/compare` | Receipt & Verification | Cross-receipt comparison — track how consensus shifts between competing claims |
-| `@uvrn/identity` | Receipt & Verification | Signer reputation layer — weight receipts by issuer credibility and track record |
-| `@uvrn/test` | Receipt & Verification | Centralized mocks, fixtures, and factory functions for building on UVRN |
-| `@uvrn/watch` | Distribution & Access | Subscription API for threshold alerts — webhooks, Slack, Discord when drift crosses boundaries |
-| `@uvrn/embed` | Distribution & Access | Drop-in React component and plain JS snippet for live consensus badges on any webpage |
+Packages are built in dependency order. See `admin/docs/build-plans/MASTER-BUILD-PLAN.md` for full details.
 
-> **Want to build one of these?** Each package spec in [ROADMAP.md](ROADMAP.md) includes the public API sketch, interface contracts, dependencies, and design constraints. Build against the contracts and your implementation will interoperate with the official UVRN ecosystem when it ships.
+**Wave 1** (parallel): `@uvrn/signal`, `@uvrn/score`, `@uvrn/test`
+**Wave 2** (parallel): `@uvrn/farm`, `@uvrn/normalize`
+**Wave 3** (parallel): `@uvrn/consensus`, `@uvrn/compare`, `@uvrn/identity`
+**Wave 4** (parallel): `@uvrn/timeline`, `@uvrn/watch`, `@uvrn/embed`
+
+Each wave is audited by OpenAI Codex before the next wave begins.
+
+---
+
+## Package Independence
+
+Every package is **independently installable**. You do not need the full protocol to use a single package. Each README documents the minimum install required.
+
+---
+
+## Install & Build
+
+```bash
+pnpm install
+pnpm run build
+pnpm run test
+```
+
+---
 
 ## Structure
 
 ```
-uvrn-packages/
-├── uvrn-core/      # @uvrn/core — Engine core (deterministic protocol)
-├── uvrn-sdk/       # @uvrn/sdk — TypeScript SDK
-├── uvrn-cli/       # @uvrn/cli — CLI (bundle → receipt)
-├── uvrn-api/       # @uvrn/api — REST API server
-├── uvrn-mcp/       # @uvrn/mcp — MCP server for AI assistants
-└── uvrn-adapter/   # @uvrn/adapter — DRVC3 envelope adapter
+uvrn-packages-next/
+├── admin/
+│   └── docs/
+│       ├── protocols/         ← Bloom Protocol, Agent Coordination
+│       ├── build-plans/       ← Master build plan, per-package prompts
+│       ├── audits/            ← Audit protocol + reports
+│       ├── handoffs/          ← Active coordination docs
+│       ├── reports/           ← Execution reports
+│       └── findings/          ← Audit findings and observations
+├── AGENTS.md                  ← Cursor/Codex agent context (read this)
+├── CLAUDE.md                  ← Claude Code context (read this)
+├── uvrn-core/     uvrn-sdk/   uvrn-adapter/
+├── uvrn-mcp/      uvrn-api/   uvrn-cli/
+├── uvrn-drift/    uvrn-agent/ uvrn-canon/
+├── uvrn-signal/   uvrn-score/ uvrn-test/     ← Wave 1
+├── uvrn-farm/     uvrn-normalize/            ← Wave 2
+├── uvrn-consensus/ uvrn-compare/ uvrn-identity/ ← Wave 3
+└── uvrn-timeline/ uvrn-watch/ uvrn-embed/    ← Wave 4
 ```
 
-## Install
+---
 
-```bash
-pnpm install
+## Publish Order
+
+```
+1. @uvrn/core → 2. @uvrn/drift → 3. @uvrn/sdk → 4. @uvrn/adapter
+→ 5. @uvrn/canon → 6. @uvrn/agent → 7. @uvrn/farm → 8. @uvrn/normalize
+→ 9. @uvrn/consensus → 10. @uvrn/signal → 11. @uvrn/score → 12. @uvrn/compare
+→ 13. @uvrn/identity → 14. @uvrn/test → 15. @uvrn/timeline
+→ 16. @uvrn/mcp → 17. @uvrn/api → 18. @uvrn/cli → 19. @uvrn/watch → 20. @uvrn/embed
 ```
 
-## Build
+---
 
-```bash
-pnpm run build
-```
+## Reference
 
-**Troubleshooting:** If you see `npm warn Unknown env config "..."` during build, those come from your environment (e.g. `npm_config_*` variables), not from this repo. The build still succeeds; you can ignore the warnings or unset those variables to silence them.
-
-## Publish
-
-Publish in dependency order: **@uvrn/core** first, then **@uvrn/sdk**, **@uvrn/adapter**, **@uvrn/mcp**, **@uvrn/api**, **@uvrn/cli**. Before publishing, run `pnpm run smoke:consumer` to verify install-from-tarball; prepack/postpack scripts rewrite workspace deps to semver in packed manifests. See [CHANGELOG.md](CHANGELOG.md) for version history.
-
-## Open source
-
-**Open source:** Source code and issues are on GitHub: [uvrn-packages](https://github.com/UVRN-org/uvrn-packages) (monorepo). Project landing: [UVRN](https://github.com/UVRN-org/uvrn).
+- **Full package specs**: `../uvrn-packages/ROADMAP.md` (stable reference)
+- **Build plans**: `admin/docs/build-plans/`
+- **Audit protocol**: `admin/docs/audits/AUDIT-PROTOCOL.md`
 
 ## License
 
-MIT
+MIT — UVRN-org

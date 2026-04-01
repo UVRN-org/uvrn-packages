@@ -1,11 +1,16 @@
 module.exports = {
-  extends: ['../.eslintrc.js'],
+  parser: '@typescript-eslint/parser',
+  extends: [
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended'
+  ],
   parserOptions: {
-    project: './tsconfig.json',
-    tsconfigRootDir: __dirname
+    ecmaVersion: 2022,
+    sourceType: 'module'
   },
+  ignorePatterns: ['dist', 'node_modules', '*.js'],
   rules: {
-    // CLI entrypoint — console output is intentional user-facing I/O
-    'no-console': 'off'
+    '@typescript-eslint/no-var-requires': 'warn',
+    '@typescript-eslint/no-explicit-any': 'warn'
   }
 };

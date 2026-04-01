@@ -1,7 +1,12 @@
 module.exports = {
-  extends: ['../.eslintrc.js'],
+  parser: '@typescript-eslint/parser',
+  extends: [
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended'
+  ],
   parserOptions: {
-    project: './tsconfig.json',
-    tsconfigRootDir: __dirname
-  }
+    ecmaVersion: 2022,
+    sourceType: 'module'
+  },
+  ignorePatterns: ['dist', 'node_modules', '*.js']
 };

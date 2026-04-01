@@ -7,15 +7,16 @@
  * and do NOT affect determinism or replay.
  */
 
-import { DeltaReceipt, verifyReceipt } from '@uvrn/core';
+import { DeltaReceipt } from '@uvrn/core';
+import { Wallet, HDNodeWallet } from 'ethers';
 import { DRVC3Receipt, WrapOptions } from './types';
-import { signHash, privateKeyToAddress } from './signer';
+import { signHash } from './signer';
 
 /**
  * Wraps a DeltaReceipt in a DRVC3 envelope
  * 
  * @param deltaReceipt - Layer 1 DeltaReceipt (deterministic, hash-covered)
- * @param signerPrivateKeyHex - Raw hex private key (64 hex chars, optional 0x prefix) for EIP-191 signing
+ * @param signer - ethers Wallet for EIP-191 signing
  * @param options - Envelope options (issuer, event, etc.)
  * @returns Promise resolving to complete DRVC3 receipt
  * 
@@ -23,9 +24,11 @@ import { signHash, privateKeyToAddress } from './signer';
  * ```typescript
  * import { runDeltaEngine } from '@uvrn/core';
  * import { wrapInDRVC3 } from '@uvrn/adapter';
+ * import { Wallet } from 'ethers';
  * 
  * const deltaReceipt = runDeltaEngine(bundle);
- * const drvc3 = await wrapInDRVC3(deltaReceipt, process.env.SIGNER_PRIVATE_KEY!, {
+ * const wallet = new Wallet(privateKey);
+ * const drvc3 = await wrapInDRVC3(deltaReceipt, wallet, {
  *   issuer: 'uvrn',
  *   event: 'delta-reconciliation'
  * });
@@ -33,27 +36,20 @@ import { signHash, privateKeyToAddress } from './signer';
  */
 export async function wrapInDRVC3(
   deltaReceipt: DeltaReceipt,
-  signerPrivateKeyHex: string,
+  signer: Wallet | HDNodeWallet,
   options: WrapOptions
 ): Promise<DRVC3Receipt> {
-  // 1. Verify receipt integrity before attesting (do not sign tampered payloads)
-  const coreVerify = verifyReceipt(deltaReceipt);
-  if (!coreVerify.verified) {
-    throw new Error(`Cannot wrap invalid receipt: ${coreVerify.error}`);
-  }
-
-  // 2. Generate receipt_id (ENVELOPE METADATA - non-deterministic, intentional)
+  // 1. Generate receipt_id (ENVELOPE METADATA - non-deterministic, intentional)
   const timestamp = new Date().toISOString();
   const receipt_id = `drvc3-${deltaReceipt.bundleId}-${Date.now()}`;
 
-  // 3. Read hash from DeltaReceipt (HASH DOMAIN - read-only from Layer 1)
+  // 2. Read hash from DeltaReceipt (HASH DOMAIN - read-only from Layer 1)
   const hash = deltaReceipt.hash;
 
-  // 4. Sign hash with EIP-191 (ENVELOPE METADATA - certifies "who" and "when")
-  const signature = await signHash(hash, signerPrivateKeyHex);
-  const signer_address = privateKeyToAddress(signerPrivateKeyHex);
+  // 3. Sign hash with EIP-191 (ENVELOPE METADATA - certifies "who" and "when")
+  const signature = await signHash(hash, signer);
 
-  // 5. Construct DRVC3 envelope
+  // 4. Construct DRVC3 envelope
   const drvc3: DRVC3Receipt = {
     receipt_id,
     issuer: options.issuer,
@@ -64,7 +60,7 @@ export async function wrapInDRVC3(
       hash,
       signature_method: 'eip191',
       signature,
-      signer_address
+      signer_address: signer.address
     },
     validation: {
       v_score: deltaReceipt.deltaFinal,
@@ -97,10 +93,9 @@ export async function wrapInDRVC3(
 }
 
 /**
- * Extracts the original DeltaReceipt from a DRVC3 envelope.
- * Does not verify signature or receipt hash; for untrusted input use verifyDRVC3Integrity() first, then extract.
- *
- * @param drvc3 - DRVC3 receipt envelope (must have validation.checks.delta_receipt)
+ * Extracts the original DeltaReceipt from a DRVC3 envelope
+ * 
+ * @param drvc3 - DRVC3 receipt envelope
  * @returns The embedded DeltaReceipt
  */
 export function extractDeltaReceipt(drvc3: DRVC3Receipt): DeltaReceipt {

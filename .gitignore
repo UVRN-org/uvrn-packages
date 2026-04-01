@@ -1,28 +1,20 @@
 node_modules/
-.pnpm-store/
 dist/
 *.log
 .DS_Store
 .env
 .env.*
 !.env.example
+
+# Local / tooling — do not commit
+.git/
+**/.git
 .cursor
 .cursor/
 .admin/
-.admin 
-docs
-docs/
-!docs/reports/
-!docs/decisions/
-guides
-guides/
+.admin
 
-
-# TypeScript incremental build cache (do not track; can cause empty dist/ after clean)
+# TypeScript incremental build info — do not commit (causes non-reproducible builds)
 **/tsconfig.tsbuildinfo
-
-# Pack artifacts and prepack backup
-*.tgz
-package.json.orig
 
 

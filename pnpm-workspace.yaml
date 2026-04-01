@@ -5,3 +5,6 @@ packages:
   - 'uvrn-api'
   - 'uvrn-mcp'
   - 'uvrn-adapter'
+  - 'uvrn-drift'
+  - 'uvrn-canon'
+  - 'uvrn-agent'

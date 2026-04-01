@@ -6,6 +6,8 @@
 > This document contains the full technical specifications for every upcoming UVRN package. Each spec includes the package intent, public API sketch, dependency requirements, interface contracts, and authoring notes — enough detail to serve as a seed for building a compatible implementation against the UVRN protocol.
 >
 > **Use this however you want.** Hand a package spec to an AI agent, build it yourself, or use it as a reference for how the protocol fits together. The only rule: implementations that want to interoperate with the official UVRN ecosystem must match the interface contracts defined here.
+>
+> **Design philosophy — provider-agnostic by default.** Every UVRN package is built around its *interface contract*, not around any specific third-party service. Where packages touch external systems (data sources, storage, delivery channels), they define a pluggable interface that any provider can implement. Reference implementations using free/open APIs are included as examples — not requirements. You bring your own providers. UVRN wires them together.
 
 ---
 
@@ -74,6 +76,9 @@ These architectural choices must be preserved in any compatible implementation:
 5. **Protocol-first.** Define the type first. Implementation follows schemas, types, and receipt contracts.
 6. **No storage in core packages.** `@uvrn/core`, `@uvrn/drift`, and `@uvrn/agent` have no storage opinions. Storage is `@uvrn/canon`'s job.
 7. **LLM-friendliness by design.** Explanation fields should produce output that LLMs can include verbatim in responses.
+8. **Provider-agnostic by design.** Every package that touches an external system (data sources, storage backends, delivery channels) defines a pluggable interface. Reference implementations using free/open services are included as examples — not requirements. Users bring their own providers. This is what makes the protocol usable across any stack.
+9. **Interfaces are the contract; implementations are examples.** `FarmConnector`, `CanonStore`, `IdentityStore`, `TimelineStore`, `NotifyTarget` — these interfaces are what the protocol depends on. Any implementation that satisfies the interface is a first-class citizen. Reference connectors and stores shipped with the packages are starting points, not defaults to lock into.
+10. **Independently installable and independently useful.** Installing `@uvrn/farm` with just `CoinGeckoFarm` should work without pulling in `@uvrn/consensus` or `@uvrn/normalize`. Every package must be useful on its own terms.
 
 ---
 
@@ -234,14 +239,17 @@ agent.on('claim:threshold', (event) => {
 **Layer:** 3 — Temporal & Lifecycle
 **Status:** Pre-release (built, audited — v1.0.0)
 
-**What it does:** Locks a receipt as a permanent, human-confirmed, signed canonical record. Auto-suggests candidates for canonization but never auto-canonizes — a human or explicitly confirmed system trigger must call `canonize()`. Stores to R2, Supabase, or IPFS.
+**What it does:** Locks a receipt as a permanent, human-confirmed, signed canonical record. Auto-suggests candidates for canonization but never auto-canonizes — a human or explicitly confirmed system trigger must call `canonize()`. Storage is pluggable — bring your own backend.
+
+**Design philosophy:** `@uvrn/canon` defines what canonization *is* (a signed, permanent, human-confirmed record), not where it stores. The `CanonStore` interface is the contract; you provide the implementation. Reference implementations for common backends are included as examples.
 
 **Public API sketch:**
 ```ts
-import { Canon, CanonStore } from '@uvrn/canon';
+import { Canon } from '@uvrn/canon';
 
+// Bring your own store — implement CanonStore interface
 const canon = new Canon({
-  store: new CanonStore.Supabase({ url, key }),
+  store: myStore,  // any CanonStore implementation
   signer: mySigner,
 });
 
@@ -259,7 +267,7 @@ canon.on('suggest', (suggestion) => {
 **Interface contracts:**
 - Input: a DRVC3 receipt (from core) and a drift snapshot (from drift)
 - Output: `CanonReceipt` — signed, timestamped, permanently stored record
-- `CanonStore` interface — storage backends must implement:
+- `CanonStore` interface — implement to use any storage backend:
   ```ts
   interface CanonStore {
     save(record: CanonReceipt): Promise<string>;    // returns storage ID
@@ -267,7 +275,7 @@ canon.on('suggest', (suggestion) => {
     list(claimId: string): Promise<CanonReceipt[]>;
   }
   ```
-- Built-in store implementations: `CanonStore.Supabase`, `CanonStore.R2`, `CanonStore.IPFS`
+- Reference store implementations included as examples (Supabase, R2, IPFS) — not required
 - **Critical design rule:** `canonize()` must always require explicit invocation. Never auto-canonize.
 
 ---
@@ -283,16 +291,30 @@ These packages are in the design phase. The specs below define the intended cont
 **Layer:** 1 — Data & Consensus
 **Priority:** Highest — the missing input layer
 
-**What it does:** Standardized connectors for ingesting external data sources — financial feeds, news, research, alt data. Implements the `FarmConnector` interface defined in `@uvrn/agent`. You plug a FarmConnector into Agent; `@uvrn/farm` provides the real-world connector implementations.
+**What it does:** Standardized connector framework for ingesting external data sources — financial feeds, news, research, alt data, or any custom source. Defines the `FarmConnector` interface and provides `BaseConnector` (an abstract class with built-in retry/timeout logic) plus a `MultiFarm` aggregator. Ships with a small set of open/free-tier reference connectors as working examples. You can use these as-is, extend them, or replace them entirely with your own connectors.
+
+**Design philosophy:** `@uvrn/farm` is a connector framework, not a connector dependency. The interface is what matters. Any data source — public API, private feed, local file, custom scraper — can become a `FarmConnector` by implementing one method: `fetch(claim): Promise<FarmResult>`. The reference connectors demonstrate the pattern; they are not required.
 
 **Public API sketch:**
 ```ts
-import { GoogleNewsFarm, PerplexityFarm, CoinGeckoFarm, MultiFarm } from '@uvrn/farm';
+import { BaseConnector, MultiFarm, FarmConnector, FarmResult } from '@uvrn/farm';
 
+// Use a reference connector (example — swap freely)
+import { CoinGeckoFarm } from '@uvrn/farm/connectors';
+
+// Or build your own — implement one method
+class MyDataSourceConnector extends BaseConnector {
+  readonly name = 'MyDataSource';
+  async fetch(claim: string): Promise<FarmResult> {
+    const data = await myDataSource.query(claim);
+    return { sources: [{ name: this.name, data, timestamp: Date.now(), credibility: 0.9 }] };
+  }
+}
+
+// Combine any connectors — reference or custom
 const farm = new MultiFarm([
-  new GoogleNewsFarm({ apiKey: process.env.GOOGLE_API_KEY }),
-  new PerplexityFarm({ apiKey: process.env.PERPLEXITY_KEY }),
-  new CoinGeckoFarm(),  // free tier, no auth required
+  new CoinGeckoFarm(),          // reference connector (no auth needed)
+  new MyDataSourceConnector(),  // your connector
 ]);
 
 // Drop into agent:
@@ -302,22 +324,27 @@ const agent = new Agent({ farmConnector: farm, receiptEmitter: emitter });
 **Dependencies:** Implements `FarmConnector` interface from `@uvrn/agent`. Peer dep on `@uvrn/core` for receipt types.
 
 **Interface contracts:**
-- Each connector must implement `FarmConnector.fetch(claim): Promise<FarmResult>`
-- `FarmResult` shape is defined in `@uvrn/agent` types
-- `MultiFarm` fans out to all registered connectors in parallel, merges results
-- Rate limiting and retry logic must be built into each connector, not delegated to caller
+- `FarmConnector` — the single interface all connectors implement:
+  ```ts
+  interface FarmConnector {
+    fetch(claim: string): Promise<FarmResult>;
+  }
+  ```
+- `FarmResult` shape: `{ sources: Array<{ name, data, timestamp, credibility? }> }`
+- `BaseConnector` — abstract class providing `withRetry()` and `withTimeout()` helpers; extend for any custom connector
+- `MultiFarm` fans out to all registered connectors in parallel (`Promise.allSettled`), merges results
+- Rate limiting and retry logic live inside each connector — not delegated to the caller
 
-**v1.0 connector targets (free tier first):**
-- Web/news/research: Parallel (multi-source deep research, free tier available)
-- Broad market data: CoinGecko (free, no auth for basic price/market cap/volume)
-- Exchange-level data: Coinbase Advanced Trade API (market data endpoints are free and public)
-- Technical indicators: Twelve Data or Alpha Vantage (free tier for indicator feeds)
-
-**Post-v1.0 candidates:** TradingView (upgrade path for indicators), Messari, The Block, arXiv, Semantic Scholar, Etherscan, Dune Analytics
+**Reference connectors (bundled as examples):**
+- `CoinGeckoFarm` — public crypto market data (no auth required)
+- `CoinbaseFarm` — public exchange price data (no auth required)
+- `PerplexityFarm` — AI-powered research (API key required)
+- `GoogleNewsFarm` / `NewsApiFarm` — news search (API key required)
 
 **Authoring notes:**
-- Each connector is independently swappable — upgrade individual connectors without touching others
-- Consider implementing a connector registry pattern for discovery
+- Reference connectors are starting points, not dependencies — swap or replace them without touching the rest of the protocol
+- The `ConnectorRegistry` pattern lets you register and discover connectors at runtime
+- Each connector is independently usable: `new CoinGeckoFarm()` works standalone with no other `@uvrn/*` packages
 
 ---
 
@@ -355,22 +382,40 @@ const bundle = engine.buildBundle('claim: Exchange X holds full reserves');
 **Layer:** 1 — Data & Consensus
 **Priority:** Medium
 
-**What it does:** Normalizes raw source data across providers so the delta engine can compare apples to apples. Different data sources return different formats, units, timestamps, and precision levels. This package standardizes them before they reach `@uvrn/consensus` or `@uvrn/core`.
+**What it does:** Normalizes raw source data across providers so the delta engine can compare apples to apples. Different data sources return different formats, units, timestamps, and precision levels. This package standardizes them into a common schema before they reach `@uvrn/consensus` or `@uvrn/core`. Ships with four pre-built normalization profiles (financial, research, news, general) and a transformer registration system for custom source types.
+
+**Design philosophy:** `@uvrn/normalize` is profile-driven and extensible. The four built-in profiles handle common cases. For any source type not covered — proprietary feeds, on-chain data, custom formats — register a transformer and it integrates seamlessly. The output schema is the contract; the profiles are just implementations of it.
 
 **Public API sketch:**
 ```ts
-import { normalize, NormalizationProfile } from '@uvrn/normalize';
+import { normalize, NormalizationProfiles } from '@uvrn/normalize';
 
-const normalized = normalize(rawFarmResults, NormalizationProfile.financial);
+// Use a built-in profile
+const normalized = normalize(rawFarmResults, NormalizationProfiles.financial);
 // → Sources now share common schema: { value, unit, timestamp, credibility }
+
+// Or use a profile by name
+const normalized2 = normalize(rawFarmResults, 'research');
+
+// Register a custom transformer for any source type
+normalize.registerTransformer('MyCustomSource', (source) => ({
+  name: source.name,
+  value: source.data.price,
+  unit: 'USD',
+  timestamp: new Date(source.data.date).getTime(),
+  credibility: source.credibility ?? 0.7,
+  rawData: source.data,
+  normalizer: 'custom',
+}));
 ```
 
 **Dependencies:** `@uvrn/core` (types), `@uvrn/farm` (optional peer)
 
 **Interface contracts:**
-- Normalization profiles mirror the DriftProfiles concept — pre-built configs for financial, research, news, on-chain domains
-- Output schema must be stable and versioned — downstream packages must not break when new source types are added
+- `NormalizationProfile` — pluggable profile interface; implement to support any domain
+- Output schema (`NormalizedSource`) is stable and versioned — downstream packages must not break when new source types are added
 - Each connector in `@uvrn/farm` can register its own normalizer (transformer pattern)
+- Built-in profiles: `financial`, `research`, `news`, `general` — all replaceable or extensible
 
 ---
 
@@ -410,13 +455,16 @@ agent.on('claim:threshold', (e) => bus.emit('drift:threshold', e));
 **Layer:** 3 — Temporal & Lifecycle
 **Priority:** Medium-high
 
-**What it does:** Reconstructs the full consensus history of any claim. Queries the receipt registry or local store to return a sequence of receipts and drift snapshots across time.
+**What it does:** Reconstructs the full consensus history of any claim. Queries any compatible store to return a time-ordered sequence of receipts and drift snapshots. Canon events are annotated as landmarks. Storage is pluggable — implement `TimelineStore` to point it at any data source.
+
+**Design philosophy:** `@uvrn/timeline` is a query layer, not a storage layer. It defines `TimelineStore` (a simple two-method interface) and handles the time-series logic — sampling, resolution, charting, summary generation. You connect it to whatever storage you use.
 
 **Public API sketch:**
 ```ts
 import { Timeline } from '@uvrn/timeline';
 
-const timeline = new Timeline({ store: supabaseClient });
+// Bring your own store — implement TimelineStore interface
+const timeline = new Timeline({ store: myStore });
 
 const history = await timeline.query('clm_sol_001', {
   from: '2026-01-01',
@@ -426,16 +474,24 @@ const history = await timeline.query('clm_sol_001', {
 
 // history.snapshots → DriftSnapshot[]
 // history.canonEvents → CanonReceipt[]
-// history.chart() → { labels, vScores, statuses }
+// history.chart() → { labels, vScores, statuses, canonMarkers }
+// history.summary → LLM-friendly narrative
 ```
 
 **Dependencies:** `@uvrn/core`, `@uvrn/drift`, `@uvrn/canon`
 
 **Interface contracts:**
-- Must work against both the hosted worker API (`api.uvrn.org`) and local stores
+- `TimelineStore` — implement to use any storage backend:
+  ```ts
+  interface TimelineStore {
+    getSnapshots(claimId: string, from: number, to: number): Promise<DriftSnapshot[]>;
+    getCanonEvents(claimId: string, from: number, to: number): Promise<CanonReceipt[]>;
+  }
+  ```
 - `resolution` param: `'hourly' | 'daily' | 'weekly'`
-- Canon events should be annotated as landmarks on the timeline
-- `chart()` should return chart.js / recharts compatible data
+- Canon events annotated as landmarks on the timeline
+- `chart()` returns chart.js / recharts compatible data
+- Optional `apiUrl` param to query the hosted worker API instead of a local store
 
 ---
 
@@ -504,25 +560,39 @@ const result = CompareEngine.compare([receiptA, receiptB], {
 **Layer:** 2 — Receipt & Verification
 **Priority:** Lower (important long-term for trust infrastructure)
 
-**What it does:** Signer reputation layer. High-reputation signers carry higher baseline trust based on track record. Lets consumers weight receipts by issuer credibility.
+**What it does:** Signer reputation layer. High-reputation signers carry higher baseline trust based on track record. Lets consumers weight receipts by issuer credibility. Storage is pluggable — implement `IdentityStore` to use any backend.
+
+**Design philosophy:** Reputation logic (the scoring formula, level thresholds, activity tracking) is owned by `@uvrn/identity`. Where that data is stored is up to you. A `MockIdentityStore` is included for testing. For production, implement `IdentityStore` with your preferred backend (SQL, Supabase, KV store, on-chain, etc.).
 
 **Public API sketch:**
 ```ts
-import { IdentityRegistry, ReputationScore } from '@uvrn/identity';
+import { IdentityRegistry } from '@uvrn/identity';
 
-const registry = new IdentityRegistry({ store: supabaseClient });
+// Bring your own store — implement IdentityStore interface
+const registry = new IdentityRegistry({ store: myStore });
 
 const rep = await registry.reputation('0xA9F1...');
 // rep.score     → 94 (0–100)
 // rep.receipts  → 1847
 // rep.accuracy  → 0.91 (fraction that matched consensus)
 // rep.since     → '2025-08-01'
+// rep.level     → 'trusted' | 'established' | 'new' | 'unknown'
 ```
 
 **Dependencies:** `@uvrn/core`, `@uvrn/adapter` (for signer address)
 
 **Interface contracts:**
-- Reputation derived from on-chain verifiable facts: receipt count, canon rate, V-Score accuracy
+- `IdentityStore` — implement to use any storage backend:
+  ```ts
+  interface IdentityStore {
+    getReputation(address: string): Promise<ReputationScore | null>;
+    saveReputation(rep: ReputationScore): Promise<void>;
+    recordActivity(activity: ReputationActivity): Promise<void>;
+    listLeaderboard(limit: number): Promise<ReputationScore[]>;
+  }
+  ```
+- Reputation derived from protocol-verifiable facts only: receipt count, canon rate, V-Score accuracy
+- `MockIdentityStore` (in-memory) included for testing
 - v1 is purely additive (scores only go up); later versions can introduce decay for stale signers
 - Privacy consideration: signer addresses are public, but behavioral profile aggregation creates deanonymization risk — be intentional about what the registry exposes
 
@@ -566,27 +636,43 @@ const farm    = new MockFarmConnector({ latencyMs: 50 });
 **Layer:** 4 — Distribution & Access
 **Priority:** Medium
 
-**What it does:** Subscription API for registering threshold alerts on claims. Triggers callbacks or webhooks when drift crosses a boundary. The consumer-facing API layer for agent threshold events.
+**What it does:** Subscription API for registering threshold alerts on claims. Triggers callbacks or webhooks when drift crosses a boundary. Wraps `@uvrn/agent`'s threshold events and adds delivery routing, deduplication, cooldown logic, and pluggable delivery targets.
+
+**Design philosophy:** `@uvrn/watch` manages *when* to alert (threshold detection, cooldown, deduplication) and *how* to route it (the delivery interface). It ships with a small set of reference delivery implementations. You can use them, replace them, or add your own — the delivery system is pluggable. The in-process `callback` target works with zero external dependencies.
 
 **Public API sketch:**
 ```ts
 import { Watcher } from '@uvrn/watch';
 
-const watcher = new Watcher({ agent, emitter: webhookEmitter });
+const watcher = new Watcher({ agent });
 
+// In-process callback — zero dependencies
 watcher.subscribe('clm_sol_001', {
   on: 'CRITICAL',
-  notify: { webhook: 'https://my-app.com/alerts', slack: '#trading-desk' },
+  notify: { callback: (event) => console.log('Alert:', event) },
+  mode: 'once',
+  cooldown: 300_000,
+});
+
+// Reference delivery targets (plug in as needed)
+watcher.subscribe('clm_sol_001', {
+  on: ['DRIFTING', 'CRITICAL'],
+  notify: {
+    webhook: 'https://my-app.com/alerts',   // any HTTP endpoint
+    slack: 'https://hooks.slack.com/...',   // Slack incoming webhook URL
+    discord: 'https://discord.com/api/webhooks/...',
+  },
 });
 ```
 
 **Dependencies:** `@uvrn/agent`, `@uvrn/drift`
 
 **Interface contracts:**
-- Consumer-facing wrapper around agent's `claim:threshold` events — adds routing, deduplication, and delivery
-- Delivery targets v1.0: webhook, Slack, Discord, email (via SendGrid/Resend)
-- Must support "alert once" vs "alert every crossing" modes
-- Rate limiting / cooldown periods to prevent alert floods on DRIFTING claims
+- `NotifyTarget` — pluggable delivery interface; add custom targets by implementing it
+- Built-in delivery targets: `callback` (in-process), `WebhookDelivery` (any HTTP endpoint), `SlackDelivery`, `DiscordDelivery` — all optional, all replaceable
+- Must support `'once'` vs `'every'` alert modes
+- Cooldown logic prevents alert floods on DRIFTING claims
+- No external service is required to use `@uvrn/watch` — `callback` delivery works standalone
 
 ---
 
@@ -595,7 +681,9 @@ watcher.subscribe('clm_sol_001', {
 **Layer:** 4 — Distribution & Access
 **Priority:** Medium
 
-**What it does:** Drop-in React component and plain JS snippet showing live consensus status on any webpage. Think GitHub build badge, but for UVRN claim consensus.
+**What it does:** Drop-in React component and plain JS UMD script showing live consensus status on any webpage. Think GitHub build badge, but for UVRN claim consensus. Points at any UVRN-compatible API endpoint — self-hosted or `api.uvrn.org`.
+
+**Design philosophy:** `@uvrn/embed` is pure UI. It fetches badge data from whatever `apiUrl` you configure, renders status and score, and handles caching and error states. The React component and UMD builds are independent — use one or both. The UMD script has zero dependencies and works on any webpage.
 
 **Public API sketch (React):**
 ```tsx
@@ -603,7 +691,7 @@ import { ConsensusBadge } from '@uvrn/embed';
 
 <ConsensusBadge
   claimId="clm_sol_001"
-  apiUrl="https://api.uvrn.org"
+  apiUrl="https://your-api.example.com"  // any UVRN-compatible endpoint
   theme="dark"
   showScore={true}
   showStatus={true}
@@ -611,18 +699,20 @@ import { ConsensusBadge } from '@uvrn/embed';
 // Renders: 🟢 STABLE  V-Score: 91
 ```
 
-**Plain JS (no React):**
+**Plain JS (no React, no build tools):**
 ```html
-<script src="https://cdn.uvrn.org/embed.js"></script>
-<div data-uvrn-claim="clm_sol_001" data-uvrn-theme="dark"></div>
+<script src="path/to/embed.umd.js"></script>
+<div data-uvrn-claim="clm_sol_001" data-uvrn-api="https://your-api.example.com"></div>
+<!-- Auto-initializes on DOMContentLoaded -->
 ```
 
-**Dependencies:** `@uvrn/core` (types only — peer dep)
+**Dependencies:** `@uvrn/core` (types only — peer dep). React is an optional peer dep — UMD build requires neither.
 
 **Interface contracts:**
-- Bundle as both ESM React component and standalone UMD script
-- UMD build is important — many embedding sites aren't React apps
-- Cache badge data for 60 seconds to avoid hammering the API
+- Bundle as both ESM React component (`dist/index.js`) and standalone UMD script (`dist/embed.umd.js`)
+- UMD build has zero runtime dependencies — works on any webpage without a bundler
+- `apiUrl` is configurable — point at self-hosted `@uvrn/api`, the hosted `api.uvrn.org`, or any compatible endpoint
+- In-memory 60-second cache — no localStorage, no cookies
 - Color scheme: green (STABLE), amber (DRIFTING), red (CRITICAL)
 
 ---

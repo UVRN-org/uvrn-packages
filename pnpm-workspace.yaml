@@ -1,0 +1,27 @@
+packages:
+  # Live on npm
+  - 'uvrn-core'
+  - 'uvrn-sdk'
+  - 'uvrn-cli'
+  - 'uvrn-api'
+  - 'uvrn-mcp'
+  - 'uvrn-adapter'
+  # Pre-release (built, audited)
+  - 'uvrn-drift'
+  - 'uvrn-canon'
+  - 'uvrn-agent'
+  # Wave 1 — build targets
+  - 'uvrn-signal'
+  - 'uvrn-score'
+  - 'uvrn-test'
+  # Wave 2 — build targets
+  - 'uvrn-farm'
+  - 'uvrn-normalize'
+  # Wave 3 — build targets
+  - 'uvrn-consensus'
+  - 'uvrn-compare'
+  - 'uvrn-identity'
+  - 'uvrn-timeline'
+  # Wave 4 — build targets
+  - 'uvrn-watch'
+  - 'uvrn-embed'

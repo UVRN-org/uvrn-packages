@@ -1,0 +1,132 @@
+{
+  "name": "delta-engine-mcp",
+  "version": "1.0.0",
+  "description": "MCP Server for Loosechain Delta Engine - AI-Native Bundle Processing",
+  "author": "Loosechain",
+  "license": "MIT",
+  "homepage": "https://github.com/uvrn/lc_delta-core",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/uvrn/lc_delta-core.git"
+  },
+  "capabilities": {
+    "tools": true,
+    "resources": true,
+    "prompts": true
+  },
+  "tools": [
+    {
+      "name": "delta_run_engine",
+      "description": "Execute the Delta Engine on a bundle to verify data consensus across sources. Returns a DeltaReceipt with outcome (consensus/indeterminate) and round-by-round analysis.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "bundle": {
+            "type": "object",
+            "description": "DeltaBundle to process",
+            "required": ["bundleId", "claim", "dataSpecs", "thresholdPct"]
+          },
+          "options": {
+            "type": "object",
+            "description": "Optional execution options"
+          }
+        },
+        "required": ["bundle"]
+      }
+    },
+    {
+      "name": "delta_validate_bundle",
+      "description": "Validate a DeltaBundle structure without executing the engine. Checks required fields, data types, and structural integrity.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "bundle": {
+            "type": "object",
+            "description": "DeltaBundle to validate"
+          }
+        },
+        "required": ["bundle"]
+      }
+    },
+    {
+      "name": "delta_verify_receipt",
+      "description": "Verify the integrity of a DeltaReceipt by recomputing its hash. Ensures the receipt has not been tampered with.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "receipt": {
+            "type": "object",
+            "description": "DeltaReceipt to verify"
+          }
+        },
+        "required": ["receipt"]
+      }
+    }
+  ],
+  "resources": [
+    {
+      "uri": "mcp://delta-engine/schema/bundle",
+      "name": "DeltaBundle Schema",
+      "description": "JSON schema for DeltaBundle structure",
+      "mimeType": "application/json"
+    },
+    {
+      "uri": "mcp://delta-engine/schema/receipt",
+      "name": "DeltaReceipt Schema",
+      "description": "JSON schema for DeltaReceipt structure",
+      "mimeType": "application/json"
+    },
+    {
+      "uri": "mcp://delta-engine/receipts/{uvrn}",
+      "name": "Receipt by UVRN",
+      "description": "Retrieve a DeltaReceipt by its UVRN",
+      "mimeType": "application/json"
+    },
+    {
+      "uri": "mcp://delta-engine/bundles/{id}",
+      "name": "Bundle by ID",
+      "description": "Retrieve a DeltaBundle by its ID",
+      "mimeType": "application/json"
+    }
+  ],
+  "prompts": [
+    {
+      "name": "verify_data",
+      "description": "Template for verifying data across multiple sources",
+      "arguments": [
+        {
+          "name": "claim",
+          "description": "The claim to verify",
+          "required": true
+        },
+        {
+          "name": "sources",
+          "description": "Data sources to compare",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "create_bundle",
+      "description": "Guide user through creating a DeltaBundle",
+      "arguments": [
+        {
+          "name": "claim",
+          "description": "The claim to verify",
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "analyze_receipt",
+      "description": "Analyze a Delta Engine receipt",
+      "arguments": [
+        {
+          "name": "receipt_json",
+          "description": "The receipt JSON to analyze",
+          "required": true
+        }
+      ]
+    }
+  ]
+}

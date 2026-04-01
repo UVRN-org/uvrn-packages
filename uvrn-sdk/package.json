@@ -1,0 +1,47 @@
+{
+  "name": "@uvrn/sdk",
+  "version": "1.0.2",
+  "description": "UVRN TypeScript SDK — programmatic access to deterministic verification",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "keywords": ["uvrn", "sdk", "verification", "receipt", "deterministic", "typescript"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UVRN-org/uvrn-packages.git",
+    "directory": "uvrn-sdk"
+  },
+  "homepage": "https://github.com/UVRN-org/uvrn-packages#readme",
+  "scripts": {
+    "build": "npm run clean && tsc",
+    "build:watch": "tsc --watch",
+    "clean": "rm -rf dist dist-esm tsconfig.tsbuildinfo",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/**/*.ts"
+  },
+  "peerDependencies": {
+    "@uvrn/core": "^1.0.0"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@uvrn/core": "workspace:*",
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": { "node": ">=18.0.0" },
+  "files": ["dist", "README.md", "LICENSE"]
+}

@@ -1,0 +1,43 @@
+{
+  "name": "@uvrn/mcp",
+  "version": "1.0.2",
+  "description": "UVRN MCP server — AI-native bundle processing",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": { "uvrn-mcp": "dist/index.js" },
+  "keywords": ["uvrn", "mcp", "verification", "receipt", "ai"],
+  "author": "UVRN",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UVRN-org/uvrn-packages.git",
+    "directory": "uvrn-mcp"
+  },
+  "homepage": "https://github.com/UVRN-org/uvrn-packages#readme",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "start": "node dist/index.js",
+    "clean": "rm -rf dist",
+    "lint": "eslint src --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\""
+  },
+  "dependencies": {
+    "@uvrn/core": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "prettier": "^3.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.3.0",
+    "vitest": "^1.0.0"
+  },
+  "engines": { "node": ">=18.0.0" },
+  "files": ["dist", "README.md"]
+}

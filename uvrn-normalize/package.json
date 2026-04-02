@@ -1,0 +1,45 @@
+{
+  "name": "@uvrn/normalize",
+  "version": "1.0.0",
+  "description": "Source normalization layer for the UVRN protocol",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist", "README.md", "LICENSE"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "clean": "rm -rf dist"
+  },
+  "peerDependencies": {
+    "@uvrn/core": ">=1.0.0",
+    "@uvrn/agent": ">=1.0.0",
+    "@uvrn/farm": ">=1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@uvrn/farm": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@uvrn/core": "workspace:*",
+    "@uvrn/agent": "workspace:*",
+    "@uvrn/farm": "workspace:*",
+    "@uvrn/test": "workspace:*",
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT",
+  "keywords": ["uvrn", "normalize", "data-normalization", "sources"]
+}

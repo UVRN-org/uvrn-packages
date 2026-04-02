@@ -14,3 +14,6 @@ Initial release. Provider-agnostic connector framework for UVRN data ingestion.
 - Reference connectors for CoinGecko, Coinbase, Perplexity, and NewsAPI
 - `MultiFarm` for parallel fan-out and partial-result aggregation
 - `ConnectorRegistry` for connector discovery and composition
+
+### Changed (internal — no public API impact)
+- FARM-05: removed runtime `PROFILES` import from `@uvrn/agent` in `BaseConnector` and `MultiFarm`; replaced duplicated string-to-claim fallback with a single internal helper (`src/internal/defaultClaimRegistration.ts`). Behavior and public surface are unchanged.

@@ -1,16 +1,6 @@
-import { PROFILES } from '@uvrn/agent';
 import type { ClaimRegistration, FarmConnector, FarmResult } from '../types';
 import { type MultiFarmOptions, FarmConnectorError } from '../types';
-
-function claimFromString(claim: string): ClaimRegistration {
-  return {
-    id: claim,
-    label: claim,
-    query: claim,
-    driftConfig: PROFILES.default,
-    intervalMs: 60_000,
-  };
-}
+import { defaultClaimRegistration } from '../internal/defaultClaimRegistration';
 
 function connectorName(connector: FarmConnector & { name?: string }): string {
   return connector.name ?? connector.constructor.name ?? 'AnonymousConnector';
@@ -34,7 +24,7 @@ export class MultiFarm implements FarmConnector {
   async fetch(claim: ClaimRegistration): Promise<FarmResult>;
   async fetch(claim: string): Promise<FarmResult>;
   async fetch(claim: ClaimRegistration | string): Promise<FarmResult> {
-    const registration = typeof claim === 'string' ? claimFromString(claim) : claim;
+    const registration = typeof claim === 'string' ? defaultClaimRegistration(claim) : claim;
     const startedAt = Date.now();
     const connectorEntries = Array.from(this.connectors.entries());
 

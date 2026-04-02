@@ -1,6 +1,7 @@
-import { PROFILES, type ClaimRegistration, type FarmConnector, type FarmResult } from '@uvrn/agent';
+import type { ClaimRegistration, FarmConnector, FarmResult } from '@uvrn/agent';
 
 import { type ConnectorConfig, FarmConnectorError } from '../../types';
+import { defaultClaimRegistration } from '../../internal/defaultClaimRegistration';
 
 export abstract class BaseConnector implements FarmConnector {
   abstract readonly name: string;
@@ -17,13 +18,7 @@ export abstract class BaseConnector implements FarmConnector {
   abstract fetch(claim: ClaimRegistration): Promise<FarmResult>;
 
   protected claimFromString(claim: string): ClaimRegistration {
-    return {
-      id: claim,
-      label: claim,
-      query: claim,
-      driftConfig: PROFILES.default,
-      intervalMs: 60_000,
-    };
+    return defaultClaimRegistration(claim);
   }
 
   protected async withRetry<T>(fn: () => Promise<T>): Promise<T> {

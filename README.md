@@ -1,8 +1,8 @@
 # uvrn-packages-next
 
-Active development worktree for the **UVRN** (Universal Verification Receipt Network) full 20-package open protocol.
+Full 20-package open protocol for the **UVRN** (Universal Verification Receipt Network).
 
-**This is the active build branch.** The sibling directory `uvrn-packages/` is the stable reference (live npm packages).
+All packages are built, tested, and audited. The 11 new packages are at v2.0.0, ready for npm publish.
 
 **Build standard**: Bloom Protocol v1.7 → `.admin/protocols/BLOOM-PROTOCOL.md`
 **Agent context**: `AGENTS.md` (Cursor/Codex) | `CLAUDE.md` (Claude Code)
@@ -67,33 +67,35 @@ This is what makes UVRN usable across any stack: a DeFi monitor, a newsroom fact
 | `@uvrn/mcp` | 4 | ✅ Live | MCP server — AI agent native access |
 | `@uvrn/api` | 4 | ✅ Live | Fastify REST API — self-hosted deployments |
 | `@uvrn/cli` | 4 | ✅ Live | CLI — `uvrn run bundle.json` → receipt |
-| `@uvrn/drift` | 3 | 🔜 Pre-release | Temporal decay scoring |
-| `@uvrn/agent` | 3 | 🔜 Pre-release | Continuous claim monitoring loop |
-| `@uvrn/canon` | 3 | 🔜 Pre-release | Canonization engine — permanent signed records |
-| `@uvrn/signal` | 1 | 🔨 Building | Typed internal event bus — zero deps |
-| `@uvrn/score` | 2 | 🔨 Building | V-Score breakdown + domain profiles |
-| `@uvrn/test` | 2 | 🔨 Building | Mocks, fixtures, factory functions |
-| `@uvrn/farm` | 1 | 🔨 Building | Data source connectors (news, financial, on-chain) |
-| `@uvrn/normalize` | 1 | 🔨 Building | Source normalization layer |
-| `@uvrn/consensus` | 1 | 🔨 Building | Multi-source signal aggregation |
-| `@uvrn/compare` | 2 | 🔨 Building | Cross-receipt comparison |
-| `@uvrn/identity` | 2 | 🔨 Building | Signer reputation layer |
-| `@uvrn/timeline` | 3 | 🔨 Building | Time-series query layer |
-| `@uvrn/watch` | 4 | 🔨 Building | Subscription & threshold alerts |
-| `@uvrn/embed` | 4 | 🔨 Building | Embeddable React badge + UMD script |
+| `@uvrn/drift` | 3 | ✅ Built + audited | Temporal decay scoring |
+| `@uvrn/agent` | 3 | ✅ Built + audited | Continuous claim monitoring loop |
+| `@uvrn/canon` | 3 | ✅ Built + audited | Canonization engine — permanent signed records |
+| `@uvrn/signal` | 1 | ✅ Built + audited | Typed internal event bus — zero deps |
+| `@uvrn/score` | 2 | ✅ Built + audited | V-Score breakdown + domain profiles |
+| `@uvrn/test` | 2 | ✅ Built + audited | Mocks, fixtures, factory functions |
+| `@uvrn/farm` | 1 | ✅ Built + audited | Data source connectors (news, financial, on-chain) |
+| `@uvrn/normalize` | 1 | ✅ Built + audited | Source normalization layer |
+| `@uvrn/consensus` | 1 | ✅ Built + audited | Multi-source signal aggregation |
+| `@uvrn/compare` | 2 | ✅ Built + audited | Cross-receipt comparison |
+| `@uvrn/identity` | 2 | ✅ Built + audited | Signer reputation layer |
+| `@uvrn/timeline` | 3 | ✅ Built + audited | Time-series query layer |
+| `@uvrn/watch` | 4 | ✅ Built + audited | Subscription & threshold alerts |
+| `@uvrn/embed` | 4 | ✅ Built + audited | Embeddable React badge + UMD script |
 
 ---
 
-## Build Waves
+## Release Status
 
-Packages are built in dependency order. See `.admin/build-plans/MASTER-BUILD-PLAN.md` for full details.
+All 20 packages are built and audited. The 11 new packages (waves 1–4) are at v2.0.0, ready for npm publish.
 
-**Wave 1** (parallel): `@uvrn/signal`, `@uvrn/score`, `@uvrn/test`
-**Wave 2** (parallel): `@uvrn/farm`, `@uvrn/normalize`
-**Wave 3** (parallel): `@uvrn/consensus`, `@uvrn/compare`, `@uvrn/identity`
-**Wave 4** (parallel): `@uvrn/timeline`, `@uvrn/watch`, `@uvrn/embed`
+| Wave | Packages | Status |
+|------|----------|--------|
+| Wave 1 | `@uvrn/signal`, `@uvrn/score`, `@uvrn/test` | ✅ Built + audited |
+| Wave 2 | `@uvrn/farm`, `@uvrn/normalize` | ✅ Built + audited |
+| Wave 3 | `@uvrn/consensus`, `@uvrn/compare`, `@uvrn/identity`, `@uvrn/timeline` | ✅ Built + audited |
+| Wave 4 | `@uvrn/watch`, `@uvrn/embed` | ✅ Built + audited |
 
-Each wave is audited by OpenAI Codex before the next wave begins.
+See `.admin/build-plans/MASTER-BUILD-PLAN.md` for full build plan details.
 
 ---
 
@@ -143,10 +145,10 @@ uvrn-packages-next/
 ├── uvrn-core/     uvrn-sdk/   uvrn-adapter/
 ├── uvrn-mcp/      uvrn-api/   uvrn-cli/
 ├── uvrn-drift/    uvrn-agent/ uvrn-canon/
-├── uvrn-signal/   uvrn-score/ uvrn-test/     ← Wave 1
-├── uvrn-farm/     uvrn-normalize/            ← Wave 2
-├── uvrn-consensus/ uvrn-compare/ uvrn-identity/ ← Wave 3
-└── uvrn-timeline/ uvrn-watch/ uvrn-embed/    ← Wave 4
+├── uvrn-signal/   uvrn-score/ uvrn-test/     ← Wave 1 ✅
+├── uvrn-farm/     uvrn-normalize/            ← Wave 2 ✅
+├── uvrn-consensus/ uvrn-compare/ uvrn-identity/ ← Wave 3 ✅
+└── uvrn-timeline/ uvrn-watch/ uvrn-embed/    ← Wave 4 ✅
 ```
 
 ---

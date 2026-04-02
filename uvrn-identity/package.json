@@ -1,10 +1,14 @@
 {
   "name": "@uvrn/identity",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Signer reputation layer for the UVRN protocol",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
     "test": "jest",
@@ -26,5 +30,11 @@
     "node": ">=18.0.0"
   },
   "license": "MIT",
-  "keywords": ["uvrn", "identity", "reputation", "signer", "trust"]
+  "keywords": [
+    "uvrn",
+    "identity",
+    "reputation",
+    "signer",
+    "trust"
+  ]
 }

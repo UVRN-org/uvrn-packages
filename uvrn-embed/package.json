@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/embed",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Embeddable consensus badges for any webpage — React component and plain JS",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -11,7 +11,11 @@
       "require": "./dist/embed.umd.js"
     }
   },
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc && node build-umd.mjs",
     "test": "jest",
@@ -46,5 +50,12 @@
     "node": ">=18.0.0"
   },
   "license": "MIT",
-  "keywords": ["uvrn", "embed", "badge", "consensus", "react", "widget"]
+  "keywords": [
+    "uvrn",
+    "embed",
+    "badge",
+    "consensus",
+    "react",
+    "widget"
+  ]
 }

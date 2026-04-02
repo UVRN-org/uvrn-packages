@@ -1,10 +1,14 @@
 {
   "name": "@uvrn/farm",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Standardized data source connectors for the UVRN protocol",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -39,5 +43,12 @@
     "node": ">=18.0.0"
   },
   "license": "MIT",
-  "keywords": ["uvrn", "farm", "connectors", "data-sources", "financial", "news"]
+  "keywords": [
+    "uvrn",
+    "farm",
+    "connectors",
+    "data-sources",
+    "financial",
+    "news"
+  ]
 }

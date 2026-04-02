@@ -6,22 +6,22 @@ packages:
   - 'uvrn-api'
   - 'uvrn-mcp'
   - 'uvrn-adapter'
-  # Pre-release (built, audited)
+  # Pre-release (built, audited — publishing after wave 1)
   - 'uvrn-drift'
   - 'uvrn-canon'
   - 'uvrn-agent'
-  # Wave 1 — build targets
+  # Wave 1 — built + audited
   - 'uvrn-signal'
   - 'uvrn-score'
   - 'uvrn-test'
-  # Wave 2 — build targets
+  # Wave 2 — built + audited
   - 'uvrn-farm'
   - 'uvrn-normalize'
-  # Wave 3 — build targets
+  # Wave 3 — built + audited
   - 'uvrn-consensus'
   - 'uvrn-compare'
   - 'uvrn-identity'
   - 'uvrn-timeline'
-  # Wave 4 — build targets
+  # Wave 4 — built + audited
   - 'uvrn-watch'
   - 'uvrn-embed'

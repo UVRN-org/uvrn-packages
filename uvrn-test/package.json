@@ -1,10 +1,14 @@
 {
   "name": "@uvrn/test",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Centralized mocks, fixtures, and factory functions for building on UVRN",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
     "test": "jest",
@@ -38,5 +42,11 @@
     "node": ">=18.0.0"
   },
   "license": "MIT",
-  "keywords": ["uvrn", "test", "mocks", "fixtures", "testing"]
+  "keywords": [
+    "uvrn",
+    "test",
+    "mocks",
+    "fixtures",
+    "testing"
+  ]
 }

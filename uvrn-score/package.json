@@ -1,10 +1,14 @@
 {
   "name": "@uvrn/score",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "V-Score composition internals and domain-specific scoring profiles for UVRN",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["dist", "README.md", "LICENSE"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
     "test": "jest",
@@ -25,5 +29,12 @@
     "node": ">=18.0.0"
   },
   "license": "MIT",
-  "keywords": ["uvrn", "score", "vscore", "verification", "breakdown", "profile"]
+  "keywords": [
+    "uvrn",
+    "score",
+    "vscore",
+    "verification",
+    "breakdown",
+    "profile"
+  ]
 }

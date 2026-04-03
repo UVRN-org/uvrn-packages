@@ -1,7 +1,7 @@
 # UVRN Package Roadmap — Open Protocol Specs
 
 **Status:** Active — updated as packages ship
-**Last updated:** 2026-03-30
+**Last updated:** 2026-04-03
 
 > This document contains the full technical specifications for every upcoming UVRN package. Each spec includes the package intent, public API sketch, dependency requirements, interface contracts, and authoring notes — enough detail to serve as a seed for building a compatible implementation against the UVRN protocol.
 >
@@ -727,20 +727,20 @@ import { ConsensusBadge } from '@uvrn/embed';
 | `@uvrn/mcp` | 4 | Live (npm) | MCP server — AI agent native access |
 | `@uvrn/api` | 4 | Live (npm) | Fastify REST API — self-hosted deployments |
 | `@uvrn/cli` | 4 | Live (npm) | CLI — `uvrn run bundle.json` → receipt |
-| `@uvrn/drift` | 3 | Pre-release | Temporal decay scoring |
-| `@uvrn/agent` | 3 | Pre-release | Continuous claim monitoring loop |
-| `@uvrn/canon` | 3 | Pre-release | Canonization engine — permanent signed records |
-| `@uvrn/farm` | 1 | Roadmap | Data source connectors |
-| `@uvrn/consensus` | 1 | Roadmap | Multi-source signal aggregation |
-| `@uvrn/normalize` | 1 | Roadmap | Source normalization layer |
-| `@uvrn/signal` | 1 | Roadmap | Internal event bus |
-| `@uvrn/timeline` | 3 | Roadmap | Time-series query layer |
-| `@uvrn/score` | 2 | Roadmap | V-Score composition & profiles |
-| `@uvrn/compare` | 2 | Roadmap | Cross-receipt comparison |
-| `@uvrn/identity` | 2 | Roadmap | Signer reputation layer |
-| `@uvrn/test` | 2 | Roadmap | Testing utilities & mocks |
-| `@uvrn/watch` | 4 | Roadmap | Subscription & threshold alerts |
-| `@uvrn/embed` | 4 | Roadmap | Embeddable consensus badges |
+| `@uvrn/drift` | 3 | Live (npm) — v1.0.0 | Temporal decay scoring |
+| `@uvrn/agent` | 3 | Live (npm) — v1.0.0 | Continuous claim monitoring loop |
+| `@uvrn/canon` | 3 | Live (npm) — v1.0.0 | Canonization engine — permanent signed records |
+| `@uvrn/farm` | 1 | Live (npm) — v1.0.0 | Data source connectors |
+| `@uvrn/consensus` | 1 | Live (npm) — v1.0.0 | Multi-source signal aggregation |
+| `@uvrn/normalize` | 1 | Live (npm) — v1.0.0 | Source normalization layer |
+| `@uvrn/signal` | 1 | Live (npm) — v1.0.0 | Internal event bus |
+| `@uvrn/timeline` | 3 | Live (npm) — v1.0.0 | Time-series query layer |
+| `@uvrn/score` | 2 | Live (npm) — v1.0.0 | V-Score composition & profiles |
+| `@uvrn/compare` | 2 | Live (npm) — v1.0.0 | Cross-receipt comparison |
+| `@uvrn/identity` | 2 | Live (npm) — v1.0.0 | Signer reputation layer |
+| `@uvrn/test` | 2 | Live (npm) — v1.0.0 | Testing utilities & mocks |
+| `@uvrn/watch` | 4 | Live (npm) — v1.0.0 | Subscription & threshold alerts |
+| `@uvrn/embed` | 4 | Live (npm) — v1.0.0 | Embeddable consensus badges |
 
 ---
 

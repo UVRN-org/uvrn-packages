@@ -1,0 +1,362 @@
+[
+  {
+    "packageName": "@uvrn/core",
+    "standalone": true,
+    "peersRequired": [],
+    "combinations": [
+      "sdk",
+      "cli",
+      "api",
+      "adapter",
+      "consensus"
+    ],
+    "ingressMode": "direct",
+    "status": "verified",
+    "notes": "Core runs cleanly as the deterministic base for bundle validation, execution, and receipt verification.",
+    "evidence": [
+      "Engine Lab parity checks matched across local, CLI, and HTTP flows."
+    ]
+  },
+  {
+    "packageName": "@uvrn/sdk",
+    "standalone": false,
+    "peersRequired": [
+      "@uvrn/core"
+    ],
+    "combinations": [
+      "core",
+      "api",
+      "cli"
+    ],
+    "ingressMode": "direct",
+    "status": "verified",
+    "notes": "The SDK works well in local and HTTP modes and is easiest to validate against the same bundle fixture.",
+    "evidence": [
+      "Engine Lab local and HTTP receipts matched the core receipt hash."
+    ]
+  },
+  {
+    "packageName": "@uvrn/cli",
+    "standalone": false,
+    "peersRequired": [
+      "@uvrn/core"
+    ],
+    "combinations": [
+      "core",
+      "sdk",
+      "api"
+    ],
+    "ingressMode": "direct",
+    "status": "verified",
+    "notes": "CLI smoke runs are straightforward once the package is built and the bundle is written to disk.",
+    "evidence": [
+      "Engine Lab CLI JSON output matched the core receipt hash."
+    ]
+  },
+  {
+    "packageName": "@uvrn/api",
+    "standalone": false,
+    "peersRequired": [
+      "@uvrn/core"
+    ],
+    "combinations": [
+      "core",
+      "sdk",
+      "embed"
+    ],
+    "ingressMode": "direct",
+    "status": "verified-with-demo-glue",
+    "notes": "Official delta routes work as-is. The demo adds claim status and timeline routes because those are outside the current package surface.",
+    "evidence": [
+      "Engine Lab HTTP run, validate, and verify routes returned expected results."
+    ]
+  },
+  {
+    "packageName": "@uvrn/mcp",
+    "standalone": false,
+    "peersRequired": [
+      "@uvrn/core"
+    ],
+    "combinations": [
+      "core"
+    ],
+    "ingressMode": "direct",
+    "status": "verified",
+    "notes": "The MCP server is smoke-tested over stdio by listing tools and calling delta_run_engine against the shared bundle.",
+    "evidence": [
+      "Engine Lab MCP smoke completed with tool listing and tool execution."
+    ]
+  },
+  {
+    "packageName": "@uvrn/adapter",
+    "standalone": false,
+    "peersRequired": [
+      "@uvrn/core"
+    ],
+    "combinations": [
+      "core"
+    ],
+    "ingressMode": "direct",
+    "status": "verified",
+    "notes": "Adapter wrapping works cleanly around core receipts with a local random wallet and no network requirements.",
+    "evidence": [
+      "Engine Lab DRVC3 wrapping preserved the embedded delta receipt hash."
+    ]
+  },
+  {
+    "packageName": "@uvrn/drift",
+    "standalone": false,
+    "peersRequired": [
+      "@uvrn/core"
+    ],
+    "combinations": [
+      "agent",
+      "canon",
+      "watch",
+      "timeline"
+    ],
+    "ingressMode": "direct",
+    "status": "verified",
+    "notes": "Drift snapshots and threshold events are easy to drive once mock-ingested evidence is converted into agent scores.",
+    "evidence": [
+      "Lifecycle Lab crossed STABLE -> DRIFTING -> CRITICAL."
+    ]
+  },
+  {
+    "packageName": "@uvrn/agent",
+    "standalone": false,
+    "peersRequired": [
+      "@uvrn/drift"
+    ],
+    "combinations": [
+      "farm",
+      "watch",
+      "signal",
+      "canon"
+    ],
+    "ingressMode": "provider-http",
+    "status": "verified",
+    "notes": "Agent integrations are strongest when farm data arrives through a real connector boundary rather than direct fixtures.",
+    "evidence": [
+      "Lifecycle Lab used HTTP-backed connectors and emitted threshold events."
+    ]
+  },
+  {
+    "packageName": "@uvrn/canon",
+    "standalone": false,
+    "peersRequired": [
+      "@uvrn/core",
+      "@uvrn/drift"
+    ],
+    "combinations": [
+      "agent",
+      "timeline",
+      "test"
+    ],
+    "ingressMode": "direct",
+    "status": "verified",
+    "notes": "Manual canonization works well with mock signer and store implementations from @uvrn/test.",
+    "evidence": [
+      "Lifecycle Lab produced a canon receipt and storage proof."
+    ]
+  },
+  {
+    "packageName": "@uvrn/signal",
+    "standalone": true,
+    "peersRequired": [],
+    "combinations": [
+      "agent",
+      "watch",
+      "canon"
+    ],
+    "ingressMode": "local-callback",
+    "status": "verified",
+    "notes": "SignalBus is lightweight and easy to bridge from agent and watch events in-process.",
+    "evidence": [
+      "Lifecycle Lab emitted agent, drift, canon, and watch signals."
+    ]
+  },
+  {
+    "packageName": "@uvrn/score",
+    "standalone": false,
+    "peersRequired": [
+      "@uvrn/core"
+    ],
+    "combinations": [
+      "consensus",
+      "drift"
+    ],
+    "ingressMode": "direct",
+    "status": "verified",
+    "notes": "ScoreBreakdown is useful as the explanation layer for ingestion and lifecycle outputs.",
+    "evidence": [
+      "Ingestion Lab produced a score breakdown from normalized components."
+    ]
+  },
+  {
+    "packageName": "@uvrn/test",
+    "standalone": false,
+    "peersRequired": [
+      "@uvrn/core",
+      "@uvrn/drift",
+      "@uvrn/canon"
+    ],
+    "combinations": [
+      "canon",
+      "compare",
+      "identity"
+    ],
+    "ingressMode": "direct",
+    "status": "verified",
+    "notes": "The package is best used as a setup accelerator for demos, tests, and mock signer/store support.",
+    "evidence": [
+      "Analysis Lab consumed fixtures and mock signer/store helpers."
+    ]
+  },
+  {
+    "packageName": "@uvrn/farm",
+    "standalone": false,
+    "peersRequired": [
+      "@uvrn/core",
+      "@uvrn/agent"
+    ],
+    "combinations": [
+      "normalize",
+      "consensus",
+      "agent"
+    ],
+    "ingressMode": "provider-http",
+    "status": "verified-with-demo-glue",
+    "notes": "Farm is the clearest place to test provider-style boundaries. Demo-owned connectors keep the default path zero-external.",
+    "evidence": [
+      "Ingestion Lab fetched mock provider data over local HTTP through BaseConnector-based adapters."
+    ]
+  },
+  {
+    "packageName": "@uvrn/normalize",
+    "standalone": false,
+    "peersRequired": [
+      "@uvrn/core",
+      "@uvrn/agent"
+    ],
+    "combinations": [
+      "farm",
+      "consensus"
+    ],
+    "ingressMode": "direct",
+    "status": "verified",
+    "notes": "Normalization fits naturally between farm ingestion and consensus bundle construction.",
+    "evidence": [
+      "Ingestion Lab normalized HTTP-fetched FarmSource objects into stable output."
+    ]
+  },
+  {
+    "packageName": "@uvrn/consensus",
+    "standalone": false,
+    "peersRequired": [
+      "@uvrn/core",
+      "@uvrn/agent"
+    ],
+    "combinations": [
+      "farm",
+      "normalize",
+      "core"
+    ],
+    "ingressMode": "direct",
+    "status": "verified",
+    "notes": "ConsensusEngine is effective once mock provider snippets carry usable numeric tokens.",
+    "evidence": [
+      "Ingestion Lab built a DeltaBundle and consensus stats from mock-ingested evidence."
+    ]
+  },
+  {
+    "packageName": "@uvrn/compare",
+    "standalone": false,
+    "peersRequired": [
+      "@uvrn/core",
+      "@uvrn/drift"
+    ],
+    "combinations": [
+      "timeline",
+      "identity"
+    ],
+    "ingressMode": "direct",
+    "status": "verified",
+    "notes": "CompareEngine works well on mixed receipt-like shapes and benefits from timeline-aligned data.",
+    "evidence": [
+      "Analysis Lab compared two claim histories and generated a divergence summary."
+    ]
+  },
+  {
+    "packageName": "@uvrn/identity",
+    "standalone": false,
+    "peersRequired": [
+      "@uvrn/core"
+    ],
+    "combinations": [
+      "test",
+      "compare"
+    ],
+    "ingressMode": "direct",
+    "status": "verified",
+    "notes": "IdentityRegistry is straightforward to demo with MockIdentityStore and recorded activities.",
+    "evidence": [
+      "Analysis Lab produced leaderboard-ready reputation output."
+    ]
+  },
+  {
+    "packageName": "@uvrn/timeline",
+    "standalone": false,
+    "peersRequired": [
+      "@uvrn/core",
+      "@uvrn/drift",
+      "@uvrn/canon"
+    ],
+    "combinations": [
+      "canon",
+      "agent",
+      "watch"
+    ],
+    "ingressMode": "direct",
+    "status": "verified-with-demo-glue",
+    "notes": "Timeline works locally with MockTimelineStore and can also target a remote API if a compatible route exists.",
+    "evidence": [
+      "Lifecycle Lab returned sampled snapshots and chart output."
+    ]
+  },
+  {
+    "packageName": "@uvrn/watch",
+    "standalone": false,
+    "peersRequired": [
+      "@uvrn/agent",
+      "@uvrn/drift"
+    ],
+    "combinations": [
+      "agent",
+      "signal"
+    ],
+    "ingressMode": "local-callback",
+    "status": "verified",
+    "notes": "The in-process callback path is the best default for demos. Third-party delivery targets stay optional.",
+    "evidence": [
+      "Lifecycle Lab delivered callback alerts without external services."
+    ]
+  },
+  {
+    "packageName": "@uvrn/embed",
+    "standalone": false,
+    "peersRequired": [
+      "react",
+      "react-dom"
+    ],
+    "combinations": [
+      "api"
+    ],
+    "ingressMode": "direct",
+    "status": "verified-with-demo-glue",
+    "notes": "Embed renders cleanly against a local claim status endpoint. The demo API provides the route expected by the package.",
+    "evidence": [
+      "UI Lab renders the live badge against /claims/:claimId/status."
+    ]
+  }
+]

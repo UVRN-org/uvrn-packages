@@ -1,0 +1,1539 @@
+{
+  "generatedAt": "2026-04-03T01:10:38.008Z",
+  "manifests": [
+    {
+      "id": "engine-lab",
+      "title": "Engine Lab",
+      "summary": "Cross-check core, SDK, CLI, API, adapter, and MCP behavior against the same bundle.",
+      "packages": [
+        "@uvrn/core",
+        "@uvrn/sdk",
+        "@uvrn/cli",
+        "@uvrn/api",
+        "@uvrn/adapter",
+        "@uvrn/mcp"
+      ],
+      "mode": "engine"
+    },
+    {
+      "id": "ingestion-lab",
+      "title": "Ingestion Lab",
+      "summary": "Fetch mock provider data over HTTP and run farm, normalize, consensus, and score flows.",
+      "packages": [
+        "@uvrn/farm",
+        "@uvrn/normalize",
+        "@uvrn/consensus",
+        "@uvrn/score"
+      ],
+      "mode": "ingestion"
+    },
+    {
+      "id": "lifecycle-lab",
+      "title": "Lifecycle Lab",
+      "summary": "Drive drift, agent, signal, watch, canon, and timeline from mock-ingested claim changes.",
+      "packages": [
+        "@uvrn/drift",
+        "@uvrn/agent",
+        "@uvrn/signal",
+        "@uvrn/watch",
+        "@uvrn/canon",
+        "@uvrn/timeline"
+      ],
+      "mode": "lifecycle"
+    },
+    {
+      "id": "analysis-lab",
+      "title": "Analysis Lab",
+      "summary": "Compare claim histories, score signer reputation, and use @uvrn/test fixtures as setup accelerators.",
+      "packages": [
+        "@uvrn/compare",
+        "@uvrn/identity",
+        "@uvrn/test"
+      ],
+      "mode": "analysis"
+    },
+    {
+      "id": "ui-lab",
+      "title": "UI Lab",
+      "summary": "Render @uvrn/embed against the local claim status route and document the plain embed path.",
+      "packages": [
+        "@uvrn/embed"
+      ],
+      "mode": "ui"
+    }
+  ],
+  "scenarios": [
+    {
+      "manifest": {
+        "id": "engine-lab",
+        "title": "Engine Lab",
+        "summary": "Cross-check core, SDK, CLI, API, adapter, and MCP behavior against the same bundle.",
+        "packages": [
+          "@uvrn/core",
+          "@uvrn/sdk",
+          "@uvrn/cli",
+          "@uvrn/api",
+          "@uvrn/adapter",
+          "@uvrn/mcp"
+        ],
+        "mode": "engine"
+      },
+      "summary": "Engine package parity holds across direct, SDK, CLI, API, adapter, and MCP entrypoints.",
+      "status": "pass",
+      "assertions": [
+        {
+          "label": "Receipt parity",
+          "passed": true,
+          "detail": "All engine receipts resolved to hash f4bb1f0cb1d00604358eb6d4f67c0c4bb2636a39006e635bbc2f121cc83f025f."
+        },
+        {
+          "label": "HTTP verify route",
+          "passed": true,
+          "detail": "API verify reported true."
+        },
+        {
+          "label": "MCP tool surface",
+          "passed": true,
+          "detail": "MCP tools: delta_run_engine, delta_validate_bundle, delta_verify_receipt."
+        }
+      ],
+      "outputs": {
+        "bundle": {
+          "bundleId": "bundle_btc_reserves_fixture",
+          "claim": "BTC reserve coverage remains above 100%",
+          "thresholdPct": 0.1,
+          "maxRounds": 5,
+          "dataSpecs": [
+            {
+              "id": "desk_a",
+              "label": "Desk A custody feed",
+              "sourceKind": "metric",
+              "originDocIds": [
+                "doc_desk_a"
+              ],
+              "metrics": [
+                {
+                  "key": "reserve_ratio",
+                  "value": 1.024,
+                  "unit": "ratio",
+                  "ts": "2026-04-02T10:15:00.000Z"
+                }
+              ]
+            },
+            {
+              "id": "desk_b",
+              "label": "Desk B custody feed",
+              "sourceKind": "metric",
+              "originDocIds": [
+                "doc_desk_b"
+              ],
+              "metrics": [
+                {
+                  "key": "reserve_ratio",
+                  "value": 1.018,
+                  "unit": "ratio",
+                  "ts": "2026-04-02T10:15:00.000Z"
+                }
+              ]
+            },
+            {
+              "id": "desk_c",
+              "label": "Desk C custody feed",
+              "sourceKind": "metric",
+              "originDocIds": [
+                "doc_desk_c"
+              ],
+              "metrics": [
+                {
+                  "key": "reserve_ratio",
+                  "value": 1.031,
+                  "unit": "ratio",
+                  "ts": "2026-04-02T10:15:00.000Z"
+                }
+              ]
+            }
+          ]
+        },
+        "receipts": {
+          "directReceipt": {
+            "bundleId": "bundle_btc_reserves_fixture",
+            "deltaFinal": 0.01268912,
+            "sources": [
+              "Desk A custody feed",
+              "Desk B custody feed",
+              "Desk C custody feed"
+            ],
+            "rounds": [
+              {
+                "round": 1,
+                "deltasByMetric": {
+                  "reserve_ratio": 0.01268912
+                },
+                "withinThreshold": true,
+                "witnessRequired": false
+              }
+            ],
+            "suggestedFixes": [],
+            "outcome": "consensus",
+            "hash": "f4bb1f0cb1d00604358eb6d4f67c0c4bb2636a39006e635bbc2f121cc83f025f"
+          },
+          "sdkLocalReceipt": {
+            "bundleId": "bundle_btc_reserves_fixture",
+            "deltaFinal": 0.01268912,
+            "sources": [
+              "Desk A custody feed",
+              "Desk B custody feed",
+              "Desk C custody feed"
+            ],
+            "rounds": [
+              {
+                "round": 1,
+                "deltasByMetric": {
+                  "reserve_ratio": 0.01268912
+                },
+                "withinThreshold": true,
+                "witnessRequired": false
+              }
+            ],
+            "suggestedFixes": [],
+            "outcome": "consensus",
+            "hash": "f4bb1f0cb1d00604358eb6d4f67c0c4bb2636a39006e635bbc2f121cc83f025f"
+          },
+          "sdkHttpReceipt": {
+            "bundleId": "bundle_btc_reserves_fixture",
+            "deltaFinal": 0.01268912,
+            "sources": [
+              "Desk A custody feed",
+              "Desk B custody feed",
+              "Desk C custody feed"
+            ],
+            "rounds": [
+              {
+                "round": 1,
+                "deltasByMetric": {
+                  "reserve_ratio": 0.01268912
+                },
+                "withinThreshold": true,
+                "witnessRequired": false
+              }
+            ],
+            "suggestedFixes": [],
+            "outcome": "consensus",
+            "hash": "f4bb1f0cb1d00604358eb6d4f67c0c4bb2636a39006e635bbc2f121cc83f025f"
+          },
+          "cliReceipt": {
+            "bundleId": "bundle_btc_reserves_fixture",
+            "deltaFinal": 0.01268912,
+            "sources": [
+              "Desk A custody feed",
+              "Desk B custody feed",
+              "Desk C custody feed"
+            ],
+            "rounds": [
+              {
+                "round": 1,
+                "deltasByMetric": {
+                  "reserve_ratio": 0.01268912
+                },
+                "withinThreshold": true,
+                "witnessRequired": false
+              }
+            ],
+            "suggestedFixes": [],
+            "outcome": "consensus",
+            "hash": "f4bb1f0cb1d00604358eb6d4f67c0c4bb2636a39006e635bbc2f121cc83f025f"
+          },
+          "apiReceipt": {
+            "bundleId": "bundle_btc_reserves_fixture",
+            "deltaFinal": 0.01268912,
+            "sources": [
+              "Desk A custody feed",
+              "Desk B custody feed",
+              "Desk C custody feed"
+            ],
+            "rounds": [
+              {
+                "round": 1,
+                "deltasByMetric": {
+                  "reserve_ratio": 0.01268912
+                },
+                "withinThreshold": true,
+                "witnessRequired": false
+              }
+            ],
+            "suggestedFixes": [],
+            "outcome": "consensus",
+            "hash": "f4bb1f0cb1d00604358eb6d4f67c0c4bb2636a39006e635bbc2f121cc83f025f"
+          }
+        },
+        "drvc3": {
+          "receipt_id": "drvc3-bundle_btc_reserves_fixture-1775178637711",
+          "issuer": "uvrn-demo",
+          "event": "engine-lab",
+          "timestamp": "2026-04-03T01:10:37.711Z",
+          "integrity": {
+            "hash_algorithm": "sha256",
+            "hash": "f4bb1f0cb1d00604358eb6d4f67c0c4bb2636a39006e635bbc2f121cc83f025f",
+            "signature_method": "eip191",
+            "signature": "0xb9e8f083ee605e705b7ed7b02919c51fd98e5419bbc91d11acd465ee32a18f0b766eaf4e7bce02bd6c3835a86ff5fa49009e61053c2a00e60ec3ea19c52432ff1b",
+            "signer_address": "0x9B0EA6aC955036AE60155D6Db5bFf2FaCAC0c45B"
+          },
+          "validation": {
+            "v_score": 0.01268912,
+            "checks": {
+              "delta_receipt": {
+                "bundleId": "bundle_btc_reserves_fixture",
+                "deltaFinal": 0.01268912,
+                "sources": [
+                  "Desk A custody feed",
+                  "Desk B custody feed",
+                  "Desk C custody feed"
+                ],
+                "rounds": [
+                  {
+                    "round": 1,
+                    "deltasByMetric": {
+                      "reserve_ratio": 0.01268912
+                    },
+                    "withinThreshold": true,
+                    "witnessRequired": false
+                  }
+                ],
+                "suggestedFixes": [],
+                "outcome": "consensus",
+                "hash": "f4bb1f0cb1d00604358eb6d4f67c0c4bb2636a39006e635bbc2f121cc83f025f"
+              }
+            }
+          },
+          "block_state": "loose",
+          "certificate": "DRVC3 v1.01",
+          "description": "Demo DRVC3 wrapping test",
+          "tags": [
+            "#uvrn",
+            "#demo",
+            "#engine-lab"
+          ]
+        },
+        "mcpSmoke": {
+          "toolNames": [
+            "delta_run_engine",
+            "delta_validate_bundle",
+            "delta_verify_receipt"
+          ],
+          "runResultText": "{\n  \"receipt\": {\n    \"bundleId\": \"bundle_btc_reserves_fixture\",\n    \"deltaFinal\": 0.01268912,\n    \"sources\": [\n      \"Desk A custody feed\",\n      \"Desk B custody feed\",\n      \"Desk C custody feed\"\n    ],\n    \"rounds\": [\n      {\n        \"round\": 1,\n        \"deltasByMetric\": {\n          \"reserve_ratio\": 0.01268912\n        },\n        \"withinThreshold\": true,\n        \"witnessRequired\": false\n      }\n    ],\n    \"suggestedFixes\": [],\n    \"outcome\": \"consensus\",\n    \"hash\": \"f4bb1f0cb1d00604358eb6d4f67c0c4bb2636a39006e635bbc2f121cc83f025f\"\n  },\n  \"success\": true\n}",
+          "stderr": "[INFO] Starting Delta Engine MCP Server...\n[INFO] Delta Engine MCP Server started successfully\n[INFO] Server capabilities: { tools: 3, resources: 4, prompts: 3 }\n[INFO] Engine executed successfully { bundleId: 'bundle_btc_reserves_fixture', outcome: 'consensus' }"
+        }
+      },
+      "logs": [
+        "API server booted on http://127.0.0.1:62330.",
+        "CLI executed via /Users/stsdev1/Documents/SuttleMedia/SuttleMediaLLC/UVRN/uvrn-packages_main/uvrn-packages-next-2/uvrn-packages-next-2/uvrn-cli/dist/cli.js.",
+        "MCP server executed via /Users/stsdev1/Documents/SuttleMedia/SuttleMediaLLC/UVRN/uvrn-packages_main/uvrn-packages-next-2/uvrn-packages-next-2/uvrn-mcp/dist/index.js."
+      ],
+      "findings": [
+        "@uvrn/api works for delta routes without modification.",
+        "@uvrn/embed needs an additional status route outside the official API package."
+      ]
+    },
+    {
+      "manifest": {
+        "id": "ingestion-lab",
+        "title": "Ingestion Lab",
+        "summary": "Fetch mock provider data over HTTP and run farm, normalize, consensus, and score flows.",
+        "packages": [
+          "@uvrn/farm",
+          "@uvrn/normalize",
+          "@uvrn/consensus",
+          "@uvrn/score"
+        ],
+        "mode": "ingestion"
+      },
+      "summary": "Mock provider endpoints behave like real ingestion points and flow cleanly through farm, normalize, consensus, and score.",
+      "status": "pass",
+      "assertions": [
+        {
+          "label": "HTTP ingestion produced sources",
+          "passed": true,
+          "detail": "Farm fetched 4 sources."
+        },
+        {
+          "label": "Normalization retained source count",
+          "passed": true,
+          "detail": "Normalization returned 4 sources."
+        },
+        {
+          "label": "Consensus produced receipt",
+          "passed": true,
+          "detail": "Consensus outcome was consensus."
+        }
+      ],
+      "outputs": {
+        "farmResult": {
+          "claimId": "clm_btc_reserves_001",
+          "sources": [
+            {
+              "url": "https://mock.local/coingecko/btc/desk-a",
+              "title": "BTC reserve ratio 100.4 from custody desk A",
+              "snippet": "Search evidence reports reserve coverage at 100.4 with narrow spread.",
+              "publishedAt": "2026-04-02T10:00:00.000Z",
+              "credibility": 0.91
+            },
+            {
+              "url": "https://mock.local/coingecko/btc/desk-b",
+              "title": "BTC reserve ratio 102.8 from custody desk B",
+              "snippet": "Secondary search evidence reports reserve coverage at 102.8.",
+              "publishedAt": "2026-04-02T08:00:00.000Z",
+              "credibility": 0.89
+            },
+            {
+              "url": "https://mock.local/coinbase/btc/desk-c",
+              "title": "BTC reserve ratio 104.9 from balance sheet feed",
+              "snippet": "Balance sheet feed publishes reserve coverage at 104.9.",
+              "publishedAt": "2026-04-02T09:00:00.000Z",
+              "credibility": 0.86
+            },
+            {
+              "url": "https://mock.local/news/btc/desk-d",
+              "title": "Analyst note cites reserve ratio 98.7",
+              "snippet": "Coverage recap cites the reserve ratio at 98.7 after reconciliation.",
+              "publishedAt": "2026-04-02T06:00:00.000Z",
+              "credibility": 0.74
+            }
+          ],
+          "fetchedAt": "2026-04-03T01:10:37.496Z",
+          "durationMs": 50
+        },
+        "normalized": {
+          "sources": [
+            {
+              "name": "BTC reserve ratio 100.4 from custody desk A",
+              "value": 100.4,
+              "unit": "USD",
+              "timestamp": 1775124000000,
+              "credibility": 0.91,
+              "rawData": {
+                "url": "https://mock.local/coingecko/btc/desk-a",
+                "title": "BTC reserve ratio 100.4 from custody desk A",
+                "snippet": "Search evidence reports reserve coverage at 100.4 with narrow spread.",
+                "publishedAt": "2026-04-02T10:00:00.000Z",
+                "credibility": 0.91
+              },
+              "normalizer": "financial"
+            },
+            {
+              "name": "BTC reserve ratio 102.8 from custody desk B",
+              "value": 102.8,
+              "unit": "USD",
+              "timestamp": 1775116800000,
+              "credibility": 0.89,
+              "rawData": {
+                "url": "https://mock.local/coingecko/btc/desk-b",
+                "title": "BTC reserve ratio 102.8 from custody desk B",
+                "snippet": "Secondary search evidence reports reserve coverage at 102.8.",
+                "publishedAt": "2026-04-02T08:00:00.000Z",
+                "credibility": 0.89
+              },
+              "normalizer": "financial"
+            },
+            {
+              "name": "BTC reserve ratio 104.9 from balance sheet feed",
+              "value": 104.9,
+              "unit": "USD",
+              "timestamp": 1775120400000,
+              "credibility": 0.86,
+              "rawData": {
+                "url": "https://mock.local/coinbase/btc/desk-c",
+                "title": "BTC reserve ratio 104.9 from balance sheet feed",
+                "snippet": "Balance sheet feed publishes reserve coverage at 104.9.",
+                "publishedAt": "2026-04-02T09:00:00.000Z",
+                "credibility": 0.86
+              },
+              "normalizer": "financial"
+            },
+            {
+              "name": "Analyst note cites reserve ratio 98.7",
+              "value": 98.7,
+              "unit": "USD",
+              "timestamp": 1775109600000,
+              "credibility": 0.74,
+              "rawData": {
+                "url": "https://mock.local/news/btc/desk-d",
+                "title": "Analyst note cites reserve ratio 98.7",
+                "snippet": "Coverage recap cites the reserve ratio at 98.7 after reconciliation.",
+                "publishedAt": "2026-04-02T06:00:00.000Z",
+                "credibility": 0.74
+              },
+              "normalizer": "financial"
+            }
+          ],
+          "profile": "financial",
+          "timestamp": 1775178637497
+        },
+        "consensusStats": {
+          "sourceCount": 4,
+          "agreementScore": 25,
+          "coverageScore": 100,
+          "recencyScore": 97.6490163580247,
+          "weightedConsensusScore": 93.29470490740741,
+          "summary": "Consensus derived from 4 usable sources with agreement 25.0, coverage 100.0, recency 97.6, and weighted consensus 93.3."
+        },
+        "bundle": {
+          "bundleId": "consensus-4687c4e5",
+          "claim": "clm_btc_reserves_001",
+          "dataSpecs": [
+            {
+              "id": "source-1-c1dedcfb",
+              "label": "BTC reserve ratio 100.4 from custody desk A",
+              "sourceKind": "metric",
+              "originDocIds": [
+                "https://mock.local/coingecko/btc/desk-a"
+              ],
+              "metrics": [
+                {
+                  "key": "consensus_value",
+                  "value": 100.4,
+                  "unit": "BTC",
+                  "ts": "2026-04-02T10:00:00.000Z"
+                }
+              ]
+            },
+            {
+              "id": "source-2-c1dedcfc",
+              "label": "BTC reserve ratio 102.8 from custody desk B",
+              "sourceKind": "metric",
+              "originDocIds": [
+                "https://mock.local/coingecko/btc/desk-b"
+              ],
+              "metrics": [
+                {
+                  "key": "consensus_value",
+                  "value": 102.8,
+                  "unit": "BTC",
+                  "ts": "2026-04-02T08:00:00.000Z"
+                }
+              ]
+            },
+            {
+              "id": "source-3-a03e4181",
+              "label": "BTC reserve ratio 104.9 from balance sheet feed",
+              "sourceKind": "metric",
+              "originDocIds": [
+                "https://mock.local/coinbase/btc/desk-c"
+              ],
+              "metrics": [
+                {
+                  "key": "consensus_value",
+                  "value": 104.9,
+                  "unit": "BTC",
+                  "ts": "2026-04-02T09:00:00.000Z"
+                }
+              ]
+            },
+            {
+              "id": "source-4-b7cda671",
+              "label": "Analyst note cites reserve ratio 98.7",
+              "sourceKind": "metric",
+              "originDocIds": [
+                "https://mock.local/news/btc/desk-d"
+              ],
+              "metrics": [
+                {
+                  "key": "consensus_value",
+                  "value": 98.7,
+                  "ts": "2026-04-02T06:00:00.000Z"
+                }
+              ]
+            }
+          ],
+          "thresholdPct": 0.1,
+          "maxRounds": 5
+        },
+        "receipt": {
+          "bundleId": "consensus-4687c4e5",
+          "deltaFinal": 0.06090373,
+          "sources": [
+            "BTC reserve ratio 100.4 from custody desk A",
+            "BTC reserve ratio 102.8 from custody desk B",
+            "BTC reserve ratio 104.9 from balance sheet feed",
+            "Analyst note cites reserve ratio 98.7"
+          ],
+          "rounds": [
+            {
+              "round": 1,
+              "deltasByMetric": {
+                "consensus_value": 0.06090373
+              },
+              "withinThreshold": true,
+              "witnessRequired": false
+            }
+          ],
+          "suggestedFixes": [],
+          "outcome": "consensus",
+          "hash": "2fd7ab7d2fa03513a161d15173827faf88e5ff00234b141574a1820aadfbd70d"
+        },
+        "scoreBreakdown": {
+          "completeness": {
+            "raw": 88,
+            "weight": 0.35,
+            "weighted": 30.8
+          },
+          "parity": {
+            "raw": 90,
+            "weight": 0.35,
+            "weighted": 31.5
+          },
+          "freshness": {
+            "raw": 84,
+            "weight": 0.3,
+            "weighted": 25.2
+          },
+          "final": 87.5,
+          "explanation": "V-Score: 87.5 (financial profile) — Completeness: 88/100 (30.8 pts) — Parity: 90/100 (31.5 pts) — Freshness: 84/100 (25.2 pts) — Consensus is STABLE. — Freshness is the limiting factor.",
+          "profile": "financial"
+        }
+      },
+      "logs": [
+        "Fetched ingestion evidence from http://127.0.0.1:4175.",
+        "Consensus bundle emitted 4 data specs."
+      ],
+      "findings": [
+        "ConsensusEngine depends on numeric tokens being present in provider snippets or titles.",
+        "Demo-owned connectors provide a clean zero-external path without touching package reference connectors."
+      ]
+    },
+    {
+      "manifest": {
+        "id": "lifecycle-lab",
+        "title": "Lifecycle Lab",
+        "summary": "Drive drift, agent, signal, watch, canon, and timeline from mock-ingested claim changes.",
+        "packages": [
+          "@uvrn/drift",
+          "@uvrn/agent",
+          "@uvrn/signal",
+          "@uvrn/watch",
+          "@uvrn/canon",
+          "@uvrn/timeline"
+        ],
+        "mode": "lifecycle"
+      },
+      "summary": "Lifecycle packages work together when the claim path is driven by HTTP-backed mock connectors and in-process stores.",
+      "status": "pass",
+      "assertions": [
+        {
+          "label": "Agent emitted receipts",
+          "passed": true,
+          "detail": "Agent emitted 3 receipts."
+        },
+        {
+          "label": "Threshold transitions captured",
+          "passed": true,
+          "detail": "Captured 2 threshold transitions."
+        },
+        {
+          "label": "Watch callback fired",
+          "passed": true,
+          "detail": "Watch emitted 2 callback alerts."
+        },
+        {
+          "label": "Canon receipt persisted",
+          "passed": true,
+          "detail": "Canon store contains 1 receipt."
+        }
+      ],
+      "outputs": {
+        "agentStatus": {
+          "running": false,
+          "startedAt": null,
+          "totalRuns": 3,
+          "claims": [
+            {
+              "id": "clm_sol_momentum_001",
+              "label": "SOL momentum remains stable through the monitoring window",
+              "status": "CRITICAL",
+              "vScore": 54.33691361688649,
+              "lastVerifiedAt": "2026-04-03T01:10:37.627Z",
+              "nextRunIn": -1,
+              "receiptSequence": 3
+            }
+          ]
+        },
+        "thresholdEvents": [
+          {
+            "receipt_id": "clm_sol_momentum_001_r2",
+            "from": "STABLE",
+            "to": "DRIFTING",
+            "score": 71.51926983635232,
+            "delta": -13.593253764297472,
+            "at": "2026-04-03T01:10:37.559Z",
+            "claimId": "clm_sol_momentum_001",
+            "receiptId": "clm_sol_momentum_001_r2",
+            "vScore": 71.51926983635232,
+            "crossedAt": "2026-04-03T01:10:37.559Z",
+            "component": "freshness"
+          },
+          {
+            "receipt_id": "clm_sol_momentum_001_r3",
+            "from": "DRIFTING",
+            "to": "CRITICAL",
+            "score": 54.33691361688649,
+            "delta": -17.18235621946583,
+            "at": "2026-04-03T01:10:37.627Z",
+            "claimId": "clm_sol_momentum_001",
+            "receiptId": "clm_sol_momentum_001_r3",
+            "vScore": 54.33691361688649,
+            "crossedAt": "2026-04-03T01:10:37.627Z",
+            "component": "freshness"
+          }
+        ],
+        "emittedReceipts": [
+          {
+            "receipt_id": "clm_sol_momentum_001_r1_drift_1775178637504",
+            "claim_id": "clm_sol_momentum_001",
+            "agent": "@uvrn/agent@0.1.0",
+            "drift_module": "@uvrn/drift@0.1.0",
+            "v_score": 85.1125236006498,
+            "drift_delta": -14.887476399350206,
+            "decay_curve": "SIGMOID",
+            "age_hours": 0,
+            "status": "STABLE",
+            "components": {
+              "completeness": 63.01369940898164,
+              "parity": 99.47573789593696,
+              "freshness": 94.1374018130943
+            },
+            "thresholds": {
+              "drifting": 80,
+              "critical": 60
+            },
+            "scored_at": "2026-04-03T01:10:37.504Z",
+            "tags": [
+              "#uvrn",
+              "#drvc3",
+              "#drift",
+              "#STABLE"
+            ]
+          },
+          {
+            "receipt_id": "clm_sol_momentum_001_r2_drift_1775178637559",
+            "claim_id": "clm_sol_momentum_001",
+            "agent": "@uvrn/agent@0.1.0",
+            "drift_module": "@uvrn/drift@0.1.0",
+            "v_score": 71.51926983635232,
+            "drift_delta": -13.593253764297472,
+            "decay_curve": "SIGMOID",
+            "age_hours": 0,
+            "status": "DRIFTING",
+            "components": {
+              "completeness": 52.59645524515595,
+              "parity": 96.60821453418588,
+              "freshness": 64.32545137860893
+            },
+            "thresholds": {
+              "drifting": 80,
+              "critical": 60
+            },
+            "scored_at": "2026-04-03T01:10:37.559Z",
+            "tags": [
+              "#uvrn",
+              "#drvc3",
+              "#drift",
+              "#DRIFTING"
+            ]
+          },
+          {
+            "receipt_id": "clm_sol_momentum_001_r3_drift_1775178637627",
+            "claim_id": "clm_sol_momentum_001",
+            "agent": "@uvrn/agent@0.1.0",
+            "drift_module": "@uvrn/drift@0.1.0",
+            "v_score": 54.33691361688649,
+            "drift_delta": -17.18235621946583,
+            "decay_curve": "SIGMOID",
+            "age_hours": 0,
+            "status": "CRITICAL",
+            "components": {
+              "completeness": 52.57554966689233,
+              "parity": 88.29326001616559,
+              "freshness": 16.776100759387393
+            },
+            "thresholds": {
+              "drifting": 80,
+              "critical": 60
+            },
+            "scored_at": "2026-04-03T01:10:37.627Z",
+            "tags": [
+              "#uvrn",
+              "#drvc3",
+              "#drift",
+              "#CRITICAL"
+            ]
+          }
+        ],
+        "alertEvents": [
+          {
+            "claimId": "clm_sol_momentum_001",
+            "status": "DRIFTING",
+            "vScore": 71.51926983635232,
+            "driftDelta": -13.593253764297472,
+            "triggeredAt": "2026-04-03T01:10:37.559Z",
+            "subscriberId": "sub_0002",
+            "summary": "Claim clm_sol_momentum_001 entered DRIFTING status at V-Score 71.5 (delta -13.6) at 2026-04-03T01:10:37.559Z."
+          },
+          {
+            "claimId": "clm_sol_momentum_001",
+            "status": "CRITICAL",
+            "vScore": 54.33691361688649,
+            "driftDelta": -17.18235621946583,
+            "triggeredAt": "2026-04-03T01:10:37.627Z",
+            "subscriberId": "sub_0002",
+            "summary": "Claim clm_sol_momentum_001 entered CRITICAL status at V-Score 54.3 (delta -17.2) at 2026-04-03T01:10:37.627Z."
+          }
+        ],
+        "suggestion": {
+          "suggestion_id": "sug_clm_sol_momentum_001_1775178637629",
+          "claim_id": "clm_sol_momentum_001",
+          "receipt_id": "clm_sol_momentum_001_snapshot_1",
+          "suggested_at": "2026-04-03T01:10:37.629Z",
+          "reason": "stable_consecutive",
+          "qualifying_score": 85.1125236006498,
+          "consecutive_runs": 1,
+          "expires_at": "2026-04-03T02:10:37.629Z",
+          "status": "confirmed"
+        },
+        "canonReceipt": {
+          "canon_id": "canon_a7c7b77eca2a3a3d",
+          "receipt_id": "clm_sol_momentum_001_r1_drift_1775178637504",
+          "claim_id": "clm_sol_momentum_001",
+          "canon_seq": 2,
+          "drift_receipt": {
+            "receipt_id": "clm_sol_momentum_001_r1_drift_1775178637504",
+            "claim_id": "clm_sol_momentum_001",
+            "agent": "@uvrn/agent@0.1.0",
+            "drift_module": "@uvrn/drift@0.1.0",
+            "v_score": 85.1125236006498,
+            "drift_delta": -14.887476399350206,
+            "decay_curve": "SIGMOID",
+            "age_hours": 0,
+            "status": "STABLE",
+            "components": {
+              "completeness": 63.01369940898164,
+              "parity": 99.47573789593696,
+              "freshness": 94.1374018130943
+            },
+            "thresholds": {
+              "drifting": 80,
+              "critical": 60
+            },
+            "scored_at": "2026-04-03T01:10:37.504Z",
+            "tags": [
+              "#uvrn",
+              "#drvc3",
+              "#drift",
+              "#STABLE"
+            ]
+          },
+          "final_snapshot": {
+            "receiptId": "clm_sol_momentum_001_snapshot_1",
+            "claimId": "clm_sol_momentum_001",
+            "scoredAt": "2026-04-03T01:10:37.504Z",
+            "components": {
+              "completeness": 79.1125236006498,
+              "parity": 82.1125236006498,
+              "freshness": 76.1125236006498
+            },
+            "vScore": 85.1125236006498,
+            "decayCurve": "LINEAR",
+            "ageHours": 1,
+            "driftDelta": -2,
+            "status": "STABLE"
+          },
+          "triggered_by": {
+            "type": "manual",
+            "confirmed_by": "uvrn-demo-user",
+            "reason": "Demo promotion after stable first run"
+          },
+          "canonized_at": "2026-04-03T01:10:37.629Z",
+          "canonized_by": "uvrn-demo-operator",
+          "public_key": "g3kqJprxkIAWfWx4nTjl8Qw96QPCMUCun23xFbB8jq4=",
+          "certificate": "DRVC3 v1.01",
+          "block_state": "canonized",
+          "tags": [
+            "#uvrn",
+            "#drvc3",
+            "#canonized",
+            "#vscore-85",
+            "#sigmoid"
+          ],
+          "replay_id": "replay_clm_sol_momentum_001_2",
+          "content_hash": "a7c7b77eca2a3a3dafe3e4a9df862ba106881a7f4f80424a38c37da8b4319028",
+          "signature": "TeUQdfhL3VPX3Uv2PTP3Ce6M+ZElWLYPinmJZS+d6Ww=",
+          "storage_proofs": [
+            {
+              "store": "supabase",
+              "location": "mock-store/canon_a7c7b77eca2a3a3d",
+              "written_at": "2026-04-01T00:00:00.000Z",
+              "checksum": "a7c7b77eca2a3a3dafe3e4a9df862ba106881a7f4f80424a38c37da8b4319028"
+            }
+          ]
+        },
+        "timeline": {
+          "claimId": "clm_sol_momentum_001",
+          "from": "2026-03-20T00:00:00.000Z",
+          "to": "2026-04-03T00:00:00.000Z",
+          "resolution": "daily",
+          "snapshots": [],
+          "canonEvents": [],
+          "summary": "Claim clm_sol_momentum_001 has no timeline snapshots in the requested range."
+        },
+        "signalPreview": {
+          "signalsTracked": [
+            "agent:registered",
+            "agent:receipt",
+            "drift:threshold",
+            "watch:alert",
+            "canon:suggested",
+            "canon:canonized"
+          ]
+        }
+      },
+      "logs": [
+        "Lifecycle lab used http://127.0.0.1:4175 for farm ingestion.",
+        "Timeline chart contains 0 buckets."
+      ],
+      "findings": [
+        "The zero-external path is strong when watch delivery stays on callback mode and canon uses mock signer/store.",
+        "Timeline package already supports both store mode and API mode, which makes it easy to bridge into the dashboard."
+      ]
+    },
+    {
+      "manifest": {
+        "id": "analysis-lab",
+        "title": "Analysis Lab",
+        "summary": "Compare claim histories, score signer reputation, and use @uvrn/test fixtures as setup accelerators.",
+        "packages": [
+          "@uvrn/compare",
+          "@uvrn/identity",
+          "@uvrn/test"
+        ],
+        "mode": "analysis"
+      },
+      "summary": "Analysis packages are strongest when fed by generated scenario history and mock stores rather than external systems.",
+      "status": "pass",
+      "assertions": [
+        {
+          "label": "Compare engine picked a winner",
+          "passed": true,
+          "detail": "Delta was 47.1."
+        },
+        {
+          "label": "Series trend computed",
+          "passed": true,
+          "detail": "Series trend resolved to declining."
+        },
+        {
+          "label": "Identity leaderboard returned entries",
+          "passed": true,
+          "detail": "Leaderboard returned 2 signers."
+        }
+      ],
+      "outputs": {
+        "compare": {
+          "winner": {
+            "claimId": "clm_eth_treasury_001",
+            "vScore": 91.2,
+            "status": "STABLE",
+            "scoredAt": "2026-04-01T12:00:00.000Z",
+            "receiptId": "eth_series_3"
+          },
+          "loser": {
+            "claimId": "clm_sol_momentum_001",
+            "vScore": 44.1,
+            "status": "CRITICAL",
+            "scoredAt": "2026-04-01T12:00:00.000Z",
+            "receiptId": "sol_series_3"
+          },
+          "delta": 47.1,
+          "divergenceAt": "2026-03-29T12:00:00.000Z",
+          "summary": "Claim clm_eth_treasury_001 leads with V-Score 91.2 vs clm_sol_momentum_001 at 44.1 for a delta of 47.1. Claims diverged 2026-03-29T12:00:00.000Z.",
+          "details": {
+            "receiptA": {
+              "claimId": "clm_eth_treasury_001",
+              "vScore": 91.2,
+              "status": "STABLE"
+            },
+            "receiptB": {
+              "claimId": "clm_sol_momentum_001",
+              "vScore": 44.1,
+              "status": "CRITICAL"
+            }
+          }
+        },
+        "series": {
+          "claimId": "clm_sol_momentum_001",
+          "trend": "declining",
+          "peakScore": 92.1,
+          "peakAt": 1774440000000,
+          "latestScore": 44.1,
+          "changeRate": -23.999999999999996,
+          "summary": "Claim clm_sol_momentum_001 is declining with latest V-Score 44.1, peak 92.1, and average change -24.00 per period."
+        },
+        "leaderboard": [
+          {
+            "signerAddress": "0xDEMOA",
+            "receipts": 1,
+            "canonRate": 1,
+            "accuracy": 1,
+            "since": "2026-04-03T01:10:37.449Z",
+            "lastSeen": "2026-04-03T01:10:37.449Z",
+            "score": 80.2,
+            "level": "new"
+          },
+          {
+            "signerAddress": "0xDEMOB",
+            "receipts": 1,
+            "canonRate": 0,
+            "accuracy": 0,
+            "since": "2026-04-03T01:10:37.449Z",
+            "lastSeen": "2026-04-03T01:10:37.449Z",
+            "score": 0.2,
+            "level": "new"
+          }
+        ],
+        "fixtures": {
+          "claimId": "clm_test_001",
+          "stableReceipt": {
+            "claim_id": "clm_test_001",
+            "claim": "Test claim for unit testing",
+            "v_score": 90,
+            "completeness": 92,
+            "parity": 89,
+            "freshness": 88,
+            "status": "STABLE",
+            "timestamp": 1775178539610,
+            "sources": [
+              {
+                "name": "MockSource1",
+                "data": {
+                  "value": 100
+                },
+                "timestamp": 1775178539610,
+                "credibility": 0.9
+              },
+              {
+                "name": "MockSource2",
+                "data": {
+                  "value": 101
+                },
+                "timestamp": 1775178540610,
+                "credibility": 0.85
+              }
+            ]
+          },
+          "driftingReceipt": {
+            "claim_id": "clm_test_001",
+            "claim": "Test claim for unit testing",
+            "v_score": 60,
+            "completeness": 72,
+            "parity": 65,
+            "freshness": 44,
+            "status": "DRIFTING",
+            "timestamp": 1775178539610,
+            "sources": [
+              {
+                "name": "MockSource1",
+                "data": {
+                  "value": 100
+                },
+                "timestamp": 1775178539610,
+                "credibility": 0.9
+              },
+              {
+                "name": "MockSource2",
+                "data": {
+                  "value": 101
+                },
+                "timestamp": 1775178540610,
+                "credibility": 0.85
+              }
+            ]
+          },
+          "criticalReceipt": {
+            "claim_id": "clm_test_001",
+            "claim": "Test claim for unit testing",
+            "v_score": 35,
+            "completeness": 48,
+            "parity": 38,
+            "freshness": 19,
+            "status": "CRITICAL",
+            "timestamp": 1775178539610,
+            "sources": [
+              {
+                "name": "MockSource1",
+                "data": {
+                  "value": 100
+                },
+                "timestamp": 1775178539610,
+                "credibility": 0.9
+              },
+              {
+                "name": "MockSource2",
+                "data": {
+                  "value": 101
+                },
+                "timestamp": 1775178540610,
+                "credibility": 0.85
+              }
+            ]
+          }
+        },
+        "fixtureSnapshot": {
+          "receiptId": "rcpt_test_001",
+          "claimId": "clm_eth_treasury_001",
+          "scoredAt": "2026-04-01T00:00:00.000Z",
+          "components": {
+            "completeness": 80,
+            "parity": 80,
+            "freshness": 80
+          },
+          "vScore": 88,
+          "decayCurve": "LINEAR",
+          "ageHours": 1,
+          "driftDelta": -2,
+          "status": "STABLE"
+        },
+        "reputationExamples": [
+          {
+            "signerAddress": "0xDEMOA",
+            "receipts": 1,
+            "canonRate": 1,
+            "accuracy": 1,
+            "since": "2026-04-03T01:10:37.449Z",
+            "lastSeen": "2026-04-03T01:10:37.449Z",
+            "score": 80.2,
+            "level": "new"
+          },
+          {
+            "signerAddress": "0xDEMOB",
+            "receipts": 1,
+            "canonRate": 0,
+            "accuracy": 0,
+            "since": "2026-04-03T01:10:37.449Z",
+            "lastSeen": "2026-04-03T01:10:37.449Z",
+            "score": 0.2,
+            "level": "new"
+          }
+        ]
+      },
+      "logs": [
+        "CompareEngine consumed receipt-like series objects directly.",
+        "IdentityRegistry used MockIdentityStore for reputation scoring."
+      ],
+      "findings": [
+        "@uvrn/test is valuable as scaffolding even outside unit tests.",
+        "CompareEngine tolerates mixed receipt-like object shapes, which makes demo wiring easier."
+      ]
+    },
+    {
+      "manifest": {
+        "id": "ui-lab",
+        "title": "UI Lab",
+        "summary": "Render @uvrn/embed against the local claim status route and document the plain embed path.",
+        "packages": [
+          "@uvrn/embed"
+        ],
+        "mode": "ui"
+      },
+      "summary": "UI integration stays simple once the local demo API satisfies the embed package status contract.",
+      "status": "pass",
+      "assertions": [
+        {
+          "label": "Embed expects local status route",
+          "passed": true,
+          "detail": "ConsensusBadge will target http://127.0.0.1:4174/claims/clm_sol_momentum_001/status."
+        },
+        {
+          "label": "Plain embed snippet available",
+          "passed": true,
+          "detail": "The demo ships both React and plain HTML embed examples."
+        }
+      ],
+      "outputs": {
+        "badgeConfig": {
+          "claimId": "clm_sol_momentum_001",
+          "apiUrl": "http://127.0.0.1:4174",
+          "theme": "dark",
+          "showScore": true,
+          "showStatus": true
+        },
+        "plainHtmlSnippet": "<div data-uvrn-claim=\"clm_sol_momentum_001\" data-uvrn-api=\"http://127.0.0.1:4174\" data-uvrn-theme=\"dark\"></div>",
+        "note": "The dashboard renders the live React badge. The plain HTML snippet is documented for external consumers."
+      },
+      "logs": [
+        "Embed config prepared for clm_sol_momentum_001."
+      ],
+      "findings": [
+        "@uvrn/embed remains lightweight when pointed at a compatible local status route."
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "packageName": "@uvrn/core",
+      "standalone": true,
+      "peersRequired": [],
+      "combinations": [
+        "sdk",
+        "cli",
+        "api",
+        "adapter",
+        "consensus"
+      ],
+      "ingressMode": "direct",
+      "status": "verified",
+      "notes": "Core runs cleanly as the deterministic base for bundle validation, execution, and receipt verification.",
+      "evidence": [
+        "Engine Lab parity checks matched across local, CLI, and HTTP flows."
+      ]
+    },
+    {
+      "packageName": "@uvrn/sdk",
+      "standalone": false,
+      "peersRequired": [
+        "@uvrn/core"
+      ],
+      "combinations": [
+        "core",
+        "api",
+        "cli"
+      ],
+      "ingressMode": "direct",
+      "status": "verified",
+      "notes": "The SDK works well in local and HTTP modes and is easiest to validate against the same bundle fixture.",
+      "evidence": [
+        "Engine Lab local and HTTP receipts matched the core receipt hash."
+      ]
+    },
+    {
+      "packageName": "@uvrn/cli",
+      "standalone": false,
+      "peersRequired": [
+        "@uvrn/core"
+      ],
+      "combinations": [
+        "core",
+        "sdk",
+        "api"
+      ],
+      "ingressMode": "direct",
+      "status": "verified",
+      "notes": "CLI smoke runs are straightforward once the package is built and the bundle is written to disk.",
+      "evidence": [
+        "Engine Lab CLI JSON output matched the core receipt hash."
+      ]
+    },
+    {
+      "packageName": "@uvrn/api",
+      "standalone": false,
+      "peersRequired": [
+        "@uvrn/core"
+      ],
+      "combinations": [
+        "core",
+        "sdk",
+        "embed"
+      ],
+      "ingressMode": "direct",
+      "status": "verified-with-demo-glue",
+      "notes": "Official delta routes work as-is. The demo adds claim status and timeline routes because those are outside the current package surface.",
+      "evidence": [
+        "Engine Lab HTTP run, validate, and verify routes returned expected results."
+      ]
+    },
+    {
+      "packageName": "@uvrn/mcp",
+      "standalone": false,
+      "peersRequired": [
+        "@uvrn/core"
+      ],
+      "combinations": [
+        "core"
+      ],
+      "ingressMode": "direct",
+      "status": "verified",
+      "notes": "The MCP server is smoke-tested over stdio by listing tools and calling delta_run_engine against the shared bundle.",
+      "evidence": [
+        "Engine Lab MCP smoke completed with tool listing and tool execution."
+      ]
+    },
+    {
+      "packageName": "@uvrn/adapter",
+      "standalone": false,
+      "peersRequired": [
+        "@uvrn/core"
+      ],
+      "combinations": [
+        "core"
+      ],
+      "ingressMode": "direct",
+      "status": "verified",
+      "notes": "Adapter wrapping works cleanly around core receipts with a local random wallet and no network requirements.",
+      "evidence": [
+        "Engine Lab DRVC3 wrapping preserved the embedded delta receipt hash."
+      ]
+    },
+    {
+      "packageName": "@uvrn/drift",
+      "standalone": false,
+      "peersRequired": [
+        "@uvrn/core"
+      ],
+      "combinations": [
+        "agent",
+        "canon",
+        "watch",
+        "timeline"
+      ],
+      "ingressMode": "direct",
+      "status": "verified",
+      "notes": "Drift snapshots and threshold events are easy to drive once mock-ingested evidence is converted into agent scores.",
+      "evidence": [
+        "Lifecycle Lab crossed STABLE -> DRIFTING -> CRITICAL."
+      ]
+    },
+    {
+      "packageName": "@uvrn/agent",
+      "standalone": false,
+      "peersRequired": [
+        "@uvrn/drift"
+      ],
+      "combinations": [
+        "farm",
+        "watch",
+        "signal",
+        "canon"
+      ],
+      "ingressMode": "provider-http",
+      "status": "verified",
+      "notes": "Agent integrations are strongest when farm data arrives through a real connector boundary rather than direct fixtures.",
+      "evidence": [
+        "Lifecycle Lab used HTTP-backed connectors and emitted threshold events."
+      ]
+    },
+    {
+      "packageName": "@uvrn/canon",
+      "standalone": false,
+      "peersRequired": [
+        "@uvrn/core",
+        "@uvrn/drift"
+      ],
+      "combinations": [
+        "agent",
+        "timeline",
+        "test"
+      ],
+      "ingressMode": "direct",
+      "status": "verified",
+      "notes": "Manual canonization works well with mock signer and store implementations from @uvrn/test.",
+      "evidence": [
+        "Lifecycle Lab produced a canon receipt and storage proof."
+      ]
+    },
+    {
+      "packageName": "@uvrn/signal",
+      "standalone": true,
+      "peersRequired": [],
+      "combinations": [
+        "agent",
+        "watch",
+        "canon"
+      ],
+      "ingressMode": "local-callback",
+      "status": "verified",
+      "notes": "SignalBus is lightweight and easy to bridge from agent and watch events in-process.",
+      "evidence": [
+        "Lifecycle Lab emitted agent, drift, canon, and watch signals."
+      ]
+    },
+    {
+      "packageName": "@uvrn/score",
+      "standalone": false,
+      "peersRequired": [
+        "@uvrn/core"
+      ],
+      "combinations": [
+        "consensus",
+        "drift"
+      ],
+      "ingressMode": "direct",
+      "status": "verified",
+      "notes": "ScoreBreakdown is useful as the explanation layer for ingestion and lifecycle outputs.",
+      "evidence": [
+        "Ingestion Lab produced a score breakdown from normalized components."
+      ]
+    },
+    {
+      "packageName": "@uvrn/test",
+      "standalone": false,
+      "peersRequired": [
+        "@uvrn/core",
+        "@uvrn/drift",
+        "@uvrn/canon"
+      ],
+      "combinations": [
+        "canon",
+        "compare",
+        "identity"
+      ],
+      "ingressMode": "direct",
+      "status": "verified",
+      "notes": "The package is best used as a setup accelerator for demos, tests, and mock signer/store support.",
+      "evidence": [
+        "Analysis Lab consumed fixtures and mock signer/store helpers."
+      ]
+    },
+    {
+      "packageName": "@uvrn/farm",
+      "standalone": false,
+      "peersRequired": [
+        "@uvrn/core",
+        "@uvrn/agent"
+      ],
+      "combinations": [
+        "normalize",
+        "consensus",
+        "agent"
+      ],
+      "ingressMode": "provider-http",
+      "status": "verified-with-demo-glue",
+      "notes": "Farm is the clearest place to test provider-style boundaries. Demo-owned connectors keep the default path zero-external.",
+      "evidence": [
+        "Ingestion Lab fetched mock provider data over local HTTP through BaseConnector-based adapters."
+      ]
+    },
+    {
+      "packageName": "@uvrn/normalize",
+      "standalone": false,
+      "peersRequired": [
+        "@uvrn/core",
+        "@uvrn/agent"
+      ],
+      "combinations": [
+        "farm",
+        "consensus"
+      ],
+      "ingressMode": "direct",
+      "status": "verified",
+      "notes": "Normalization fits naturally between farm ingestion and consensus bundle construction.",
+      "evidence": [
+        "Ingestion Lab normalized HTTP-fetched FarmSource objects into stable output."
+      ]
+    },
+    {
+      "packageName": "@uvrn/consensus",
+      "standalone": false,
+      "peersRequired": [
+        "@uvrn/core",
+        "@uvrn/agent"
+      ],
+      "combinations": [
+        "farm",
+        "normalize",
+        "core"
+      ],
+      "ingressMode": "direct",
+      "status": "verified",
+      "notes": "ConsensusEngine is effective once mock provider snippets carry usable numeric tokens.",
+      "evidence": [
+        "Ingestion Lab built a DeltaBundle and consensus stats from mock-ingested evidence."
+      ]
+    },
+    {
+      "packageName": "@uvrn/compare",
+      "standalone": false,
+      "peersRequired": [
+        "@uvrn/core",
+        "@uvrn/drift"
+      ],
+      "combinations": [
+        "timeline",
+        "identity"
+      ],
+      "ingressMode": "direct",
+      "status": "verified",
+      "notes": "CompareEngine works well on mixed receipt-like shapes and benefits from timeline-aligned data.",
+      "evidence": [
+        "Analysis Lab compared two claim histories and generated a divergence summary."
+      ]
+    },
+    {
+      "packageName": "@uvrn/identity",
+      "standalone": false,
+      "peersRequired": [
+        "@uvrn/core"
+      ],
+      "combinations": [
+        "test",
+        "compare"
+      ],
+      "ingressMode": "direct",
+      "status": "verified",
+      "notes": "IdentityRegistry is straightforward to demo with MockIdentityStore and recorded activities.",
+      "evidence": [
+        "Analysis Lab produced leaderboard-ready reputation output."
+      ]
+    },
+    {
+      "packageName": "@uvrn/timeline",
+      "standalone": false,
+      "peersRequired": [
+        "@uvrn/core",
+        "@uvrn/drift",
+        "@uvrn/canon"
+      ],
+      "combinations": [
+        "canon",
+        "agent",
+        "watch"
+      ],
+      "ingressMode": "direct",
+      "status": "verified-with-demo-glue",
+      "notes": "Timeline works locally with MockTimelineStore and can also target a remote API if a compatible route exists.",
+      "evidence": [
+        "Lifecycle Lab returned sampled snapshots and chart output."
+      ]
+    },
+    {
+      "packageName": "@uvrn/watch",
+      "standalone": false,
+      "peersRequired": [
+        "@uvrn/agent",
+        "@uvrn/drift"
+      ],
+      "combinations": [
+        "agent",
+        "signal"
+      ],
+      "ingressMode": "local-callback",
+      "status": "verified",
+      "notes": "The in-process callback path is the best default for demos. Third-party delivery targets stay optional.",
+      "evidence": [
+        "Lifecycle Lab delivered callback alerts without external services."
+      ]
+    },
+    {
+      "packageName": "@uvrn/embed",
+      "standalone": false,
+      "peersRequired": [
+        "react",
+        "react-dom"
+      ],
+      "combinations": [
+        "api"
+      ],
+      "ingressMode": "direct",
+      "status": "verified-with-demo-glue",
+      "notes": "Embed renders cleanly against a local claim status endpoint. The demo API provides the route expected by the package.",
+      "evidence": [
+        "UI Lab renders the live badge against /claims/:claimId/status."
+      ]
+    }
+  ]
+}

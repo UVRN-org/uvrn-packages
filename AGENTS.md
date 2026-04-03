@@ -4,7 +4,7 @@
 **Project**: `uvrn-packages-next`
 **Monorepo**: UVRN (Universal Verification Receipt Network) — full 20-package protocol
 **Active branch**: `feature/updates` (git worktree from `uvrn-packages/`)
-**Build standard**: Bloom Protocol v1.7 — `admin/docs/protocols/BLOOM-PROTOCOL.md`
+**Build standard**: Bloom Protocol v1.7 — `.admin/protocols/BLOOM-PROTOCOL.md`
 **Last updated**: 2026-04-01
 
 ---
@@ -19,6 +19,21 @@ UVRN is a **Universal Verification Receipt Network** — an open protocol for sc
 ```
 V-Score = (Completeness × 0.35) + (Parity × 0.35) + (Freshness × 0.30)
 ```
+
+---
+
+## Core Design Philosophy — Provider-Agnostic & Template-First
+
+Every package in this protocol is built around its **interface contract**, not around any specific third-party service or technology stack. This is what makes UVRN a genuine open protocol rather than a locked-in product.
+
+**What this means in practice:**
+
+- Packages that touch external systems (`@uvrn/farm`, `@uvrn/canon`, `@uvrn/identity`, `@uvrn/timeline`, `@uvrn/watch`) define a **pluggable interface**. The package owns the protocol logic. The user brings the provider.
+- **Reference implementations** using free/open APIs are included as working examples. They are not defaults users are locked into. `CoinGeckoFarm` shows how a farm connector works. `MockIdentityStore` shows how a store works. Users swap these out freely.
+- **No hard runtime dependency on any specific external service.** Every package must be fully functional with just its interface implementations — even if those are mocks or minimal in-memory versions.
+- The **in-process / zero-external path must always work.** A developer who wants to use `@uvrn/watch` should be able to get alerts via an in-process callback without signing up for Slack, Discord, or any third-party service.
+
+**When building — the rule:** Build the interface and the protocol behavior first. Reference implementations come second. Document both clearly so users know what is "the protocol" and what is "an example." Never couple the protocol logic to a specific external service at the type level.
 
 ---
 
@@ -92,10 +107,10 @@ V-Score = (Completeness × 0.35) + (Parity × 0.35) + (Freshness × 0.30)
 
 | Agent | Role | Writes To | Do NOT Touch |
 |-------|------|-----------|--------------|
-| **Cursor / Codex** | Primary build agent | Assigned package `src/`, `tests/` | `admin/docs/`, `AGENTS.md`, `CLAUDE.md` |
-| **Claude Code** | Protocol + integration lead | `admin/docs/`, cross-package types, README files | Do not modify shared `@uvrn/core` types without explicit instruction |
-| **Claude Cowork** | Research, planning, audit review | `admin/docs/reports/`, `admin/docs/findings/` | No runtime code |
-| **OpenAI Codex** | Audit engine | `admin/docs/audits/` (report outputs only) | No runtime code modifications |
+| **Cursor / Codex** | Primary build agent | Assigned package `src/`, `tests/` | `.admin/`, `AGENTS.md`, `CLAUDE.md` |
+| **Claude Code** | Protocol + integration lead | `.admin/`, cross-package types, README files | Do not modify shared `@uvrn/core` types without explicit instruction |
+| **Claude Cowork** | Research, planning, audit review | `.admin/reports/`, `.admin/findings/` | No runtime code |
+| **OpenAI Codex** | Audit engine | `.admin/audits/` (report outputs only) | No runtime code modifications |
 
 ---
 
@@ -111,6 +126,9 @@ V-Score = (Completeness × 0.35) + (Parity × 0.35) + (Freshness × 0.30)
 8. **LLM-friendly output fields.** `explanation`, `summary`, `breakdown` strings should be verbatim-ready for LLM responses.
 9. **`dist/` is never committed.** Always in `.gitignore`.
 10. **Packages must be independently installable** — a user installing only `@uvrn/farm` + `@uvrn/core` should not be forced to pull the entire protocol.
+11. **Provider-agnostic interfaces.** Any package that touches an external system must expose a pluggable interface for it. Reference implementations are examples, not requirements. The protocol logic must never be coupled to a specific third-party service at the type or import level.
+12. **The zero-external path must always work.** Every package must be fully usable without signing up for any external service — via mocks, in-memory stores, in-process callbacks, or reference implementations that use free/open APIs.
+13. **Document the interface separately from the example.** In READMEs and build plans, clearly distinguish "this is the interface you implement" from "this is a reference implementation." Users need to know what is theirs to own and what is just a working example.
 
 ---
 
@@ -176,11 +194,11 @@ After each package build reaches a stable state, an audit pass is scheduled:
 
 1. **Agent writes code** → Cursor/Claude Code build pass
 2. **Audit trigger** → OpenAI Codex reviews the package against ROADMAP spec + house rules
-3. **Audit report** → saved to `admin/docs/audits/audit-{package}-{date}.md`
+3. **Audit report** → saved to `.admin/audits/audit-{package}-{date}.md`
 4. **Findings review** → Claude Cowork / Claude Code address findings
-5. **Findings doc** → saved to `admin/docs/findings/findings-{package}-{date}.md`
+5. **Findings doc** → saved to `.admin/findings/findings-{package}-{date}.md`
 
-See: `admin/docs/audits/AUDIT-PROTOCOL.md` for the full audit checklist.
+See: `.admin/audits/AUDIT-PROTOCOL.md` for the full audit checklist.
 
 ---
 
@@ -214,10 +232,10 @@ See: `admin/docs/audits/AUDIT-PROTOCOL.md` for the full audit checklist.
 ## Reference Docs
 
 - **Full package specs**: `uvrn-packages/ROADMAP.md` (sibling repo — stable reference)
-- **Bloom Protocol**: `admin/docs/protocols/BLOOM-PROTOCOL.md`
-- **Agent Coordination**: `admin/docs/protocols/AGENT-COORDINATION.md`
-- **Build Plans**: `admin/docs/build-plans/`
-- **Audit Protocol**: `admin/docs/audits/AUDIT-PROTOCOL.md`
+- **Bloom Protocol**: `.admin/protocols/BLOOM-PROTOCOL.md`
+- **Agent Coordination**: `.admin/protocols/AGENT-COORDINATION.md`
+- **Build Plans**: `.admin/build-plans/`
+- **Audit Protocol**: `.admin/audits/AUDIT-PROTOCOL.md`
 
 ---
 

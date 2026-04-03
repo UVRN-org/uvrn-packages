@@ -1,0 +1,21 @@
+{
+  "name": "uvrn-real-test-demo",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.30.3",
+  "type": "module",
+  "scripts": {
+    "refresh:uvrn": "pnpm -C /Users/stsdev1/Documents/SuttleMedia/SuttleMediaLLC/UVRN/uvrn-packages_main/uvrn-packages-next-2/uvrn-packages-next-2 --filter @uvrn/core --filter @uvrn/sdk --filter @uvrn/cli --filter @uvrn/api --filter @uvrn/mcp --filter @uvrn/adapter --filter @uvrn/drift --filter @uvrn/agent --filter @uvrn/canon --filter @uvrn/signal --filter @uvrn/score --filter @uvrn/test --filter @uvrn/farm --filter @uvrn/normalize --filter @uvrn/consensus --filter @uvrn/compare --filter @uvrn/identity --filter @uvrn/timeline --filter @uvrn/watch --filter @uvrn/embed run build",
+    "generate": "pnpm --filter @uvrn-demo/scenarios generate",
+    "smoke": "pnpm run refresh:uvrn && pnpm --filter @uvrn-demo/scenarios smoke",
+    "build": "pnpm run refresh:uvrn && pnpm run generate && pnpm -r run build",
+    "predev": "node ./scripts/free-ports.mjs 4173 4174 4175",
+    "dev": "concurrently -k -n INGEST,API,WEB -c cyan,green,magenta \"pnpm --filter @uvrn-demo/mock-ingest dev\" \"pnpm --filter @uvrn-demo/demo-api dev\" \"pnpm --filter @uvrn-demo/web dev\""
+  },
+  "devDependencies": {
+    "@types/node": "^24.6.0",
+    "concurrently": "^9.2.1",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.3"
+  }
+}

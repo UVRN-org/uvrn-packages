@@ -13,7 +13,7 @@
 
 Claude Code is the **protocol and integration lead** for this build:
 
-- Owns `admin/docs/` — governance, protocols, build plans, audit reports
+- Owns `.admin/` — governance, protocols, build plans, audit reports
 - Coordinates cross-package interface contracts and shared types
 - Writes and updates READMEs, CHANGELOGs, and package docs
 - Reviews OpenAI Codex audit reports and creates findings docs
@@ -23,7 +23,7 @@ Claude Code is the **protocol and integration lead** for this build:
 Claude Cowork is **research and planning**:
 - Reads ROADMAP specs and builds context for build prompts
 - Reviews audit reports and suggests approaches
-- Writes into `admin/docs/reports/` and `admin/docs/findings/` only
+- Writes into `.admin/reports/` and `.admin/findings/` only
 
 ---
 
@@ -48,7 +48,7 @@ Every build cycle follows: **Plan → Build → Check → Update → Reflect →
 
 - No implementation without a build plan existing first
 - After every build phase, update CHANGELOGs and READMEs
-- After every build phase, record findings/observations in `admin/docs/`
+- After every build phase, record findings/observations in `.admin/`
 - Treat each package as a **complete, self-contained circle** that shares typed boundaries with neighbors
 
 ---
@@ -63,6 +63,9 @@ Every build cycle follows: **Plan → Build → Check → Update → Reflect →
 6. **`dist/` is never committed.** Verify `.gitignore` in every new package.
 7. **Each package must be independently installable** — test with `npm install` from tarball smoke check.
 8. **LLM-friendly explanation fields** in all output objects. Short, factual, verbatim-ready.
+9. **Provider-agnostic interfaces are non-negotiable.** Every package that touches an external system must define a pluggable interface (`FarmConnector`, `CanonStore`, `IdentityStore`, `TimelineStore`, `NotifyTarget`). Reference implementations are working examples — not requirements. Never couple protocol logic to a specific third-party service at the type level.
+10. **The zero-external path must always work.** Mocks, in-memory stores, in-process callbacks, and free/open reference connectors must provide a fully functional path with no external service signup required.
+11. **Document interface vs. example clearly.** Every README and build plan must distinguish "this is the interface you implement" from "this is a reference implementation." Make it obvious what users own vs. what is a starting point.
 
 ---
 
@@ -78,19 +81,36 @@ This is a **first-class design goal**: every package should be usable standalone
 
 ---
 
+## Provider-Agnostic Build Standard
+
+This protocol is open-source and intended for use across any stack. When building packages that interact with external systems:
+
+**Always ask:** "What is the interface here?" Build that first. Then add reference implementations as examples.
+
+**For `@uvrn/farm`:** The `FarmConnector` interface is what matters. `CoinGeckoFarm`, `CoinbaseFarm`, etc. are reference connectors — examples of how to implement it. A user building on a private data feed should be able to implement one method and have a first-class connector.
+
+**For `@uvrn/canon`, `@uvrn/timeline`, `@uvrn/identity`:** The `*Store` interfaces are what matter. `MockStore` (in-memory) ships with the package. Any other store is a user-provided implementation.
+
+**For `@uvrn/watch`:** The in-process `callback` delivery target works with zero external services. `WebhookDelivery`, `SlackDelivery`, `DiscordDelivery` are reference implementations of the delivery interface.
+
+**The rule:** If removing a specific third-party service would break the package's core behavior, something has been coupled that shouldn't be. Fix it by moving the service-specific code into a separate, optional implementation file.
+
+---
+
 ## Monorepo Structure
 
 ```
 uvrn-packages-next/
-├── admin/                     ← YOUR PRIMARY WRITE SURFACE
-│   └── docs/
-│       ├── protocols/         ← Bloom, agent coordination, genesis
-│       ├── guides/            ← Constitution, house rules, design system
-│       ├── build-plans/       ← Per-package and master build plans
-│       ├── handoffs/          ← Agent coordination, active handoffs
-│       ├── audits/            ← Audit protocol + audit reports
-│       ├── reports/           ← Execution reports
-│       └── findings/          ← Gaps, observations, suggestions
+├── .admin/                    ← YOUR PRIMARY WRITE SURFACE
+│   ├── protocols/             ← Bloom, agent coordination
+│   ├── guides/                ← Constitution, house rules
+│   ├── build-plans/           ← Per-package and master build plans
+│   │   └── prompts/           ← BUILD-{name}.md for each package
+│   ├── handoffs/              ← Agent coordination, active handoffs
+│   ├── audits/                ← Audit protocol + audit reports
+│   ├── reports/               ← Execution reports
+│   ├── findings/              ← Gaps, observations, suggestions
+│   └── executive/             ← High-level strategy docs
 ├── uvrn-core/                 ← Live — do not modify without explicit instruction
 ├── uvrn-sdk/                  ← Live — do not modify without explicit instruction
 ├── uvrn-adapter/              ← Live — do not modify without explicit instruction
@@ -122,12 +142,12 @@ uvrn-packages-next/
 
 When an audit report arrives from OpenAI Codex:
 
-1. Read `admin/docs/audits/audit-{package}-{date}.md`
+1. Read `.admin/audits/audit-{package}-{date}.md`
 2. Triage findings by severity (critical / major / minor / suggestion)
-3. Write `admin/docs/findings/findings-{package}-{date}.md` with actionable items
+3. Write `.admin/findings/findings-{package}-{date}.md` with actionable items
 4. For critical/major findings: create targeted fix prompts for Claude Code / Cursor
 5. For minor findings: address directly in the same session
-6. For suggestions: log in `admin/docs/ideas/` for future consideration
+6. For suggestions: log in `.admin/ideas/` for future consideration
 
 ---
 
@@ -148,10 +168,10 @@ Before publishing any new package:
 
 ## Reference
 
-- **ROADMAP**: `../uvrn-packages/ROADMAP.md` (sibling — stable)
-- **Bloom Protocol**: `admin/docs/protocols/BLOOM-PROTOCOL.md`
-- **Agent Coordination**: `admin/docs/protocols/AGENT-COORDINATION.md`
-- **Build Plans**: `admin/docs/build-plans/`
+- **ROADMAP**: `ROADMAP.md` (project root — canonical spec)
+- **Bloom Protocol**: `.admin/protocols/BLOOM-PROTOCOL.md`
+- **Agent Coordination**: `.admin/protocols/AGENT-COORDINATION.md`
+- **Build Plans**: `.admin/build-plans/`
 - **AGENTS.md**: `AGENTS.md` (Cursor/Codex read this)
 
 ---

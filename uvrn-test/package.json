@@ -1,0 +1,60 @@
+{
+  "name": "@uvrn/test",
+  "version": "1.0.0",
+  "description": "Centralized mocks, fixtures, and factory functions for building on UVRN",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "clean": "rm -rf dist"
+  },
+  "peerDependencies": {
+    "@uvrn/core": ">=1.0.0",
+    "@uvrn/drift": ">=1.0.0",
+    "@uvrn/canon": ">=1.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@uvrn/drift": {
+      "optional": true
+    },
+    "@uvrn/canon": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@uvrn/agent": "workspace:*",
+    "@uvrn/canon": "workspace:*",
+    "@uvrn/core": "workspace:*",
+    "@uvrn/drift": "workspace:*",
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT",
+  "keywords": [
+    "uvrn",
+    "test",
+    "mocks",
+    "fixtures",
+    "testing"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UVRN-org/uvrn-packages.git",
+    "directory": "uvrn-test"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

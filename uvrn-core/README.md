@@ -1,10 +1,10 @@
 # @uvrn/core
 
-UVRN Delta Engine core — deterministic multi-source comparison and verification. Runs the Delta formula on bundles, produces canonical receipts with SHA-256 hashes, and validates or verifies bundles and receipts. **Release:** 1.6.0.
+UVRN Delta Engine core — deterministic multi-source comparison and verification. Runs the Delta formula on bundles, produces canonical receipts with SHA-256 hashes, and validates or verifies bundles and receipts.
 
-**Disclaimer:** UVRN is in Alpha testing. The engine measures whether your sources agree with each other — not whether they’re correct. Final trust of output rests with the user. Use at your own discretion. Have fun.
+**Package provides:** `runDeltaEngine`, `validateBundle`, `verifyReceipt`, `canonicalSerialize`, `hashReceipt`; types (`DeltaBundle`, `DeltaReceipt`, etc.). Pure logic — no I/O, no signer, no storage.
 
-*UVRN makes no claims to "truth", the "verification" is the output of math — it is up to any user to decide if claim is actually "true" — Research and testing are absolutely recommended per use case and individual system!!*
+**You provide:** Bundle data (claim, threshold, at least two data specs with metrics). No connectors or keys required for basic use.
 
 ## Install
 
@@ -57,36 +57,10 @@ console.log(receipt.hash);      // SHA-256 of canonical receipt
 
 ## Use cases
 
-- **Compare two or more data sources** — Run the Delta formula on metrics (e.g. report A vs report B) and get a deterministic consensus or indeterminate outcome. Note: consensus means the sources agree with each other within the threshold — not that either source is correct.
+- **Compare two or more data sources** — Run the Delta formula on metrics (e.g. report A vs report B) and get a deterministic consensus or indeterminate outcome.
 - **Produce verifiable receipts** — Every receipt has a canonical hash; use `verifyReceipt(receipt)` to recompute and check integrity.
 - **Validate before running** — Use `validateBundle(bundle)` to check structure and threshold without executing the engine.
 - **Integrate into pipelines** — Use as a library in CI, ETL, or any service that needs deterministic comparison and proof.
-
-### Validation (shared contract)
-
-Bundle validation is the protocol source of truth. All consumers (SDK, API, MCP, CLI) align to these rules:
-
-- **dataSpecs**: array with **at least 2** items; each item must have `id`, `label`, `sourceKind`, `originDocIds`, and non-empty `metrics`.
-- **thresholdPct**: number **greater than 0 and at most 1** (exclusive zero).
-- **Metrics**: each metric must have a non-empty string `key` and a numeric `value` (no NaN).
-
-The SDK delegates to core `validateBundle` so pass/fail is identical everywhere.
-
-### Replay determinism and timestamp
-
-Receipts may include an optional `ts` (ISO timestamp). **Replay determinism** compares the canonical receipt payload **excluding** `ts`: two runs are considered deterministic if their normalized payloads (without `ts`) match. The stored `receipt.hash` remains over the full payload for integrity. This allows replay verification regardless of who added or omitted a timestamp.
-
-### Use case: Product / content research
-
-Your audience and market data often live in multiple places: platform analytics (e.g. YouTube, Spotify), surveys, CRM exports, or APIs. When one source says +41%, another +35%, and a third +38%, it’s hard to know if you can safely pivot or ship — **who do you trust?**
-
-UVRN helps **content creators, product teams, and designers** reconcile that split. You feed **2 to 100+ data sources** into the Delta Engine (each with comparable metrics). The engine:
-
-1. **Canonically serializes** the inputs, runs a **deterministic delta comparison**, and checks whether the spread is within your **threshold** (e.g. 8%).
-2. Produces a **verifiable receipt** with a clear outcome: **consensus** (sources agree within threshold — e.g. “Both signals agree. Pivot with proof.”) or **indeterminate** (outside threshold — time to investigate).
-3. The receipt is **hash-verified** and **reproducible**; you can share it with partners or your team so anyone can verify the same result.
-
-**Example:** Three sources — YouTube Analytics (+41% how-to views), a subscriber survey (+35% demand), and a platform API (+38% engagement). The engine returns **consensus** with a 4.83% delta (within an 8% threshold), so the designer or creator can confidently decide to pivot or ship, backed by a receipt — not just a hunch.
 
 ## Links
 

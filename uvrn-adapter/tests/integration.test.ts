@@ -3,18 +3,21 @@
  * Tests the full flow from DeltaBundle → DeltaReceipt → DRVC3Receipt
  */
 
-import {
-  runDeltaEngine,
+import { Wallet, HDNodeWallet } from 'ethers';
+import { 
+  runDeltaEngine, 
   verifyReceipt,
-  DeltaBundle
+  DeltaBundle 
 } from '@uvrn/core';
 import { wrapInDRVC3, extractDeltaReceipt, validateDRVC3 } from '../src';
 
-// Fixed test private key (deterministic)
-const TEST_PRIVATE_KEY_HEX =
-  '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80';
-
 describe('Integration: Layer 1 → Layer 2', () => {
+  let testWallet: HDNodeWallet;
+
+  beforeAll(() => {
+    testWallet = Wallet.createRandom();
+  });
+
   it('should complete full flow: bundle → receipt → DRVC3', async () => {
     // 1. Create a DeltaBundle (input to Layer 1)
     const bundle: DeltaBundle = {
@@ -53,7 +56,7 @@ describe('Integration: Layer 1 → Layer 2', () => {
     expect(verifyResult.verified).toBe(true);
 
     // 3. Wrap in DRVC3 (Layer 2)
-    const drvc3 = await wrapInDRVC3(deltaReceipt, TEST_PRIVATE_KEY_HEX, {
+    const drvc3 = await wrapInDRVC3(deltaReceipt, testWallet, {
       issuer: 'uvrn-integration',
       event: 'delta-reconciliation',
       tags: ['#uvrn', '#integration-test']
@@ -99,12 +102,12 @@ describe('Integration: Layer 1 → Layer 2', () => {
     const originalHash = receipt.hash;
 
     // Wrap multiple times - hash should always match
-    const drvc3_1 = await wrapInDRVC3(receipt, TEST_PRIVATE_KEY_HEX, {
+    const drvc3_1 = await wrapInDRVC3(receipt, testWallet, {
       issuer: 'test',
       event: 'test'
     });
 
-    const drvc3_2 = await wrapInDRVC3(receipt, TEST_PRIVATE_KEY_HEX, {
+    const drvc3_2 = await wrapInDRVC3(receipt, testWallet, {
       issuer: 'test',
       event: 'test'
     });

@@ -7,19 +7,18 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const CLI_PATH = path.resolve(__dirname, '../dist/cli.js');
-const packageJson = require(path.resolve(__dirname, '../package.json'));
-const expectedVersion = packageJson.version;
+const pkg = require('../package.json') as { version: string };
 
 describe('Delta Engine CLI', () => {
   describe('Version and Help', () => {
     test('should display version', () => {
       const output = execSync(`node ${CLI_PATH} --version`, { encoding: 'utf-8' });
-      expect(output.trim()).toBe(expectedVersion);
+      expect(output.trim()).toBe(pkg.version);
     });
 
     test('should display help', () => {
       const output = execSync(`node ${CLI_PATH} --help`, { encoding: 'utf-8' });
-      expect(output).toContain('CLI for UVRN Delta Engine');
+      expect(output).toContain('CLI for Loosechain Delta Engine');
       expect(output).toContain('run');
       expect(output).toContain('validate');
       expect(output).toContain('verify');

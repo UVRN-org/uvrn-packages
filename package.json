@@ -1,31 +1,40 @@
 {
   "name": "uvrn-packages",
   "private": true,
-  "description": "UVRN protocol packages — core, SDK, CLI, API, MCP, adapter. Publish to npm under @uvrn scope.",
-  "pnpm": {
-    "overrides": {
-      "hono": ">=4.12.7",
-      "esbuild": ">=0.25.0"
-    }
-  },
+  "description": "UVRN protocol packages — full 20-package open protocol. Publish to npm under @uvrn scope.",
   "workspaces": [
     "uvrn-core",
     "uvrn-sdk",
     "uvrn-cli",
     "uvrn-api",
     "uvrn-mcp",
-    "uvrn-adapter"
+    "uvrn-adapter",
+    "uvrn-drift",
+    "uvrn-canon",
+    "uvrn-agent",
+    "uvrn-signal",
+    "uvrn-score",
+    "uvrn-test",
+    "uvrn-farm",
+    "uvrn-normalize",
+    "uvrn-consensus",
+    "uvrn-compare",
+    "uvrn-identity",
+    "uvrn-timeline",
+    "uvrn-watch",
+    "uvrn-embed"
   ],
   "scripts": {
     "build": "pnpm -r run build",
-    "test": "CI=1 pnpm -r run test",
-    "lint": "pnpm -r run lint",
-    "smoke:consumer": "node scripts/smoke-test-consumer.js"
+    "test": "pnpm -r --if-present run test",
+    "lint": "pnpm -r --if-present run lint",
+    "build:wave1": "pnpm --filter @uvrn/signal --filter @uvrn/score --filter @uvrn/test run build",
+    "test:wave1": "pnpm --filter @uvrn/signal --filter @uvrn/score --filter @uvrn/test run test",
+    "build:wave2": "pnpm --filter @uvrn/farm --filter @uvrn/normalize run build",
+    "build:wave3": "pnpm --filter @uvrn/consensus --filter @uvrn/compare --filter @uvrn/identity --filter @uvrn/timeline run build",
+    "build:wave4": "pnpm --filter @uvrn/watch --filter @uvrn/embed run build"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
-    "eslint": "^8.0.0",
     "typescript": "^5.3.0"
   },
   "engines": {

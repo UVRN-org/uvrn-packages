@@ -1,11 +1,10 @@
 {
   "name": "@uvrn/cli",
-  "version": "1.5.2",
-  "publishConfig": { "access": "public" },
+  "version": "1.0.2",
   "description": "UVRN CLI — bundle to receipt",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "bin": { "uvrn": "dist/cli.js", "delta-engine": "dist/cli.js" },
+  "bin": { "uvrn": "dist/cli.js" },
   "keywords": ["uvrn", "cli", "verification", "receipt"],
   "license": "MIT",
   "repository": {
@@ -19,16 +18,17 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "lint": "eslint src --ext .ts",
-    "clean": "rm -rf dist",
-    "prepack": "node ../scripts/rewrite-workspace-deps.js",
-    "postpack": "node ../scripts/restore-workspace-deps.js"
+    "lint": "eslint src/**/*.ts",
+    "clean": "rm -rf dist"
+  },
+  "peerDependencies": {
+    "@uvrn/core": ">=1.0.0"
   },
   "dependencies": {
-    "@uvrn/core": "workspace:^",
     "commander": "^11.1.0"
   },
   "devDependencies": {
+    "@uvrn/core": "workspace:*",
     "@types/jest": "^29.5.0",
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
@@ -39,5 +39,5 @@
     "typescript": "^5.3.0"
   },
   "engines": { "node": ">=18.0.0" },
-  "files": ["dist", "README.md"]
+  "files": ["dist", "README.md", "LICENSE"]
 }

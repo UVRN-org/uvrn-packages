@@ -1,10 +1,10 @@
 # @uvrn/cli
 
-Command-line interface for the UVRN Delta Engine. Transform data bundles into verifiable receipts using deterministic comparison and canonical hashing. **Release:** 1.5.1.
+Command-line interface for the UVRN Delta Engine. Transform data bundles into verifiable receipts using deterministic comparison and canonical hashing.
 
-**Disclaimer:** UVRN is in Alpha testing. The engine measures whether your sources agree with each other — not whether they’re correct. Final trust of output rests with the user. Use at your own discretion. Have fun.
+**Package provides:** The `uvrn` command; `run`, `validate`, `verify` subcommands; bundle input from file, stdin, or URL; receipt output to file or stdout. Uses `@uvrn/core` under the hood.
 
-*UVRN makes no claims to "truth", the "verification" is the output of math — it is up to any user to decide if claim is actually "true" — Research and testing are absolutely recommended per use case and individual system!!*
+**You provide:** A bundle (JSON file, stdin, or URL). Optional: output path, `--pretty`, `--quiet`. No signer or storage — engine only.
 
 ## Install
 
@@ -14,7 +14,7 @@ Command-line interface for the UVRN Delta Engine. Transform data bundles into ve
 npm install -g @uvrn/cli
 ```
 
-After installation, the `uvrn` command will be available globally (the `delta-engine` alias also works):
+After installation, the `uvrn` command will be available globally:
 
 ```bash
 uvrn --version
@@ -292,8 +292,6 @@ fi
 - **Validate before running** — Use `uvrn validate bundle.json` to check structure without executing.
 - **Verify receipts** — Use `uvrn verify receipt.json` to recompute the hash and confirm integrity.
 - **CI and scripts** — Pipe bundles in and receipts out; use exit codes for success or failure.
-
-The `delta-engine` command is also available as an alias.
 
 ## Protocol compliance
 

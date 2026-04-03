@@ -14,7 +14,3 @@ export declare function canonicalSerialize(obj: any): string;
  * IMPORTANT: The hash matches the `canonicalSerialize` output.
  */
 export declare function hashReceipt(receiptPayload: Omit<DeltaReceipt, 'hash'>): string;
-/**
- * Hash of receipt payload excluding optional ts (for replay determinism).
- */
-export declare function hashReceiptPayloadWithoutTs(payload: Omit<DeltaReceipt, 'hash'>): string;

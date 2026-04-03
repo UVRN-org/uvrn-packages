@@ -1,5 +1,5 @@
 /**
- * UVRN Delta Engine Core
+ * Loosechain Delta Engine Core
  * Layer 1 Protocol Infrastructure
  */
 export * from './types';

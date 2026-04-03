@@ -1,8 +1,8 @@
 {
   "name": "delta-engine-mcp",
   "version": "1.0.0",
-  "description": "MCP Server for UVRN Delta Engine - AI-Native Bundle Processing",
-  "author": "UVRN",
+  "description": "MCP Server for Loosechain Delta Engine - AI-Native Bundle Processing",
+  "author": "Loosechain",
   "license": "MIT",
   "homepage": "https://github.com/uvrn/lc_delta-core",
   "repository": {

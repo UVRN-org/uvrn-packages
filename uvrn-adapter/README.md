@@ -1,10 +1,10 @@
 # @uvrn/adapter
 
-UVRN DRVC3 envelope adapter — wraps Delta Engine receipts in DRVC3 envelopes with EIP-191 signatures. Use this when you need to attach issuer identity and signing to core receipts without changing their deterministic hash. **Release:** 1.5.1.
+UVRN DRVC3 envelope adapter — wraps Delta Engine receipts in DRVC3 envelopes with EIP-191 signatures. Use this when you need to attach issuer identity and signing to core receipts without changing their deterministic hash.
 
-**Disclaimer:** UVRN is in Alpha testing. The engine measures whether your sources agree with each other — not whether they’re correct. Final trust of output rests with the user. Use at your own discretion. Have fun.
+**Package provides:** `wrapInDRVC3`, `validateDRVC3`, `extractDeltaReceipt`; bundled DRVC3 schema; types. EIP-191 signing and validation.
 
-*UVRN makes no claims to "truth", the "verification" is the output of math — it is up to any user to decide if claim is actually "true" — Research and testing are absolutely recommended per use case and individual system!!*
+**You provide:** A `DeltaReceipt` from `@uvrn/core`; an ethers signer (e.g. `Wallet` with private key); issuer and event strings; optional metadata (certificate, extensions, etc.).
 
 ## Install
 
@@ -27,25 +27,25 @@ npm install @uvrn/core @uvrn/adapter
 ## Usage
 
 1. Obtain a **DeltaReceipt** from `@uvrn/core` (e.g. `runDeltaEngine(bundle)`).
-2. Use **wrapInDRVC3** with a signer private key (hex string) and options to produce a DRVC3 envelope.
+2. Use **wrapInDRVC3** with an ethers signer and options to produce a DRVC3 envelope.
 3. Use **validateDRVC3** / **extractDeltaReceipt** to validate envelopes and read back the core receipt.
 
 ```typescript
 import { runDeltaEngine } from '@uvrn/core';
 import { wrapInDRVC3, validateDRVC3, extractDeltaReceipt } from '@uvrn/adapter';
+import { Wallet } from 'ethers';
 
 const bundle = { /* ... DeltaBundle ... */ };
 const receipt = runDeltaEngine(bundle);
 
-const privateKeyHex = process.env.SIGNER_PRIVATE_KEY!; // 64 hex chars, optional 0x prefix
-const drvc3 = await wrapInDRVC3(receipt, privateKeyHex, {
+const wallet = new Wallet(process.env.SIGNER_PRIVATE_KEY);
+const drvc3 = await wrapInDRVC3(receipt, wallet, {
   issuer: 'my-service',
   event: 'delta-reconciliation',
 });
 
 const valid = validateDRVC3(drvc3);
 const extracted = extractDeltaReceipt(drvc3);
-// For full integrity (schema + EIP-191 signature + embedded receipt hash), use verifyDRVC3Integrity(drvc3).
 ```
 
 ## Use cases
@@ -69,7 +69,7 @@ You can set these options when wrapping a receipt (no code changes to this packa
 Example:
 
 ```typescript
-const drvc3 = await wrapInDRVC3(receipt, privateKeyHex, {
+const drvc3 = await wrapInDRVC3(receipt, wallet, {
   issuer: 'acme-corp',
   event: 'price-attestation',
   certificate: 'Acme Receipt v1',

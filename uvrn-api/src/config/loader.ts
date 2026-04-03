@@ -12,6 +12,7 @@ export function loadConfig(): ServerConfig {
   const config: ServerConfig = {
     port: parseInt(process.env.PORT || '3000', 10),
     host: process.env.HOST || '0.0.0.0',
+    // WARNING: ['*'] with credentials is permissive. Restrict CORS_ORIGINS in production.
     corsOrigins: process.env.CORS_ORIGINS?.split(',').map(o => o.trim()) || ['*'],
     rateLimitMax: parseInt(process.env.RATE_LIMIT_MAX || '100', 10),
     rateLimitTimeWindow: process.env.RATE_LIMIT_TIME_WINDOW || '1 minute',

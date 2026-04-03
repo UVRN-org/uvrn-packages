@@ -159,12 +159,11 @@ describe('BundleBuilder', () => {
 
     test('validate detects missing claim', () => {
       const builder = new BundleBuilder()
-        .addDataSpecQuick('s1', 'S1', 'report', ['d1'], [{ key: 'v', value: 1 }])
-        .addDataSpecQuick('s2', 'S2', 'report', ['d2'], [{ key: 'v', value: 2 }]);
+        .addDataSpecQuick('s1', 'S1', 'report', ['d1'], [{ key: 'v', value: 1 }]);
 
       const result = builder.validate();
       expect(result.valid).toBe(false);
-      expect(result.errors?.some(e => e.field === 'bundle')).toBe(true);
+      expect(result.errors?.some(e => e.field === 'claim')).toBe(true);
     });
 
     test('validate detects missing dataSpecs', () => {
@@ -172,7 +171,7 @@ describe('BundleBuilder', () => {
 
       const result = builder.validate();
       expect(result.valid).toBe(false);
-      expect(result.errors?.some(e => e.field === 'bundle')).toBe(true);
+      expect(result.errors?.some(e => e.field === 'dataSpecs')).toBe(true);
     });
 
     test('validate passes for valid configuration', () => {
@@ -233,7 +232,6 @@ describe('BundleBuilder', () => {
       const builder = new BundleBuilder()
         .setClaim('Test')
         .addDataSpecQuick('s1', 'S1', 'report', ['d1'], [{ key: 'v', value: 1 }])
-        .addDataSpecQuick('s2', 'S2', 'report', ['d2'], [{ key: 'v', value: 2 }])
         .setThreshold(0.15)
         .setMaxRounds(7);
 

@@ -1,13 +1,10 @@
 /**
  * @uvrn/sdk
  *
- * TypeScript SDK for interacting with UVRN Delta Engine
+ * TypeScript SDK for interacting with Loosechain Delta Engine
  *
  * @packageDocumentation
  */
-
-import path from 'path';
-import fs from 'fs';
 
 // Export main client
 export { DeltaEngineClient } from './client';
@@ -59,15 +56,6 @@ export type {
 export { DeltaEngineClient as default } from './client';
 
 /**
- * Package version (read from package.json at runtime so it stays in sync)
+ * Package version (must match package.json)
  */
-function readPackageVersion(): string {
-  try {
-    const pkgPath = path.join(__dirname, '..', 'package.json');
-    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8')) as { version?: string };
-    return typeof pkg.version === 'string' ? pkg.version : '0.0.0';
-  } catch {
-    return '0.0.0';
-  }
-}
-export const VERSION = readPackageVersion();
+export const VERSION = '1.0.2';

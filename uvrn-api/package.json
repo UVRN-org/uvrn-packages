@@ -1,11 +1,12 @@
 {
   "name": "@uvrn/api",
-  "version": "1.5.3",
-  "publishConfig": { "access": "public" },
+  "version": "1.0.2",
   "description": "UVRN REST API — HTTP access to bundle processing",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "bin": { "uvrn-api": "dist/server.js" },
+  "bin": {
+    "uvrn-api": "dist/server.js"
+  },
   "keywords": ["uvrn", "rest-api", "bundle", "protocol"],
   "license": "MIT",
   "repository": {
@@ -19,19 +20,20 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "test": "jest",
-    "lint": "eslint src --ext .ts",
-    "clean": "rm -rf dist",
-    "prepack": "node ../scripts/rewrite-workspace-deps.js",
-    "postpack": "node ../scripts/restore-workspace-deps.js"
+    "lint": "eslint src/**/*.ts",
+    "clean": "rm -rf dist"
+  },
+  "peerDependencies": {
+    "@uvrn/core": ">=1.0.0"
   },
   "dependencies": {
-    "@uvrn/core": "workspace:^",
-    "fastify": "^5.7.3",
-    "@fastify/cors": "^10.0.0",
-    "@fastify/rate-limit": "^10.0.0",
-    "@fastify/helmet": "^12.0.0"
+    "fastify": "^4.25.0",
+    "@fastify/cors": "^8.5.0",
+    "@fastify/rate-limit": "^9.1.0",
+    "@fastify/helmet": "^11.1.0"
   },
   "devDependencies": {
+    "@uvrn/core": "workspace:*",
     "@types/node": "^20.0.0",
     "@types/jest": "^29.5.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
@@ -43,6 +45,6 @@
     "tsx": "^4.7.0",
     "typescript": "^5.3.0"
   },
-  "engines": { "node": ">=20.0.0" },
-  "files": ["dist", "README.md"]
+  "engines": { "node": ">=18.0.0" },
+  "files": ["dist", "README.md", "LICENSE"]
 }

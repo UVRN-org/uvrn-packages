@@ -1,10 +1,10 @@
 # @uvrn/api
 
-UVRN REST API — HTTP server for Delta Engine bundle processing. Exposes run, validate, and verify over HTTP so any client (browser, script, or service) can call the engine without installing the core or SDK. **Release:** 1.5.2.
+UVRN REST API — HTTP server for Delta Engine bundle processing. Exposes run, validate, and verify over HTTP so any client (browser, script, or service) can call the engine without installing the core or SDK.
 
-**Disclaimer:** UVRN is in Alpha testing. The engine measures whether your sources agree with each other — not whether they’re correct. Final trust of output rests with the user. Use at your own discretion. Have fun.
+**Package provides:** Fastify server; `createServer` / `startServer`; routes for `/api/v1/delta/run`, `/api/v1/delta/validate`, `/api/v1/delta/verify`, `/api/v1/health`. Uses `@uvrn/core`. Config via env (PORT, HOST, CORS_ORIGINS, etc.).
 
-*UVRN makes no claims to "truth", the "verification" is the output of math — it is up to any user to decide if claim is actually "true" — Research and testing are absolutely recommended per use case and individual system!!*
+**You provide:** In production — restrict `CORS_ORIGINS` to your frontend origin(s). Optionally port, host, rate limits. No custom auth or storage in the base package.
 
 ## Install
 
@@ -20,7 +20,7 @@ pnpm add @uvrn/api
 
 ## Usage
 
-1. **Start the server** (default port 3000):
+1. **Start the server** (default port 3000). After building (`pnpm build` in the repo, or use the published package):
 
 ```bash
 npx @uvrn/api
@@ -31,15 +31,18 @@ Or from your app:
 ```typescript
 import { startServer, createServer } from '@uvrn/api';
 
-// Default: start with default config (port 3000)
-await startServer();
-
-// Or create server with custom config, then listen
-const server = await createServer({ port: 4000 });
-await server.listen({ port: 4000, host: '0.0.0.0' });
+const server = await createServer();
+await startServer(server);
 ```
 
-2. **Send a bundle** (e.g. POST to `/api/v1/delta/run`) and get a receipt in the response. Use `/api/v1/delta/validate` and `/api/v1/delta/verify` for validation and verification.
+2. **Endpoints** are under `/api/v1/`:
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/v1/delta/run` | Execute engine on bundle, return receipt |
+| POST | `/api/v1/delta/validate` | Validate bundle schema |
+| POST | `/api/v1/delta/verify` | Verify receipt replay |
+| GET | `/api/v1/health` | Health check |
 
 Example with curl:
 
@@ -49,14 +52,7 @@ curl -X POST http://localhost:3000/api/v1/delta/run \
   -d '{"bundleId":"example-001","claim":"Compare sources","thresholdPct":0.1,"dataSpecs":[...]}'
 ```
 
-## Logging
-
-Logging uses Pino (via Fastify). Behavior depends on `NODE_ENV`:
-
-- **Production** (`NODE_ENV=production`): JSON logs to stdout; no transport.
-- **Development** (`NODE_ENV=development` or unset): If the optional dependency `pino-pretty` is installed (e.g. as a devDependency), logs are pretty-printed for readability. If `pino-pretty` is not available, the server falls back to standard Pino output and **does not crash** — `createServer()` always succeeds with default config.
-
-To get pretty logs in development, install `pino-pretty` in your project (e.g. `pnpm add -D pino-pretty`). It is optional; the API never requires it to start.
+**Security:** The default CORS setting allows all origins (`*`). For production, set `CORS_ORIGINS` to your frontend origin(s) (e.g. `https://app.example.com`) so only trusted clients can call the API.
 
 ## Use cases
 

@@ -60,26 +60,26 @@ The configuration file location varies by operating system:
 
 Open `claude_desktop_config.json` in a text editor and add the Delta Engine MCP server:
 
-#### Option A: Using Global Installation (Recommended)
+#### Option A: Using npx (Recommended - No Installation Required)
 
 ```json
 {
   "mcpServers": {
-    "uvrn": {
-      "command": "uvrn-mcp"
+    "delta-engine": {
+      "command": "npx",
+      "args": ["-y", "@uvrn/mcp"]
     }
   }
 }
 ```
 
-#### Option B: Using npx (if not installed globally)
+#### Option B: Using Global Installation
 
 ```json
 {
   "mcpServers": {
-    "uvrn": {
-      "command": "npx",
-      "args": ["-y", "@uvrn/mcp"]
+    "delta-engine": {
+      "command": "uvrn-mcp"
     }
   }
 }
@@ -90,9 +90,9 @@ Open `claude_desktop_config.json` in a text editor and add the Delta Engine MCP 
 ```json
 {
   "mcpServers": {
-    "uvrn": {
+    "delta-engine": {
       "command": "node",
-      "args": ["/absolute/path/to/node_modules/@uvrn/mcp/dist/run.js"]
+      "args": ["/absolute/path/to/node_modules/@uvrn/mcp/dist/index.js"]
     }
   }
 }
@@ -103,8 +103,9 @@ Open `claude_desktop_config.json` in a text editor and add the Delta Engine MCP 
 ```json
 {
   "mcpServers": {
-    "uvrn": {
-      "command": "uvrn-mcp",
+    "delta-engine": {
+      "command": "npx",
+      "args": ["-y", "@uvrn/mcp"],
       "env": {
         "LOG_LEVEL": "debug",
         "STORAGE_PATH": "/path/to/receipts",
@@ -252,8 +253,9 @@ tail -f ~/Library/Logs/Claude/mcp*.log
 ```json
 {
   "mcpServers": {
-    "uvrn": {
-      "command": "uvrn-mcp",
+    "delta-engine": {
+      "command": "npx",
+      "args": ["-y", "@uvrn/mcp"],
       "env": {
         "LOG_LEVEL": "debug"
       }
@@ -294,8 +296,9 @@ You can run multiple MCP servers simultaneously:
 ```json
 {
   "mcpServers": {
-    "uvrn": {
-      "command": "uvrn-mcp"
+    "delta-engine": {
+      "command": "npx",
+      "args": ["-y", "@uvrn/mcp"]
     },
     "other-server": {
       "command": "other-mcp-server"
@@ -309,8 +312,9 @@ You can run multiple MCP servers simultaneously:
 ```json
 {
   "mcpServers": {
-    "uvrn": {
-      "command": "uvrn-mcp",
+    "delta-engine": {
+      "command": "npx",
+      "args": ["-y", "@uvrn/mcp"],
       "env": {
         "LOG_LEVEL": "debug"
       }
@@ -342,4 +346,4 @@ Once configured, explore:
 
 ---
 
-**UVRN** - _Receipts are truth. Interfaces are untrusted. Verification comes first._
+**Loosechain** - _Receipts are truth. Interfaces are untrusted. Verification comes first._

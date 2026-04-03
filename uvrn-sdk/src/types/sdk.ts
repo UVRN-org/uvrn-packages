@@ -40,11 +40,6 @@ export interface ClientOptions {
    * @default 3
    */
   retries?: number;
-
-  /**
-   * API key sent as `X-UVRN-API-Key` header in HTTP mode. Only needed if the target server requires auth.
-   */
-  apiKey?: string;
 }
 
 /**
@@ -142,39 +137,19 @@ export interface ReplayResult {
   replayedReceipt?: DeltaReceipt;
 
   /**
-   * Whether the results match exactly (based on canonical payload excluding optional ts).
+   * Whether the results match exactly
    */
   deterministic: boolean;
 
   /**
-   * True when determinism used normalized hash (ts stripped); full receipt hashes differed due to timestamp context only.
-   */
-  timestampNormalized?: boolean;
-
-  /**
-   * Differences found (if any). When timestampNormalized is true, may include an informational line about hash/timestamp.
+   * Differences found (if any)
    */
   differences?: string[];
 
   /**
-   * Error message or error code if replay failed (e.g. MISSING_BUNDLE, INVALID_BUNDLE, BUNDLE_ID_MISMATCH, EXECUTION_FAILED)
+   * Error message if replay failed
    */
   error?: string;
-
-  /**
-   * Original receipt hash (for comparison)
-   */
-  originalHash?: string;
-
-  /**
-   * Recomputed hash from replayed receipt
-   */
-  recomputedHash?: string;
-
-  /**
-   * Optional details for validation or execution errors
-   */
-  details?: Record<string, unknown>;
 }
 
 /**

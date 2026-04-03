@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * UVRN Delta Engine CLI
+ * Loosechain Delta Engine CLI
  * Command-line interface for running delta engine operations
  */
 
@@ -11,7 +11,6 @@ import * as path from 'path';
 import { runDeltaEngine, validateBundle, verifyReceipt } from '@uvrn/core';
 import type { DeltaBundle, DeltaReceipt } from '@uvrn/core';
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const packageJson = require('../package.json');
 
 // Exit codes
@@ -71,29 +70,43 @@ async function readStdin(): Promise<string> {
   });
 }
 
+const FETCH_TIMEOUT_MS = 30_000;
+const FETCH_MAX_BODY = 5 * 1024 * 1024; // 5 MiB
+
 /**
- * Fetch from URL
+ * Fetch from URL with timeout and max body size
  */
 async function fetchUrl(url: string): Promise<string> {
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const httpModule = url.startsWith('https://') ? require('https') : require('http');
+  const https = url.startsWith('https://') ? require('https') : require('http');
 
   return new Promise((resolve, reject) => {
-    httpModule.get(url, (res: { statusCode: number; statusMessage: string; on: (event: string, cb: (data: string | Buffer) => void) => void }) => {
+    const req = https.get(url, (res: any) => {
       let data = '';
 
       res.on('data', (chunk: string | Buffer) => {
-        data += chunk.toString();
+        data += typeof chunk === 'string' ? chunk : chunk.toString('utf8');
+        if (data.length > FETCH_MAX_BODY) {
+          clearTimeout(timer);
+          req.destroy(new Error(`Response body exceeds ${FETCH_MAX_BODY} bytes`));
+        }
       });
 
       res.on('end', () => {
+        clearTimeout(timer);
         if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve(data);
         } else {
           reject(new Error(`HTTP ${res.statusCode}: ${res.statusMessage}`));
         }
       });
-    }).on('error', (error: Error) => {
+    });
+
+    const timer = setTimeout(() => {
+      req.destroy(new Error(`Request timed out after ${FETCH_TIMEOUT_MS}ms`));
+    }, FETCH_TIMEOUT_MS);
+
+    req.on('error', (error: Error) => {
+      clearTimeout(timer);
       reject(error);
     });
   });
@@ -113,7 +126,7 @@ function parseJson<T>(jsonString: string, type: string): T {
 /**
  * Write output to file or stdout
  */
-function writeOutput(data: unknown, options: CliOptions): void {
+function writeOutput(data: any, options: CliOptions): void {
   const output = options.pretty
     ? JSON.stringify(data, null, 2)
     : JSON.stringify(data);
@@ -252,8 +265,8 @@ function main(): void {
   const program = new Command();
 
   program
-    .name('delta-engine')
-    .description('CLI for UVRN Delta Engine - Bundle → Receipt')
+    .name('uvrn')
+    .description('CLI for Loosechain Delta Engine - Bundle → Receipt')
     .version(packageJson.version);
 
   program

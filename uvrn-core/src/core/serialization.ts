@@ -20,14 +20,14 @@ export function canonicalSerialize(obj: unknown): string {
   }
 
   if (Array.isArray(obj)) {
-    return '[' + obj.map((item: unknown) => canonicalSerialize(item)).join(',') + ']';
+    return '[' + obj.map((item) => canonicalSerialize(item)).join(',') + ']';
   }
 
-  const record = obj as Record<string, unknown>;
-  const keys = Object.keys(record).sort();
+  const o = obj as Record<string, unknown>;
+  const keys = Object.keys(o).sort();
   const acc: string[] = [];
   for (const key of keys) {
-    acc.push(JSON.stringify(key) + ':' + canonicalSerialize(record[key]));
+    acc.push(JSON.stringify(key) + ':' + canonicalSerialize(o[key]));
   }
   return '{' + acc.join(',') + '}';
 }
@@ -39,15 +39,4 @@ export function canonicalSerialize(obj: unknown): string {
 export function hashReceipt(receiptPayload: Omit<DeltaReceipt, 'hash'>): string {
   const canonical = canonicalSerialize(receiptPayload);
   return createHash('sha256').update(canonical).digest('hex');
-}
-
-/**
- * Computes hash of the receipt payload excluding the optional `ts` field.
- * Used for replay determinism: when comparing original vs replayed receipt,
- * normalized hashes (without ts) determine determinism; receipt.hash remains
- * over the full payload for integrity.
- */
-export function hashReceiptPayloadWithoutTs(payload: Omit<DeltaReceipt, 'hash'>): string {
-  const { ts: _ts, ...rest } = payload;
-  return hashReceipt(rest);
 }

@@ -167,7 +167,7 @@
 - [ ] All `package.json` use semver (no `workspace:` in packed manifests)
 - [ ] Smoke consumer test passes for all 11 packages
 - [ ] Pre-release trio (drift, agent, canon) publish pass
-- [ ] Release tagged: `v2.0.0-next`
+- [ ] Release tagged: `v1.0.0`
 
 ---
 

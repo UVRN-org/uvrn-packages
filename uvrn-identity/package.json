@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/identity",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "description": "Signer reputation layer for the UVRN protocol",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -36,5 +36,13 @@
     "reputation",
     "signer",
     "trust"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UVRN-org/uvrn-packages.git",
+    "directory": "uvrn-identity"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }

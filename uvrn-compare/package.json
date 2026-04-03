@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/compare",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "description": "Cross-receipt comparison and consensus divergence tracking for UVRN",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -43,5 +43,13 @@
     "comparison",
     "divergence",
     "consensus"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UVRN-org/uvrn-packages.git",
+    "directory": "uvrn-compare"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }

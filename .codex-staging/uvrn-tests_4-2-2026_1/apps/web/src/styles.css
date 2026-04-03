@@ -1,0 +1,290 @@
+:root {
+  color-scheme: light;
+  font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  background:
+    radial-gradient(circle at top left, rgba(255, 195, 110, 0.22), transparent 38%),
+    radial-gradient(circle at 85% 10%, rgba(56, 189, 248, 0.18), transparent 34%),
+    linear-gradient(145deg, #fff8ec 0%, #f8f4ec 48%, #eff4f8 100%);
+  color: #172033;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+.shell {
+  width: min(1400px, calc(100vw - 32px));
+  margin: 0 auto;
+  padding: 32px 0 72px;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(300px, 0.9fr);
+  gap: 24px;
+  align-items: stretch;
+}
+
+.hero-copy,
+.hero-panel,
+.panel,
+.status-card {
+  border: 1px solid rgba(23, 32, 51, 0.08);
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 24px 60px rgba(43, 63, 91, 0.12);
+  backdrop-filter: blur(16px);
+}
+
+.hero-copy {
+  padding: 28px;
+  border-radius: 28px;
+}
+
+.hero-panel {
+  border-radius: 28px;
+  padding: 28px;
+  background:
+    linear-gradient(180deg, rgba(17, 24, 39, 0.96), rgba(20, 31, 53, 0.95)),
+    linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(245, 158, 11, 0.1));
+  color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.eyebrow,
+.panel-label {
+  margin: 0 0 12px;
+  font-family: "Avenir Next Condensed", "Arial Narrow", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.78rem;
+  color: #8b5e2f;
+}
+
+.hero-panel .panel-label {
+  color: #f5d0a8;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-weight: 700;
+}
+
+h1 {
+  font-size: clamp(2.5rem, 4vw, 4.4rem);
+  line-height: 0.94;
+  max-width: 11ch;
+}
+
+.lede,
+.panel-heading p,
+.scenario-card p,
+.finding-row p,
+.panel-footnote {
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  line-height: 1.6;
+}
+
+.lede {
+  margin: 18px 0 0;
+  max-width: 64ch;
+  font-size: 1rem;
+}
+
+.hero-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 26px;
+}
+
+.hero-stats div {
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: rgba(23, 32, 51, 0.04);
+}
+
+.hero-stats span,
+.meta-grid span {
+  display: block;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 0.85rem;
+  color: #526178;
+}
+
+.hero-stats strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 1.35rem;
+}
+
+.panel-footnote {
+  margin-top: 16px;
+  color: rgba(248, 250, 252, 0.76);
+}
+
+.status-card {
+  margin-top: 22px;
+  padding: 18px 20px;
+  border-radius: 20px;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+}
+
+.status-card.error {
+  border-color: rgba(220, 38, 38, 0.22);
+  color: #991b1b;
+}
+
+.grid,
+.docs-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.panel {
+  border-radius: 28px;
+  padding: 24px;
+}
+
+.panel-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.scenario-list,
+.finding-table {
+  display: grid;
+  gap: 16px;
+}
+
+.scenario-card,
+.finding-row {
+  border-radius: 22px;
+  padding: 18px;
+  border: 1px solid rgba(23, 32, 51, 0.08);
+  background: rgba(250, 251, 253, 0.78);
+}
+
+.scenario-card.pass {
+  border-color: rgba(34, 197, 94, 0.25);
+}
+
+.scenario-card.warn {
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.scenario-header,
+.finding-row header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.scenario-badge,
+.finding-status {
+  font-family: "Avenir Next Condensed", "Arial Narrow", sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.78rem;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(23, 32, 51, 0.08);
+  white-space: nowrap;
+}
+
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 0;
+}
+
+.chip {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(23, 32, 51, 0.06);
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+  font-size: 0.8rem;
+}
+
+.assertion-list {
+  list-style: none;
+  padding: 0;
+  margin: 16px 0 0;
+  display: grid;
+  gap: 10px;
+}
+
+.assertion-list li {
+  display: grid;
+  gap: 4px;
+  font-family: "Avenir Next", "Segoe UI", sans-serif;
+}
+
+.assertion-list strong {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #0f766e;
+}
+
+.assertion-list small {
+  color: #5f6c81;
+}
+
+.meta-grid {
+  display: grid;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.docs-preview,
+.code-block {
+  margin: 0;
+  padding: 18px;
+  border-radius: 18px;
+  background: rgba(15, 23, 42, 0.96);
+  color: #e2e8f0;
+  overflow-x: auto;
+  font-size: 0.86rem;
+  line-height: 1.55;
+}
+
+@media (max-width: 1100px) {
+  .hero,
+  .grid,
+  .docs-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .shell {
+    width: min(100vw - 20px, 1400px);
+    padding-top: 18px;
+  }
+
+  .hero-copy,
+  .hero-panel,
+  .panel {
+    border-radius: 22px;
+    padding: 18px;
+  }
+
+  .hero-stats {
+    grid-template-columns: 1fr;
+  }
+}

@@ -184,7 +184,7 @@ When all 11 packages pass their audits and the final wave-4 audit is clean:
 - [ ] Run smoke consumer test for all 11 new packages
 - [ ] Verify all `package.json` files use semver (no `workspace:` deps in packed manifests)
 - [ ] Update all `CHANGELOG.md` files for v1.0.0 entries
-- [ ] Tag release: `git tag v2.0.0-next`
+- [ ] Tag release: `git tag v1.0.0`
 - [ ] Publish in order: wave 1 → wave 2 → wave 3 → wave 4 → update pre-release trio (drift/agent/canon)
 
 ---

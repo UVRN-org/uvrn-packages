@@ -1,18 +1,18 @@
 # Pre-Publish Readiness Assessment
-# UVRN Packages Next — v2.0.0-next Gate Check
+# UVRN Packages Next — v1.0.0 Gate Check
 
 **Date**: 2026-04-02
 **Author**: Claude Cowork (protocol lead)
-**Scope**: All 11 wave packages — full checklist verification before `git tag v2.0.0-next`
+**Scope**: All 11 wave packages — full checklist verification before `git tag v1.0.0`
 **Protocol**: Bloom Protocol v1.7
 
 ---
 
 ## Executive Summary
 
-All 11 new packages are built, tested, and audited. No critical or major open findings remain. All three original blockers and the version upgrade to v2.0.0 have been resolved in the same session.
+All 11 new packages are built, tested, and audited. No critical or major open findings remain. All three original blockers and the version upgrade to v1.0.0 have been resolved in the same session.
 
-**Gate status: ✅ CLEAR — ready for `git tag v2.0.0-next` after build+test confirmation**
+**Gate status: ✅ CLEAR — ready for `git tag v1.0.0` after build+test confirmation**
 
 ---
 
@@ -20,13 +20,13 @@ All 11 new packages are built, tested, and audited. No critical or major open fi
 
 | Check | signal | score | test | farm | normalize | consensus | compare | identity | timeline | watch | embed |
 |-------|--------|-------|------|------|-----------|-----------|---------|----------|----------|-------|-------|
-| version = 2.0.0 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| version = 1.0.0 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `files` field correct | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | No `workspace:` in deps/peers | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `dist/` exists (built) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `dist/` NOT tracked in git | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Per-package `.gitignore` has dist | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `CHANGELOG.md` has v2.0.0 entry | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `CHANGELOG.md` has v1.0.0 entry | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `CHANGELOG.md` no open `[Unreleased]` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `README.md` exists | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Build audited (0 critical/major open) | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -49,9 +49,9 @@ Updated all 11 new packages from `🔨 Building` to `✅ Built + audited`. Pre-r
 
 Folded the `[Unreleased]` EMB-01 remediation content into the release entry. No dangling unreleased sections in any CHANGELOG.
 
-### VERSION UPGRADE — All packages 1.0.0 → 2.0.0 ✅ RESOLVED
+### VERSION — All 11 new packages at v1.0.0 ✅ CONFIRMED
 
-All 11 `package.json` versions updated to `2.0.0`. All 11 `CHANGELOG.md` entries updated to `[2.0.0]`.
+All 11 `package.json` versions confirmed at `1.0.0`. All 11 `CHANGELOG.md` entries use `[1.0.0]`.
 
 ### ADVISORY — `pnpm-workspace.yaml` comments ✅ RESOLVED
 
@@ -69,7 +69,7 @@ Comments updated from `# Wave N — build targets` to `# Wave N — built + audi
 - WCH-01: Module-level sequence counter
 - WCH-02: `flushPromises` depth
 
-These are correctly logged in findings docs and accepted as non-blocking for v2.0.0.
+These are correctly logged in findings docs and accepted as non-blocking for v1.0.0.
 
 ---
 
@@ -79,8 +79,8 @@ These are correctly logged in findings docs and accepted as non-blocking for v2.
 2. Smoke test: `pnpm pack` on each of the 11 packages; inspect manifests
 3. Confirm 0 `workspace:*` in any packed manifest
 4. Commit all pre-publish fixes
-5. Apply release tag: `git tag v2.0.0-next`
-6. Publish wave 1 → wave 2 → wave 3 → wave 4 → pre-release trio
+5. Apply release tag: `git tag v1.0.0`
+6. Publish in stable dependency order: drift → canon → agent → signal → score → test → farm → normalize → consensus → compare → identity → timeline → watch → embed
 
 ---
 

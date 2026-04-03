@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/embed",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "description": "Embeddable consensus badges for any webpage — React component and plain JS",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -57,5 +57,13 @@
     "consensus",
     "react",
     "widget"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UVRN-org/uvrn-packages.git",
+    "directory": "uvrn-embed"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }

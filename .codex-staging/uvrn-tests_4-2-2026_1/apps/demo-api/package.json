@@ -1,0 +1,16 @@
+{
+  "name": "@uvrn-demo/demo-api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --import tsx ./src/server.ts",
+    "start": "node --import tsx ./src/server.ts",
+    "build": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@uvrn-demo/scenarios": "workspace:*",
+    "@uvrn/api": "file:/Users/stsdev1/Documents/SuttleMedia/SuttleMediaLLC/UVRN/uvrn-packages_main/uvrn-packages-next-2/uvrn-packages-next-2/uvrn-api",
+    "@uvrn/core": "file:/Users/stsdev1/Documents/SuttleMedia/SuttleMediaLLC/UVRN/uvrn-packages_main/uvrn-packages-next-2/uvrn-packages-next-2/uvrn-core"
+  }
+}

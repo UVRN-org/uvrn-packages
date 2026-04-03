@@ -1,0 +1,40 @@
+{
+  "name": "@uvrn-demo/scenarios",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "generate": "node --import tsx ./scripts/generate.ts",
+    "smoke": "node --import tsx ./scripts/generate.ts --smoke"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.1",
+    "@uvrn/adapter": "file:/Users/stsdev1/Documents/SuttleMedia/SuttleMediaLLC/UVRN/uvrn-packages_main/uvrn-packages-next-2/uvrn-packages-next-2/uvrn-adapter",
+    "@uvrn/agent": "file:/Users/stsdev1/Documents/SuttleMedia/SuttleMediaLLC/UVRN/uvrn-packages_main/uvrn-packages-next-2/uvrn-packages-next-2/uvrn-agent",
+    "@uvrn/api": "file:/Users/stsdev1/Documents/SuttleMedia/SuttleMediaLLC/UVRN/uvrn-packages_main/uvrn-packages-next-2/uvrn-packages-next-2/uvrn-api",
+    "@uvrn/canon": "file:/Users/stsdev1/Documents/SuttleMedia/SuttleMediaLLC/UVRN/uvrn-packages_main/uvrn-packages-next-2/uvrn-packages-next-2/uvrn-canon",
+    "@uvrn/cli": "file:/Users/stsdev1/Documents/SuttleMedia/SuttleMediaLLC/UVRN/uvrn-packages_main/uvrn-packages-next-2/uvrn-packages-next-2/uvrn-cli",
+    "@uvrn/compare": "file:/Users/stsdev1/Documents/SuttleMedia/SuttleMediaLLC/UVRN/uvrn-packages_main/uvrn-packages-next-2/uvrn-packages-next-2/uvrn-compare",
+    "@uvrn/consensus": "file:/Users/stsdev1/Documents/SuttleMedia/SuttleMediaLLC/UVRN/uvrn-packages_main/uvrn-packages-next-2/uvrn-packages-next-2/uvrn-consensus",
+    "@uvrn/core": "file:/Users/stsdev1/Documents/SuttleMedia/SuttleMediaLLC/UVRN/uvrn-packages_main/uvrn-packages-next-2/uvrn-packages-next-2/uvrn-core",
+    "@uvrn/drift": "file:/Users/stsdev1/Documents/SuttleMedia/SuttleMediaLLC/UVRN/uvrn-packages_main/uvrn-packages-next-2/uvrn-packages-next-2/uvrn-drift",
+    "@uvrn/embed": "file:/Users/stsdev1/Documents/SuttleMedia/SuttleMediaLLC/UVRN/uvrn-packages_main/uvrn-packages-next-2/uvrn-packages-next-2/uvrn-embed",
+    "@uvrn/farm": "file:/Users/stsdev1/Documents/SuttleMedia/SuttleMediaLLC/UVRN/uvrn-packages_main/uvrn-packages-next-2/uvrn-packages-next-2/uvrn-farm",
+    "@uvrn/identity": "file:/Users/stsdev1/Documents/SuttleMedia/SuttleMediaLLC/UVRN/uvrn-packages_main/uvrn-packages-next-2/uvrn-packages-next-2/uvrn-identity",
+    "@uvrn/mcp": "file:/Users/stsdev1/Documents/SuttleMedia/SuttleMediaLLC/UVRN/uvrn-packages_main/uvrn-packages-next-2/uvrn-packages-next-2/uvrn-mcp",
+    "@uvrn/normalize": "file:/Users/stsdev1/Documents/SuttleMedia/SuttleMediaLLC/UVRN/uvrn-packages_main/uvrn-packages-next-2/uvrn-packages-next-2/uvrn-normalize",
+    "@uvrn/sdk": "file:/Users/stsdev1/Documents/SuttleMedia/SuttleMediaLLC/UVRN/uvrn-packages_main/uvrn-packages-next-2/uvrn-packages-next-2/uvrn-sdk",
+    "@uvrn/signal": "file:/Users/stsdev1/Documents/SuttleMedia/SuttleMediaLLC/UVRN/uvrn-packages_main/uvrn-packages-next-2/uvrn-packages-next-2/uvrn-signal",
+    "@uvrn/score": "file:/Users/stsdev1/Documents/SuttleMedia/SuttleMediaLLC/UVRN/uvrn-packages_main/uvrn-packages-next-2/uvrn-packages-next-2/uvrn-score",
+    "@uvrn/test": "file:/Users/stsdev1/Documents/SuttleMedia/SuttleMediaLLC/UVRN/uvrn-packages_main/uvrn-packages-next-2/uvrn-packages-next-2/uvrn-test",
+    "@uvrn/timeline": "file:/Users/stsdev1/Documents/SuttleMedia/SuttleMediaLLC/UVRN/uvrn-packages_main/uvrn-packages-next-2/uvrn-packages-next-2/uvrn-timeline",
+    "@uvrn/watch": "file:/Users/stsdev1/Documents/SuttleMedia/SuttleMediaLLC/UVRN/uvrn-packages_main/uvrn-packages-next-2/uvrn-packages-next-2/uvrn-watch",
+    "ethers": "^6.15.0",
+    "fastify": "^5.6.1"
+  }
+}

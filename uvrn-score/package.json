@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/score",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "description": "V-Score composition internals and domain-specific scoring profiles for UVRN",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -36,5 +36,13 @@
     "verification",
     "breakdown",
     "profile"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UVRN-org/uvrn-packages.git",
+    "directory": "uvrn-score"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }

@@ -2,7 +2,7 @@
 
 Full 20-package open protocol for the **UVRN** (Universal Verification Receipt Network).
 
-All packages are built, tested, and audited. The 11 new packages are at v2.0.0, ready for npm publish.
+All packages are built, tested, and audited. The 11 new packages are at v1.0.0, ready for npm publish.
 
 **Build standard**: Bloom Protocol v1.7 → `.admin/protocols/BLOOM-PROTOCOL.md`
 **Agent context**: `AGENTS.md` (Cursor/Codex) | `CLAUDE.md` (Claude Code)
@@ -86,7 +86,7 @@ This is what makes UVRN usable across any stack: a DeFi monitor, a newsroom fact
 
 ## Release Status
 
-All 20 packages are built and audited. The 11 new packages (waves 1–4) are at v2.0.0, ready for npm publish.
+All 20 packages are built and audited. The 11 new packages (waves 1–4) are at v1.0.0, ready for npm publish.
 
 | Wave | Packages | Status |
 |------|----------|--------|

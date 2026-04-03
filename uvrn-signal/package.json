@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/signal",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "description": "Typed internal event bus for the UVRN protocol",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -34,5 +34,13 @@
     "event-bus",
     "pub-sub",
     "typed-events"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UVRN-org/uvrn-packages.git",
+    "directory": "uvrn-signal"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }

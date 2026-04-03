@@ -1,6 +1,6 @@
 # Fix Prompt: Pre-Publish Housekeeping — COMPLETED
 # Target: Cursor / Claude Code
-# Context: uvrn-packages-next — v2.0.0-next gate blockers
+# Context: uvrn-packages-next — v1.0.0 gate blockers
 
 **Date**: 2026-04-02
 **Status**: ✅ ALL FIXES APPLIED by Claude Cowork session 2026-04-02
@@ -16,8 +16,8 @@ All three blockers resolved, plus version upgrade and workspace cleanup:
 2. **`.gitignore` normalized** for `uvrn-consensus`, `uvrn-compare`, `uvrn-identity`, `uvrn-timeline` (from minimal `dist/`-only to full standard)
 3. **`uvrn-embed/CHANGELOG.md`** — `[Unreleased]` section folded into release entry
 4. **Root `README.md`** — package status table updated, "Build Waves" → "Release Status"
-5. **All 11 `package.json`** — version bumped from `1.0.0` → `2.0.0`
-6. **All 11 `CHANGELOG.md`** — entry headers updated from `[1.0.0]` → `[2.0.0]`
+5. **All 11 `package.json`** — version set to `1.0.0`
+6. **All 11 `CHANGELOG.md`** — entry headers set to `[1.0.0]`
 7. **`pnpm-workspace.yaml`** — comments updated to reflect completed wave status
 
 ---
@@ -60,10 +60,10 @@ git add -f .admin/build-plans/MASTER-BUILD-PLAN.md
 git add -f .admin/build-plans/prompts/FIX-prepublish-housekeeping.md
 
 # 3. Commit
-git commit -m "chore: wave 3 packages, v2.0.0 version bump, pre-publish housekeeping
+git commit -m "chore: wave 3 packages, v1.0.0 version bump, pre-publish housekeeping
 
 - Add wave 3 packages: consensus, compare, identity, timeline
-- Bump all 11 new packages from v1.0.0 to v2.0.0
+- Set all 11 new packages to v1.0.0
 - Add/normalize .gitignore for all 11 packages
 - Resolve embed CHANGELOG [Unreleased] section (EMB-01)
 - Update root README status table (all packages → Built + audited)
@@ -75,7 +75,7 @@ pnpm run build
 pnpm run test
 
 # 5. If clean, tag
-git tag v2.0.0-next
+git tag v1.0.0
 git push && git push --tags
 ```
 

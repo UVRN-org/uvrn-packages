@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/timeline",
-  "version": "2.0.0",
+  "version": "1.0.0",
   "description": "Time-series query layer for UVRN claim consensus history",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -40,5 +40,13 @@
     "time-series",
     "history",
     "consensus"
-  ]
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UVRN-org/uvrn-packages.git",
+    "directory": "uvrn-timeline"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }

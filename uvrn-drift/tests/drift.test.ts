@@ -2,8 +2,11 @@
 // @uvrn/drift · tests
 // ─────────────────────────────────────────────
 
+import { WEIGHTS } from '@uvrn/score';
+
 import {
   computeDrift,
+  computeDriftFromInput,
   scoreToStatus,
   DriftMonitor,
   profileFor,
@@ -12,7 +15,7 @@ import {
   sigmoidDecay,
   exponentialDecay,
 } from '../src/index';
-import type { DriftInputReceipt, DriftThresholdEvent } from '../src/types/index';
+import type { DriftInput, DriftInputReceipt, DriftThresholdEvent } from '../src/types/index';
 
 function makeReceipt(overrides: Partial<DriftInputReceipt> = {}): DriftInputReceipt {
   return {
@@ -28,6 +31,30 @@ function makeReceipt(overrides: Partial<DriftInputReceipt> = {}): DriftInputRece
 
 function hoursAgo(h: number): string {
   return new Date(Date.now() - h * 60 * 60 * 1000).toISOString();
+}
+
+function expectedVScore(components: {
+  completeness: number;
+  parity: number;
+  freshness: number;
+}): number {
+  const raw =
+    components.completeness * WEIGHTS.completeness +
+    components.parity * WEIGHTS.parity +
+    components.freshness * WEIGHTS.freshness;
+  return Math.max(0, Math.min(100, raw));
+}
+
+function makeDriftInput(overrides: Partial<DriftInput> = {}): DriftInput {
+  return {
+    receiptId: 'test_r1',
+    claimId: 'claim_001',
+    originalScore: 88,
+    components: { completeness: 92, parity: 85, freshness: 88 },
+    verifiedAt: new Date().toISOString(),
+    config: DRIFT_PROFILES.slow,
+    ...overrides,
+  };
 }
 
 describe('Decay curves', () => {
@@ -74,6 +101,33 @@ describe('computeDrift()', () => {
     const freshReceipt = makeReceipt({ timestamp: hoursAgo(0.1) });
     const freshResult  = computeDrift(freshReceipt, DRIFT_PROFILES.slow);
     expect(Math.abs(freshResult.drift.delta)).toBeLessThan(1);
+  });
+
+  it('produces identical decayed_score with imported WEIGHTS (regression)', () => {
+    const receipt = makeReceipt({
+      timestamp: '2026-04-01T00:00:00.000Z',
+      v_score: 88,
+      components: { completeness: 92, parity: 85, freshness: 88 },
+    });
+    const asOf = new Date('2026-04-02T00:00:00.000Z');
+    const result = computeDrift(receipt, DRIFT_PROFILES.moderate, asOf);
+
+    const decayedFreshness = result.drift.decayed_freshness;
+    const expectedScore =
+      receipt.components.completeness * WEIGHTS.completeness +
+      receipt.components.parity * WEIGHTS.parity +
+      decayedFreshness * WEIGHTS.freshness;
+
+    expect(result.drift.decayed_score).toBe(Math.round(expectedScore * 100) / 100);
+  });
+});
+
+describe('computeDriftFromInput()', () => {
+  it('uses @uvrn/score WEIGHTS for DriftProfile default path (deterministic)', () => {
+    const result = computeDriftFromInput(makeDriftInput({ config: DRIFT_PROFILES.slow }));
+    const { components } = result.snapshot;
+
+    expect(result.snapshot.vScore).toBe(expectedVScore(components));
   });
 });
 

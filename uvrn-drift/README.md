@@ -11,8 +11,10 @@ Models how a claim's confidence score degrades over time using configurable deca
 ## Install
 
 ```bash
-npm install @uvrn/drift
+npm install @uvrn/drift @uvrn/core @uvrn/score
 ```
+
+`@uvrn/core` and `@uvrn/score` are required peer dependencies. `@uvrn/score` owns the canonical V-Score weights; `@uvrn/drift` imports `WEIGHTS` from it.
 
 ## Quick start
 
@@ -77,8 +79,7 @@ monitor.start();
 V-Score = (Completeness × 0.35) + (Parity × 0.35) + (Freshness × 0.30)
 ```
 
-Drift decays the **Freshness** component only. Completeness and Parity
-are re-scored by `@uvrn/agent` when new sources are fetched.
+Weights are owned by `@uvrn/score`. Drift decays the **Freshness** component only (via `computeDrift`). Completeness and Parity are re-scored by `@uvrn/agent` when new sources are fetched.
 
 ## License
 

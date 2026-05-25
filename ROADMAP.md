@@ -50,7 +50,7 @@ All 20 UVRN packages are organized across four layers. Every package belongs to 
 
 ## Core Protocol Constants
 
-These values are canonical and must not be redefined by any package. They live in `@uvrn/core`.
+These values are canonical and must not be redefined by any package. V-Score formula and `WEIGHTS` live in `@uvrn/score`. `@uvrn/core` is Delta-only (convergence math, `deltaFinal`, DeltaReceipts) and does not own V-Score weights. `@uvrn/drift` imports `WEIGHTS` from `@uvrn/score` (required peer).
 
 **V-Score formula:**
 ```
@@ -87,7 +87,7 @@ These architectural choices must be preserved in any compatible implementation:
 ```
 @uvrn/core  (Layer 2 — no deps)
     │
-    ├── @uvrn/drift       (Layer 3 — peer: core)
+    ├── @uvrn/drift       (Layer 3 — peers: core, score)
     │       │
     │       ├── @uvrn/agent    (Layer 3 — peer: drift)
     │       │       │
@@ -171,7 +171,7 @@ const snapshot = engine.score(receipt, { now: Date.now() });
 // snapshot.decayRate       → current decay velocity
 ```
 
-**Dependencies:** Peer dep on `@uvrn/core` (receipt types, V-Score math)
+**Dependencies:** Peer dep on `@uvrn/core` (receipt types); peer dep on `@uvrn/score` (`WEIGHTS` for V-Score recompute)
 
 **Interface contracts:**
 - Input: a valid DRVC3 receipt (as produced by `@uvrn/core`)
@@ -518,7 +518,7 @@ breakdown.explanation    // human-readable + LLM-friendly string
 **Dependencies:** `@uvrn/core`
 
 **Interface contracts:**
-- The canonical weight formula (0.35 / 0.35 / 0.30) lives in `@uvrn/core` — this package must not redefine it, only expose and decompose it
+- The canonical weight formula (0.35 / 0.35 / 0.30) and `WEIGHTS` live in THIS package (`@uvrn/score`) — it is the single source of truth. `@uvrn/core` is Delta-only and does not own V-Score weights; `@uvrn/drift` imports `WEIGHTS` from here.
 - Domain profiles explain weights for a claim type — they do not change the formula
 - `explanation` string must be LLM-friendly (short, factual)
 
@@ -721,7 +721,7 @@ import { ConsensusBadge } from '@uvrn/embed';
 
 | Package | Layer | Status | Role |
 |---------|-------|--------|------|
-| `@uvrn/core` | 2 | Live (npm) | Deterministic delta engine — V-Score math, validation, DRVC3 receipts |
+| `@uvrn/core` | 2 | Live (npm) | Deterministic delta engine — convergence math, validation, DRVC3 receipts |
 | `@uvrn/sdk` | 2 | Live (npm) | TypeScript SDK — submit claims, read receipts |
 | `@uvrn/adapter` | 2 | Live (npm) | DRVC3 envelope adapter — EIP-191 signatures |
 | `@uvrn/mcp` | 4 | Live (npm) | MCP server — AI agent native access |

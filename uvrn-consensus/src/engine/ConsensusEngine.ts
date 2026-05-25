@@ -2,7 +2,13 @@ import type { DeltaBundle } from '@uvrn/core';
 
 import { buildBundleId, calculateAgreementScore, extractRankedSources } from './aggregation';
 import { resolveWeights } from './weighting';
-import type { ConsensusEngineOptions, ConsensusStats, RankedSource, SourceWeights } from '../types';
+import type {
+  ConsensusEngineOptions,
+  ConsensusResult,
+  ConsensusStats,
+  RankedSource,
+  SourceWeights,
+} from '../types';
 import { ConsensusError } from '../types';
 
 export class ConsensusEngine {
@@ -62,6 +68,31 @@ export class ConsensusEngine {
         recencyScore,
         weightedConsensusScore
       ),
+    };
+  }
+
+  /**
+   * Build a DeltaBundle and derive named V-Score input components in one call.
+   * Returns a ConsensusResult — the bridge between @uvrn/consensus and @uvrn/score.
+   *
+   * Usage:
+   *   const engine = new ConsensusEngine({ sources, claim });
+   *   const result = engine.buildConsensusResult();
+   *   const bundle = result.bundle;          // → @uvrn/core runDeltaEngine(bundle)
+   *   const breakdown = new ScoreBreakdown(result.components, profile); // → @uvrn/score
+   */
+  buildConsensusResult(claim?: string): ConsensusResult {
+    const bundle = this.buildBundle(claim);
+    const stats = this.stats();
+
+    return {
+      bundle,
+      components: {
+        completeness: stats.coverageScore,
+        parity: stats.agreementScore,
+        freshness: stats.recencyScore,
+      },
+      stats,
     };
   }
 

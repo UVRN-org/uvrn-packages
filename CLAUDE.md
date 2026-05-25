@@ -55,7 +55,7 @@ Every build cycle follows: **Plan → Build → Check → Update → Reflect →
 
 ## Critical Design Rules
 
-1. **V-Score formula lives only in `@uvrn/core`.** Never copy or redefine it.
+1. **V-Score formula and WEIGHTS live in `@uvrn/score`.** Never copy or redefine them. `@uvrn/drift` imports `WEIGHTS` from `@uvrn/score` (required peer). `@uvrn/core` is Delta-only and does not own V-Score weights.
 2. **`canonize()` always requires explicit invocation.** Never add auto-canonize logic.
 3. **`@uvrn/agent` outputs `AgentDriftReceipt` only** — unsigned monitoring envelope.
 4. **No storage in core/drift/agent.** Storage is canon's responsibility.

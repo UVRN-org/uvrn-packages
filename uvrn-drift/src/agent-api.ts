@@ -3,6 +3,8 @@
 // Used by @uvrn/agent. Takes DriftInput, returns DriftResult.
 // ─────────────────────────────────────────────
 
+import { WEIGHTS } from '@uvrn/score';
+
 import { applyDecay } from './curves/index';
 import type {
   DriftInput,
@@ -24,7 +26,7 @@ function toConfig(profile: DriftProfile | DriftConfig): DriftConfig {
   }
   const p = profile as DriftProfile;
   return {
-    weights:    { completeness: 0.35, parity: 0.35, freshness: 0.3 },
+    weights:    { ...WEIGHTS },
     thresholds: { drifting: 80, critical: 60 },
     curve:      p.curve,
     rate:       p.rate,

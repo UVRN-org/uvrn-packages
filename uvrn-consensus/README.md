@@ -22,11 +22,15 @@ const engine = new ConsensusEngine({
 
 const bundle = engine.buildBundle('claim: Exchange X holds full reserves');
 const stats = engine.stats();
+
+const result = engine.buildConsensusResult('claim: Exchange X holds full reserves');
+// result.bundle → @uvrn/core runDeltaEngine()
+// result.components → @uvrn/score ScoreBreakdown()
 ```
 
 ## Ranking model
 
-Source weighting in this package is separate from the canonical V-Score formula in `@uvrn/core`.
+Source weighting in this package is separate from the canonical V-Score formula in `@uvrn/score`.
 
 This v1 implementation ranks sources with a weighted sum:
 
@@ -69,6 +73,8 @@ The `summary` field is intentionally short and verbatim-ready for logs or LLM re
 ## Public API
 
 - `ConsensusEngine`
+- `ConsensusEngine.buildConsensusResult()`
+- `ConsensusResult`
 - `ConsensusError`
 - `SourceWeights`
 - `ConsensusEngineOptions`

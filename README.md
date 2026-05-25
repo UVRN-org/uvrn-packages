@@ -16,10 +16,15 @@ UVRN is an **open protocol for scoring claim consensus** — a way to measure ho
 
 It is built as a set of modular, independently installable packages. You pick the pieces you need. You bring your own data sources, storage backends, and delivery targets. The protocol handles the math, the lifecycle, and the interface contracts.
 
-**V-Score formula** (defined once, in `@uvrn/core`, never redefined):
+**V-Score formula** (owned by `@uvrn/score`, applied by `@uvrn/drift`):
 ```
 V-Score = (Completeness × 0.35) + (Parity × 0.35) + (Freshness × 0.30)
 ```
+
+> `@uvrn/core` is the **Delta engine** — it computes convergence across sources
+> and returns `deltaFinal`. `@uvrn/consensus` maps source stats into the named
+> V-Score components. `@uvrn/score` applies the weights to produce the final
+> composite score.
 
 ---
 
@@ -57,11 +62,28 @@ This is what makes UVRN usable across any stack: a DeFi monitor, a newsroom fact
 
 ---
 
+## Protocol Flow
+
+```
+Source evidence
+  → @uvrn/farm / @uvrn/normalize       (data ingestion)
+  → @uvrn/consensus                     (builds DeltaBundle + ConsensusResult)
+  → @uvrn/core                          (runs DeltaReceipt — deterministic Delta engine)
+  → @uvrn/score                         (computes V-Score from completeness/parity/freshness)
+  → @uvrn/adapter / @uvrn/canon         (wraps into final signed receipt)
+  → @uvrn/drift                         (tracks freshness decay over time)
+  → @uvrn/watch / @uvrn/embed / @uvrn/api / @uvrn/mcp / @uvrn/cli  (distribution)
+```
+
+**Explicit sibling couplings:** see [COUPLINGS.md](COUPLINGS.md)
+
+---
+
 ## Full Package Status
 
 | Package | Layer | Status | Description |
 |---------|-------|--------|-------------|
-| `@uvrn/core` | 2 | ✅ Live | Delta engine — V-Score math, validation, DRVC3 receipts |
+| `@uvrn/core` | 2 | ✅ Live | Delta engine — convergence math, validation, DRVC3 receipts |
 | `@uvrn/sdk` | 2 | ✅ Live | TypeScript SDK — submit claims, read receipts |
 | `@uvrn/adapter` | 2 | ✅ Live | DRVC3 envelope adapter — EIP-191 signatures |
 | `@uvrn/mcp` | 4 | ✅ Live | MCP server — AI agent native access |

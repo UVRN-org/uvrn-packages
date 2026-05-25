@@ -22,6 +22,32 @@ export interface ConsensusStats {
   summary: string;
 }
 
+/**
+ * Named V-Score input components derived from a consensus run.
+ * These values are the bridge between @uvrn/consensus and @uvrn/score.
+ *
+ * Sibling coupling: @uvrn/score consumes these fields directly via
+ * ScoreBreakdown({ completeness, parity, freshness }).
+ *
+ * Note: maps consensus source stats into V-Score inputs — does not convert
+ * a DeltaReceipt from @uvrn/core into V-Score components.
+ */
+export interface ConsensusResult {
+  /** DeltaBundle ready for @uvrn/core runDeltaEngine() */
+  bundle: import('@uvrn/core').DeltaBundle;
+  /** Named V-Score input components — pass directly to @uvrn/score ScoreBreakdown */
+  components: {
+    /** Source coverage: % of sources that yielded usable numeric values (0–100) */
+    completeness: number;
+    /** Parity (0–100): near-identical sources are deduped first, then parity = the largest retained numeric-value cluster after two-decimal normalization */
+    parity: number;
+    /** Recency: average recency score across ranked sources (0–100) */
+    freshness: number;
+  };
+  /** Full stats for debugging/audit — superset of components */
+  stats: ConsensusStats;
+}
+
 export interface RankedSource {
   dataSpec: import('@uvrn/core').DataSpec;
   weightScore: number;

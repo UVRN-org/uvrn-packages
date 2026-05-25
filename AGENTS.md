@@ -15,7 +15,7 @@ This is the **active development worktree** for expanding the UVRN protocol from
 
 UVRN is a **Universal Verification Receipt Network** — an open protocol for scoring claim consensus using structured data bundles, the V-Score formula, and signed DRVC3 receipts.
 
-**V-Score formula (canonical, defined in `@uvrn/core`, never redefined):**
+**V-Score formula (canonical, owned by `@uvrn/score`, never redefined):**
 ```
 V-Score = (Completeness × 0.35) + (Parity × 0.35) + (Freshness × 0.30)
 ```
@@ -116,7 +116,7 @@ Every package in this protocol is built around its **interface contract**, not a
 
 ## Critical Design Rules (Non-Negotiable)
 
-1. **Never redefine V-Score weights.** They live in `@uvrn/core` only.
+1. **Never redefine V-Score weights.** They live in `@uvrn/score` only. `@uvrn/drift` imports `WEIGHTS` from `@uvrn/score` (required peer). `@uvrn/core` is Delta-only and does not own V-Score weights.
 2. **`canonize()` must always require explicit human/system invocation.** Never auto-canonize.
 3. **`@uvrn/agent` emits `AgentDriftReceipt` only** — not signed DRVC3. Signing is `@uvrn/canon`'s job.
 4. **Decay only affects Freshness.** Completeness and Parity are re-scored when new sources arrive.

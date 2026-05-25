@@ -149,4 +149,18 @@ describe('@uvrn/consensus', () => {
     expect(() => engine.buildBundle()).toThrow(ConsensusError);
     expect(() => engine.buildBundle()).toThrow('at least 2 usable numeric sources');
   });
+
+  it('buildConsensusResult() returns bundle and mapped V-Score components', () => {
+    const engine = new ConsensusEngine({ sources: buildFarmResult() });
+
+    const result = engine.buildConsensusResult('claim: Exchange X holds full reserves');
+
+    expect(result.bundle.claim).toBe('claim: Exchange X holds full reserves');
+    expect(result.components.completeness).toBe(result.stats.coverageScore);
+    expect(result.components.parity).toBe(result.stats.agreementScore);
+    expect(result.components.freshness).toBe(result.stats.recencyScore);
+    expect(result.components.completeness).toBe(100);
+    expect(result.components.parity).toBe(50);
+    expect(result.components.freshness).toBeCloseTo(96.666, 2);
+  });
 });

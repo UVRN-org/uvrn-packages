@@ -2,6 +2,8 @@
 // @uvrn/drift · main entry point
 // ─────────────────────────────────────────────
 
+import { WEIGHTS } from '@uvrn/score';
+
 import { applyDecay } from './curves/index';
 import { DRIFT_PROFILES, DEFAULT } from './profiles/index';
 import type {
@@ -12,11 +14,6 @@ import type {
   DriftThresholdEvent,
   DriftMonitorConfig,
 } from './types/index';
-
-// ── V-Score weights (canonical — mirrors @uvrn/core) ──────────────────────
-const WEIGHT_COMPLETENESS = 0.35;
-const WEIGHT_PARITY       = 0.35;
-const WEIGHT_FRESHNESS    = 0.30;
 
 // ── Threshold boundaries ──────────────────────────────────────────────────
 const THRESHOLD_STABLE   = 80;
@@ -55,9 +52,9 @@ export function computeDrift(
   // Recompute V-Score with decayed freshness
   const decayedScore = Math.max(
     profile.scoreFloor ?? 0,
-    receipt.components.completeness * WEIGHT_COMPLETENESS +
-    receipt.components.parity       * WEIGHT_PARITY       +
-    decayedFreshness                * WEIGHT_FRESHNESS
+    receipt.components.completeness * WEIGHTS.completeness +
+    receipt.components.parity       * WEIGHTS.parity       +
+    decayedFreshness                * WEIGHTS.freshness
   );
 
   const delta  = decayedScore - receipt.v_score;

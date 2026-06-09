@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.2.0] - 2026-06-05
+
+### Added
+- Added read-only canon tools for qualification checks and canon receipt reads.
+- Added `delta_score_claim`, which returns a verifiable `MasterReceipt` from configured connector sources.
+- Added a client-neutral plugin manifest and refreshed prompts for the nine-tool MCP surface.
+
+## [1.1.0] - 2026-06-05
+
+### Added
+- Added stateless MCP tools for drift scoring, receipt comparison, and in-memory identity reputation lookup.
+- Documented that drift and compare tools require already enriched/scored inputs; raw `DeltaReceipt` values are rejected.
+- Added `RuntimeConfig` injection through `createServer(runtimeConfig?)` and `buildHandlers(cfg)`, with lazy zero-external defaults for stateful capabilities.
+
 ## [1.0.2] - 2026-03-08
 
 ### Fixed

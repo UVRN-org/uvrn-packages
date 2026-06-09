@@ -150,6 +150,45 @@ describe('@uvrn/consensus', () => {
     expect(() => engine.buildBundle()).toThrow('at least 2 usable numeric sources');
   });
 
+  it('prefers source.evidenceScore over numeric titles so equal scores fully agree', () => {
+    // Regression for the title-number trap: each source has a different number in its
+    // title ("Top 10/20/30") but an identical evidenceScore (50). With the fix, the
+    // extractor reads the field, so all three values match and agreement is total.
+    // Dates are spaced >1 day apart so the dedupe window (≤1% AND ≤1 day) doesn't merge them.
+    const engine = new ConsensusEngine({
+      sources: buildFarmResult({
+        sources: [
+          buildSource({
+            url: 'https://example.com/a',
+            title: 'Top 10 trend report',
+            snippet: 'Strong demand observed.',
+            evidenceScore: 50,
+            publishedAt: '2026-04-01T00:00:00.000Z',
+          }),
+          buildSource({
+            url: 'https://example.com/b',
+            title: 'Top 20 movers this week',
+            snippet: 'Momentum continues.',
+            evidenceScore: 50,
+            publishedAt: '2026-04-03T00:00:00.000Z',
+          }),
+          buildSource({
+            url: 'https://example.com/c',
+            title: 'Top 30 ranked signals',
+            snippet: 'Sustained interest.',
+            evidenceScore: 50,
+            publishedAt: '2026-04-05T00:00:00.000Z',
+          }),
+        ],
+      }),
+    });
+
+    const stats = engine.stats();
+
+    expect(stats.sourceCount).toBe(3);
+    expect(stats.agreementScore).toBe(100);
+  });
+
   it('buildConsensusResult() returns bundle and mapped V-Score components', () => {
     const engine = new ConsensusEngine({ sources: buildFarmResult() });
 

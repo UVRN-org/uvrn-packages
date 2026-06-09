@@ -9,12 +9,12 @@ dist/
 # Local / tooling — do not commit
 .git/
 **/.git
-.cursor
-.cursor/
-.admin/
-.admin
+.claude/
+
 
 # TypeScript incremental build info — do not commit (causes non-reproducible builds)
 **/tsconfig.tsbuildinfo
 
+# Generated validation artifact — host-evidence trend report (machine-local)
+pod-trends-report.html
 

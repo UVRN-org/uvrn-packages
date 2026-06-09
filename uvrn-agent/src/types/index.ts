@@ -45,6 +45,13 @@ export interface FarmSource {
   snippet:      string;
   publishedAt?: string;
   credibility?: number;
+  /**
+   * Optional host-supplied numeric evidence score. When present, downstream
+   * numeric extractors (consensus, normalize `general`) prefer this value over
+   * regex-parsing it out of `title`/`snippet` — so a number in the title can no
+   * longer override the intended score. Additive and backward-compatible.
+   */
+  evidenceScore?: number;
 }
 
 export interface NormalizedComponents {

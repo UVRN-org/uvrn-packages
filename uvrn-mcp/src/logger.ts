@@ -3,8 +3,6 @@
  * Respects LOG_LEVEL configuration
  */
 
-import { config } from './config';
-
 type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
 const levels: Record<LogLevel, number> = {
@@ -50,4 +48,9 @@ class Logger {
   }
 }
 
-export const logger = new Logger(config.logLevel);
+function resolveLogLevel(): LogLevel {
+  const value = process.env.LOG_LEVEL ?? 'info';
+  return value === 'debug' || value === 'info' || value === 'warn' || value === 'error' ? value : 'info';
+}
+
+export const logger = new Logger(resolveLogLevel());

@@ -52,3 +52,14 @@ export interface VerifyResult {
 export interface EngineOpts {
     timestamp?: string;
 }
+/**
+ * Canonical V-Score component weights. The V-Score formula lives only in
+ * `@uvrn/core` (house rule #1); `@uvrn/score` re-exports these as `WEIGHTS`.
+ */
+export declare const VSCORE_WEIGHTS: {
+    readonly completeness: 0.35;
+    readonly parity: 0.35;
+    readonly freshness: 0.3;
+};
+export * from './measurement';
+export * from './master-receipt';

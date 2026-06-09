@@ -3,7 +3,7 @@
  * Loads configuration from environment variables
  */
 
-import { ServerConfig } from './types';
+import { RuntimeConfig, ServerConfig } from './types';
 
 export function loadConfig(): ServerConfig {
   const logLevel = (process.env.LOG_LEVEL || 'info') as ServerConfig['logLevel'];
@@ -24,4 +24,13 @@ export function loadConfig(): ServerConfig {
   };
 }
 
-export const config = loadConfig();
+/**
+ * resolveRuntimeConfig merges env-driven server config with explicit host-provided runtime config.
+ * Explicit values win, while omitted stores/signers/connectors remain lazy zero-external defaults.
+ */
+export function resolveRuntimeConfig(runtimeConfig?: RuntimeConfig): RuntimeConfig {
+  return {
+    ...loadConfig(),
+    ...runtimeConfig,
+  };
+}

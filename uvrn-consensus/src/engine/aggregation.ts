@@ -55,6 +55,12 @@ function inferUnit(text: string): string | undefined {
 }
 
 function extractMetricValue(source: FarmSource): number | null {
+  // Prefer an explicit host-supplied evidence score. This avoids the title/snippet
+  // first-number trap where a number in the title (a year, "Top 10") would win.
+  if (typeof source.evidenceScore === 'number' && Number.isFinite(source.evidenceScore)) {
+    return source.evidenceScore;
+  }
+
   const content = `${source.title} ${source.snippet}`.replace(/,/g, '');
   const match = content.match(NUMBER_PATTERN);
 

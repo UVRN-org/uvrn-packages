@@ -1,5 +1,13 @@
 # @uvrn/drift
 
+## Minimal install
+
+```bash
+npm install @uvrn/drift @uvrn/core @uvrn/score
+```
+
+`@uvrn/core` and `@uvrn/score` are the peer dependencies. No other `@uvrn/*` package is required at runtime.
+
 Temporal decay scoring for [UVRN](https://uvrn.org) verification receipts.
 
 Models how a claim's confidence score degrades over time using configurable decay curves — because a receipt from 6 hours ago on a fast-moving claim shouldn't carry the same weight as one from 6 minutes ago.
@@ -14,7 +22,7 @@ Models how a claim's confidence score degrades over time using configurable deca
 npm install @uvrn/drift @uvrn/core @uvrn/score
 ```
 
-`@uvrn/core` and `@uvrn/score` are required peer dependencies. `@uvrn/score` owns the canonical V-Score weights; `@uvrn/drift` imports `WEIGHTS` from it.
+`@uvrn/core` and `@uvrn/score` are required peer dependencies. `@uvrn/core` owns the canonical V-Score weights (`VSCORE_WEIGHTS`); `@uvrn/score` re-exports them as `WEIGHTS`, and `@uvrn/drift` imports `WEIGHTS` from `@uvrn/score` (passthrough, not duplication).
 
 ## Quick start
 
@@ -79,7 +87,7 @@ monitor.start();
 V-Score = (Completeness × 0.35) + (Parity × 0.35) + (Freshness × 0.30)
 ```
 
-Weights are owned by `@uvrn/score`. Drift decays the **Freshness** component only (via `computeDrift`). Completeness and Parity are re-scored by `@uvrn/agent` when new sources are fetched.
+Weights are owned by `@uvrn/core` (`VSCORE_WEIGHTS`) and re-exported by `@uvrn/score` as `WEIGHTS`. Drift decays the **Freshness** component only (via `computeDrift`). Completeness and Parity are re-scored by `@uvrn/agent` when new sources are fetched.
 
 ## License
 

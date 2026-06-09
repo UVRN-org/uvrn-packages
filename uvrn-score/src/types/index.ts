@@ -31,8 +31,11 @@ export interface ScoreInputComponents {
   freshness: number;
 }
 
-export const WEIGHTS = {
-  completeness: 0.35,
-  parity: 0.35,
-  freshness: 0.3,
-} as const;
+import { VSCORE_WEIGHTS } from '@uvrn/core';
+
+/**
+ * V-Score component weights. Re-exported from `@uvrn/core`'s canonical
+ * `VSCORE_WEIGHTS` — the formula lives only in core (house rule #1). This is a
+ * passthrough, not a second source of truth.
+ */
+export const WEIGHTS = VSCORE_WEIGHTS;

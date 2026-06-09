@@ -44,11 +44,17 @@ describe('MCP Protocol Compliance', () => {
 
   it('should list tools', async () => {
     const tools = await client.listTools();
-    expect(tools.tools).toHaveLength(3);
+    expect(tools.tools).toHaveLength(9);
     expect(tools.tools.map((t) => t.name)).toEqual([
       'delta_run_engine',
       'delta_validate_bundle',
       'delta_verify_receipt',
+      'delta_score_drift',
+      'delta_compare',
+      'delta_verify_identity',
+      'delta_canon_qualify',
+      'delta_canon_get',
+      'delta_score_claim',
     ]);
   });
 

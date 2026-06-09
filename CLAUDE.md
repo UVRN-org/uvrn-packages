@@ -5,7 +5,7 @@
 **Role**: Protocol integration lead, documentation, cross-package type coordination, audit review
 **Build standard**: Bloom Protocol v1.7
 **Worktree**: Active development branch off `uvrn-packages/` (sibling = stable reference)
-**Last updated**: 2026-04-01
+**Last updated**: 2026-06-08 (PR #4 remediation — weights reconciled to `@uvrn/core`; rule #1 satisfied)
 
 ---
 
@@ -55,7 +55,7 @@ Every build cycle follows: **Plan → Build → Check → Update → Reflect →
 
 ## Critical Design Rules
 
-1. **V-Score formula and WEIGHTS live in `@uvrn/score`.** Never copy or redefine them. `@uvrn/drift` imports `WEIGHTS` from `@uvrn/score` (required peer). `@uvrn/core` is Delta-only and does not own V-Score weights.
+1. **V-Score formula lives only in `@uvrn/core`.** Never copy or redefine it. Core exports the weights as `VSCORE_WEIGHTS`; `@uvrn/score` re-exports them as `WEIGHTS` and decomposes — a passthrough, not a second source of truth. (Satisfied as of PR #4 remediation, 2026-06-08.)
 2. **`canonize()` always requires explicit invocation.** Never add auto-canonize logic.
 3. **`@uvrn/agent` outputs `AgentDriftReceipt` only** — unsigned monitoring envelope.
 4. **No storage in core/drift/agent.** Storage is canon's responsibility.

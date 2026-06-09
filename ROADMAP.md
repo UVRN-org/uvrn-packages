@@ -27,7 +27,7 @@ Each package spec follows a consistent format:
 
 ## Protocol Layer Model
 
-All 20 UVRN packages are organized across four layers. Every package belongs to exactly one layer.
+All 23 UVRN packages are organized across four layers. Every package belongs to exactly one layer.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -35,14 +35,14 @@ All 20 UVRN packages are organized across four layers. Every package belongs to 
 │  @uvrn/embed  @uvrn/watch  @uvrn/mcp  @uvrn/api  @uvrn/cli    │
 ├─────────────────────────────────────────────────────────────────┤
 │  Layer 3 — Temporal & Lifecycle                                 │
-│  @uvrn/drift  @uvrn/agent  @uvrn/canon  @uvrn/timeline         │
+│  @uvrn/drift  @uvrn/agent  @uvrn/canon  @uvrn/timeline  @uvrn/algox │
 ├─────────────────────────────────────────────────────────────────┤
-│  Layer 2 — Receipt & Verification                               │
+│  Layer 2 — Receipt, Measurement & Verification                  │
 │  @uvrn/core  @uvrn/sdk  @uvrn/adapter  @uvrn/score             │
-│  @uvrn/compare  @uvrn/identity  @uvrn/test                     │
+│  @uvrn/compare  @uvrn/measure  @uvrn/identity  @uvrn/test      │
 ├─────────────────────────────────────────────────────────────────┤
 │  Layer 1 — Data & Consensus                                     │
-│  @uvrn/farm  @uvrn/consensus  @uvrn/normalize  @uvrn/signal    │
+│  @uvrn/farm  @uvrn/consensus  @uvrn/normalize  @uvrn/lattice  @uvrn/signal │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -50,7 +50,7 @@ All 20 UVRN packages are organized across four layers. Every package belongs to 
 
 ## Core Protocol Constants
 
-These values are canonical and must not be redefined by any package. V-Score formula and `WEIGHTS` live in `@uvrn/score`. `@uvrn/core` is Delta-only (convergence math, `deltaFinal`, DeltaReceipts) and does not own V-Score weights. `@uvrn/drift` imports `WEIGHTS` from `@uvrn/score` (required peer).
+These values are canonical and must not be redefined by any package. They live in `@uvrn/core`.
 
 **V-Score formula:**
 ```
@@ -87,7 +87,7 @@ These architectural choices must be preserved in any compatible implementation:
 ```
 @uvrn/core  (Layer 2 — no deps)
     │
-    ├── @uvrn/drift       (Layer 3 — peers: core, score)
+    ├── @uvrn/drift       (Layer 3 — peer: core)
     │       │
     │       ├── @uvrn/agent    (Layer 3 — peer: drift)
     │       │       │
@@ -171,7 +171,7 @@ const snapshot = engine.score(receipt, { now: Date.now() });
 // snapshot.decayRate       → current decay velocity
 ```
 
-**Dependencies:** Peer dep on `@uvrn/core` (receipt types); peer dep on `@uvrn/score` (`WEIGHTS` for V-Score recompute)
+**Dependencies:** Peer dep on `@uvrn/core` (receipt types, V-Score math)
 
 **Interface contracts:**
 - Input: a valid DRVC3 receipt (as produced by `@uvrn/core`)
@@ -518,7 +518,7 @@ breakdown.explanation    // human-readable + LLM-friendly string
 **Dependencies:** `@uvrn/core`
 
 **Interface contracts:**
-- The canonical weight formula (0.35 / 0.35 / 0.30) and `WEIGHTS` live in THIS package (`@uvrn/score`) — it is the single source of truth. `@uvrn/core` is Delta-only and does not own V-Score weights; `@uvrn/drift` imports `WEIGHTS` from here.
+- The canonical weight formula (0.35 / 0.35 / 0.30) lives in `@uvrn/core` as `VSCORE_WEIGHTS` — this package must not redefine it; it re-exports it as `WEIGHTS` and only exposes and decomposes it
 - Domain profiles explain weights for a claim type — they do not change the formula
 - `explanation` string must be LLM-friendly (short, factual)
 
@@ -721,7 +721,7 @@ import { ConsensusBadge } from '@uvrn/embed';
 
 | Package | Layer | Status | Role |
 |---------|-------|--------|------|
-| `@uvrn/core` | 2 | Live (npm) | Deterministic delta engine — convergence math, validation, DRVC3 receipts |
+| `@uvrn/core` | 2 | Live (npm) | Deterministic delta engine — V-Score math, validation, DRVC3 receipts |
 | `@uvrn/sdk` | 2 | Live (npm) | TypeScript SDK — submit claims, read receipts |
 | `@uvrn/adapter` | 2 | Live (npm) | DRVC3 envelope adapter — EIP-191 signatures |
 | `@uvrn/mcp` | 4 | Live (npm) | MCP server — AI agent native access |
@@ -739,14 +739,17 @@ import { ConsensusBadge } from '@uvrn/embed';
 | `@uvrn/compare` | 2 | Live (npm) — v1.0.0 | Cross-receipt comparison |
 | `@uvrn/identity` | 2 | Live (npm) — v1.0.0 | Signer reputation layer |
 | `@uvrn/test` | 2 | Live (npm) — v1.0.0 | Testing utilities & mocks |
+| `@uvrn/measure` | 2 | Built — v1.0.0 | Pluggable agree/disagree/conflict/potential measurements + registry |
+| `@uvrn/lattice` | 1 | Built — v0.4.1 | Cross-domain question decomposition |
+| `@uvrn/algox` | 3 | Built — v2.0.0 | Signal ranking and selection |
 | `@uvrn/watch` | 4 | Live (npm) — v1.0.0 | Subscription & threshold alerts |
 | `@uvrn/embed` | 4 | Live (npm) — v1.0.0 | Embeddable consensus badges |
 
 ---
 
-## Publish Order (Full 20-Package Sequence)
+## Publish Order (Full 23-Package Sequence)
 
-1. `@uvrn/core` → 2. `@uvrn/drift` → 3. `@uvrn/sdk` → 4. `@uvrn/adapter` → 5. `@uvrn/canon` → 6. `@uvrn/agent` → 7. `@uvrn/farm` → 8. `@uvrn/normalize` → 9. `@uvrn/consensus` → 10. `@uvrn/signal` → 11. `@uvrn/score` → 12. `@uvrn/compare` → 13. `@uvrn/identity` → 14. `@uvrn/test` → 15. `@uvrn/timeline` → 16. `@uvrn/mcp` → 17. `@uvrn/api` → 18. `@uvrn/cli` → 19. `@uvrn/watch` → 20. `@uvrn/embed`
+1. `@uvrn/core` → 2. `@uvrn/drift` → 3. `@uvrn/sdk` → 4. `@uvrn/adapter` → 5. `@uvrn/canon` → 6. `@uvrn/agent` → 7. `@uvrn/farm` → 8. `@uvrn/normalize` → 9. `@uvrn/lattice` → 10. `@uvrn/consensus` → 11. `@uvrn/signal` → 12. `@uvrn/score` → 13. `@uvrn/measure` → 14. `@uvrn/compare` → 15. `@uvrn/identity` → 16. `@uvrn/test` → 17. `@uvrn/timeline` → 18. `@uvrn/algox` → 19. `@uvrn/mcp` → 20. `@uvrn/api` → 21. `@uvrn/cli` → 22. `@uvrn/watch` → 23. `@uvrn/embed`
 
 ---
 

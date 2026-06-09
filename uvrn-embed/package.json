@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/embed",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "description": "Embeddable consensus badges for any webpage — React component and plain JS",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

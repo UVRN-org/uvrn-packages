@@ -13,8 +13,12 @@ export const generalProfile: NormalizationProfile = {
   name: 'general',
   description: 'Example/default profile for best-effort normalization across mixed source types.',
   transform(source: FarmSource) {
-    const text = `${source.title} ${source.snippet}`;
-    const numericValue = extractNumericValue(text);
+    // Prefer an explicit host-supplied evidence score over regex-parsing the
+    // title/snippet, so a number in the title can't override the intended value.
+    const numericValue =
+      typeof source.evidenceScore === 'number' && Number.isFinite(source.evidenceScore)
+        ? source.evidenceScore
+        : extractNumericValue(`${source.title} ${source.snippet}`);
 
     return finalizeNormalizedSource(source, {
       name: source.title,

@@ -13,6 +13,24 @@ import { DRVC3Receipt, WrapOptions } from './types';
 import { signHash } from './signer';
 
 /**
+ * Monotonic envelope clock (ENVELOPE METADATA only).
+ *
+ * Two wraps that land in the same wall-clock millisecond would otherwise produce
+ * identical `timestamp`/`receipt_id`. We reserve a strictly-increasing millisecond
+ * value synchronously (no `await` between read and write, so it is atomic in the
+ * JS event-loop sense) BEFORE any async signing. This affects only DRVC3 envelope
+ * metadata — never the embedded DeltaReceipt, integrity.hash, signature input,
+ * schema, or verification semantics.
+ */
+let lastEnvelopeMs = 0;
+function nextEnvelopeMs(): number {
+  const now = Date.now();
+  const ms = now > lastEnvelopeMs ? now : lastEnvelopeMs + 1;
+  lastEnvelopeMs = ms;
+  return ms;
+}
+
+/**
  * Wraps a DeltaReceipt in a DRVC3 envelope
  * 
  * @param deltaReceipt - Layer 1 DeltaReceipt (deterministic, hash-covered)
@@ -39,9 +57,12 @@ export async function wrapInDRVC3(
   signer: Wallet | HDNodeWallet,
   options: WrapOptions
 ): Promise<DRVC3Receipt> {
-  // 1. Generate receipt_id (ENVELOPE METADATA - non-deterministic, intentional)
-  const timestamp = new Date().toISOString();
-  const receipt_id = `drvc3-${deltaReceipt.bundleId}-${Date.now()}`;
+  // 1. Generate receipt_id (ENVELOPE METADATA - non-deterministic, intentional).
+  //    Reserve a monotonic millisecond synchronously BEFORE the async signing step
+  //    so back-to-back wraps always differ in timestamp and receipt_id.
+  const envelopeMs = nextEnvelopeMs();
+  const timestamp = new Date(envelopeMs).toISOString();
+  const receipt_id = `drvc3-${deltaReceipt.bundleId}-${envelopeMs}`;
 
   // 2. Read hash from DeltaReceipt (HASH DOMAIN - read-only from Layer 1)
   const hash = deltaReceipt.hash;

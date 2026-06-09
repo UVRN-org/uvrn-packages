@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/identity",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "description": "Signer reputation layer for the UVRN protocol",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -15,7 +15,7 @@
     "clean": "rm -rf dist"
   },
   "peerDependencies": {
-    "@uvrn/core": ">=1.0.0"
+    "@uvrn/core": "^3.0.0"
   },
   "devDependencies": {
     "@uvrn/core": "workspace:*",

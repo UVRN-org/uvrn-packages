@@ -5,6 +5,14 @@
 
 Part of the [UVRN](https://uvrn.org) ecosystem.
 
+## Minimal install
+
+```bash
+npm install @uvrn/canon @uvrn/core @uvrn/drift
+```
+
+`@uvrn/core` and `@uvrn/drift` are the peer dependencies. No other `@uvrn/*` package is required at runtime.
+
 ---
 
 ## What canonization means

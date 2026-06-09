@@ -106,3 +106,149 @@ export const verifyReceiptSchema = {
   },
   required: ['receipt'],
 };
+
+export const scoreDriftSchema = {
+  type: 'object',
+  properties: {
+    receipt: {
+      type: 'object',
+      description:
+        'Already enriched DriftInputReceipt with receipt_id, issuer, timestamp, v_score, and components. Raw DeltaReceipt input is rejected because it lacks v_score and components.',
+      properties: {
+        receipt_id: { type: 'string' },
+        issuer: { type: 'string' },
+        timestamp: { type: 'string' },
+        v_score: { type: 'number' },
+        components: {
+          type: 'object',
+          properties: {
+            completeness: { type: 'number' },
+            parity: { type: 'number' },
+            freshness: { type: 'number' },
+          },
+          required: ['completeness', 'parity', 'freshness'],
+        },
+        claim_id: { type: 'string' },
+        tags: { type: 'array', items: { type: 'string' } },
+      },
+      required: ['receipt_id', 'issuer', 'timestamp', 'v_score', 'components'],
+    },
+    asOf: {
+      type: 'string',
+      description: 'Optional ISO timestamp to score drift as of; defaults to now.',
+    },
+    profile: {
+      type: 'string',
+      description: 'Optional drift profile name resolved by @uvrn/drift profileFor(); defaults to the drift package default.',
+    },
+  },
+  required: ['receipt'],
+};
+
+export const compareSchema = {
+  type: 'object',
+  properties: {
+    receipts: {
+      type: 'array',
+      description:
+        'Exactly two already scored receipts. Each receipt must carry claimId or claim_id plus vScore or v_score. Raw DeltaReceipt input is rejected because it lacks those fields.',
+      minItems: 2,
+      maxItems: 2,
+      items: {
+        type: 'object',
+        properties: {
+          claimId: { type: 'string' },
+          claim_id: { type: 'string' },
+          vScore: { type: 'number' },
+          v_score: { type: 'number' },
+          status: { type: 'string' },
+          scoredAt: { type: 'string' },
+          scored_at: { type: 'string' },
+        },
+      },
+    },
+    options: {
+      type: 'object',
+      properties: {
+        normalize: {
+          type: 'boolean',
+          description: 'When true, V-Scores between 0 and 1 are normalized to 0-100.',
+        },
+      },
+    },
+  },
+  required: ['receipts'],
+};
+
+export const verifyIdentitySchema = {
+  type: 'object',
+  properties: {
+    address: {
+      type: 'string',
+      description: 'Signer address to look up in the in-memory MockIdentityStore.',
+    },
+  },
+  required: ['address'],
+};
+
+export const canonQualifySchema = {
+  type: 'object',
+  properties: {
+    claimId: {
+      type: 'string',
+      description: 'Claim id to assess for canon qualification.',
+    },
+    snapshot: {
+      type: 'object',
+      description: 'DriftSnapshot to assess. This is read-only and does not canonize or write.',
+    },
+  },
+  required: ['claimId', 'snapshot'],
+};
+
+export const canonGetSchema = {
+  type: 'object',
+  properties: {
+    canonId: {
+      type: 'string',
+      description: 'Canon receipt id to read via CanonStore.read(canonId).',
+    },
+  },
+  required: ['canonId'],
+};
+
+export const scoreClaimSchema = {
+  type: 'object',
+  properties: {
+    claim: {
+      type: 'string',
+      description: 'Claim text to adapt into a ClaimRegistration before fetching connector sources.',
+    },
+    claimId: {
+      type: 'string',
+      description: 'Optional stable claim id; defaults to a slug derived from claim text.',
+    },
+    label: {
+      type: 'string',
+      description: 'Optional display label for the claim registration.',
+    },
+    sources: {
+      type: 'array',
+      description:
+        'Optional host-provided evidence. If you (the calling agent) can search the web, gather 2+ sources and pass them here; this skips connector fetch. Precedence: any non-empty array requests host-evidence mode, so exactly one source is rejected (it does not fall back to a connector/mock). If omitted or empty, the server uses a configured connector, or mock data as a last resort.',
+      items: {
+        type: 'object',
+        properties: {
+          url: { type: 'string' },
+          title: { type: 'string' },
+          snippet: { type: 'string' },
+          publishedAt: { type: 'string', description: 'ISO timestamp' },
+          credibility: { type: 'number', minimum: 0, maximum: 1, description: '0–1 source reliability' },
+          evidenceScore: { type: 'number', minimum: 0, maximum: 100, description: '0–100 host-derived trend-support score' },
+        },
+        required: ['url', 'title', 'snippet'],
+      },
+    },
+  },
+  required: ['claim'],
+};

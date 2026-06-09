@@ -3,31 +3,113 @@
  * Implements the three core tools for Delta Engine MCP server
  */
 
+import { createHash } from 'node:crypto';
 import {
+  buildMasterReceipt,
   runDeltaEngine,
   validateBundle,
   verifyReceipt,
   DeltaBundle,
   DeltaReceipt,
+  MeasurementSource,
+  NodeStatusRecord,
 } from '@uvrn/core';
+import { computeDrift, profileFor } from '@uvrn/drift';
+import { CompareEngine } from '@uvrn/compare';
+import { ConsensusEngine } from '@uvrn/consensus';
+import { normalize } from '@uvrn/normalize';
+import { defaultRegistry } from '@uvrn/measure';
+import { ScoreBreakdown, SCORE_PROFILES } from '@uvrn/score';
+import type { Canon, CanonStore } from '@uvrn/canon';
+import type { ClaimRegistration, FarmConnector, FarmResult } from '@uvrn/agent';
+import type { IdentityRegistry } from '@uvrn/identity';
 import {
+  CanonGetInput,
+  CanonGetOutput,
+  CanonQualifyInput,
+  CanonQualifyOutput,
+  CompareReceiptsInput,
+  CompareReceiptsOutput,
+  RuntimeConfig,
   RunEngineInput,
   RunEngineOutput,
+  ScoreDriftInput,
+  ScoreDriftOutput,
+  ScoreClaimInput,
+  ScoreClaimOutput,
+  ToolHandlers,
   ValidateBundleInput,
   ValidateBundleOutput,
+  VerifyIdentityInput,
+  VerifyIdentityOutput,
   VerifyReceiptInput,
   VerifyReceiptOutput,
   ValidationError,
   ExecutionError,
 } from '../types';
 import { logger } from '../logger';
-import { config } from '../config';
+
+/**
+ * buildHandlers creates the MCP tool handler bundle for one resolved runtime configuration.
+ * Stateful defaults, such as the identity mock store, are imported lazily only when their tool runs.
+ */
+export function buildHandlers(config: RuntimeConfig): ToolHandlers {
+  let identityRegistryPromise: Promise<IdentityRegistry> | undefined;
+  let canonPromise: Promise<{ canon: Canon; stores: CanonStore[] }> | undefined;
+
+  async function getIdentityRegistry(): Promise<IdentityRegistry> {
+    if (!identityRegistryPromise) {
+      identityRegistryPromise = (async () => {
+        const { IdentityRegistry: Registry, MockIdentityStore } = await import('@uvrn/identity');
+        return new Registry({ store: config.identityStore ?? new MockIdentityStore() });
+      })();
+    }
+    return identityRegistryPromise;
+  }
+
+  async function getCanonRuntime(): Promise<{ canon: Canon; stores: CanonStore[] }> {
+    if (!canonPromise) {
+      canonPromise = (async () => {
+        const { Canon: CanonEngine, MockSigner, MockStore } = await import('@uvrn/canon');
+        const stores = config.canonStores ?? [new MockStore()];
+        const signer = config.canonSigner ?? new MockSigner();
+        return {
+          canon: new CanonEngine({
+            stores,
+            signer,
+            autoSuggest: {
+              enabled: false,
+              consecutiveRuns: 3,
+              minScore: 85,
+              suggestionTtlMs: 24 * 60 * 60 * 1000,
+            },
+            canonizerId: 'uvrn-mcp',
+          }),
+          stores,
+        };
+      })();
+    }
+    return canonPromise;
+  }
+
+  return {
+    handleRunEngine: (input) => handleRunEngine(input, config),
+    handleValidateBundle,
+    handleVerifyReceipt,
+    handleScoreDrift: (input) => handleScoreDrift(input, config),
+    handleCompare: (input) => handleCompare(input, config),
+    handleVerifyIdentity: (input) => handleVerifyIdentity(input, getIdentityRegistry),
+    handleCanonQualify: (input) => handleCanonQualify(input, getCanonRuntime),
+    handleCanonGet: (input) => handleCanonGet(input, getCanonRuntime),
+    handleScoreClaim: (input) => handleScoreClaim(input, config),
+  };
+}
 
 /**
  * Tool: delta_run_engine
  * Executes the Delta Engine on a provided bundle
  */
-export async function handleRunEngine(input: RunEngineInput): Promise<RunEngineOutput> {
+async function handleRunEngine(input: RunEngineInput, config: RuntimeConfig): Promise<RunEngineOutput> {
   logger.debug('handleRunEngine called', { bundleId: input.bundle?.bundleId });
 
   try {
@@ -90,7 +172,7 @@ export async function handleRunEngine(input: RunEngineInput): Promise<RunEngineO
  * Tool: delta_validate_bundle
  * Validates bundle structure without executing
  */
-export async function handleValidateBundle(
+async function handleValidateBundle(
   input: ValidateBundleInput
 ): Promise<ValidateBundleOutput> {
   logger.debug('handleValidateBundle called');
@@ -136,7 +218,7 @@ export async function handleValidateBundle(
  * Tool: delta_verify_receipt
  * Verifies receipt integrity and hash chain
  */
-export async function handleVerifyReceipt(
+async function handleVerifyReceipt(
   input: VerifyReceiptInput
 ): Promise<VerifyReceiptOutput> {
   logger.debug('handleVerifyReceipt called');
@@ -175,6 +257,373 @@ export async function handleVerifyReceipt(
       verified: false,
       error: 'Verification error',
       details: message,
+    };
+  }
+}
+
+/**
+ * Tool: delta_score_drift
+ * Computes temporal drift for an already enriched DriftInputReceipt.
+ */
+async function handleScoreDrift(input: ScoreDriftInput, config: RuntimeConfig): Promise<ScoreDriftOutput> {
+  logger.debug('handleScoreDrift called', { receiptId: input.receipt?.receipt_id });
+
+  try {
+    if (!input.receipt || typeof input.receipt !== 'object') {
+      throw new ValidationError('Invalid input: receipt must be an enriched DriftInputReceipt');
+    }
+    if (typeof input.receipt.v_score !== 'number' || !input.receipt.components) {
+      throw new ValidationError(
+        'delta_score_drift requires a DriftInputReceipt with v_score and components; raw DeltaReceipt input is not accepted'
+      );
+    }
+
+    const asOf = input.asOf ? new Date(input.asOf) : new Date();
+    if (Number.isNaN(asOf.getTime())) {
+      throw new ValidationError('Invalid input: asOf must be an ISO date string when provided');
+    }
+
+    const profile = profileFor(input.profile ?? 'default');
+    return {
+      receipt: computeDrift(input.receipt, profile, asOf),
+    };
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      throw error;
+    }
+    const message = error instanceof Error ? error.message : String(error);
+    const errorDetails = config.verboseErrors ? { originalError: error } : undefined;
+    logger.error('Drift scoring failed', { error: message });
+    throw new ExecutionError(`Drift scoring failed: ${message}`, errorDetails);
+  }
+}
+
+/**
+ * Tool: delta_compare
+ * Compares exactly two already scored receipts carrying claimId and vScore fields.
+ */
+async function handleCompare(input: CompareReceiptsInput, config: RuntimeConfig): Promise<CompareReceiptsOutput> {
+  logger.debug('handleCompare called', { receiptCount: input.receipts?.length });
+
+  try {
+    if (!Array.isArray(input.receipts) || input.receipts.length !== 2) {
+      throw new ValidationError('delta_compare requires exactly two enriched receipts');
+    }
+
+    input.receipts.forEach((receipt, index) => {
+      const claimId = receipt.claimId ?? receipt.claim_id;
+      const vScore = receipt.vScore ?? receipt.v_score;
+      if (typeof claimId !== 'string' || claimId.length === 0 || typeof vScore !== 'number') {
+        throw new ValidationError(
+          `delta_compare receipt ${index} must include claimId/claim_id and vScore/v_score; raw DeltaReceipt input is not accepted`
+        );
+      }
+    });
+
+    return {
+      result: CompareEngine.compare(input.receipts, input.options),
+    };
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      throw error;
+    }
+    const message = error instanceof Error ? error.message : String(error);
+    const errorDetails = config.verboseErrors ? { originalError: error } : undefined;
+    logger.error('Receipt comparison failed', { error: message });
+    throw new ExecutionError(`Receipt comparison failed: ${message}`, errorDetails);
+  }
+}
+
+/**
+ * Tool: delta_verify_identity
+ * Reads signer reputation from an in-memory MockIdentityStore.
+ */
+async function handleVerifyIdentity(
+  input: VerifyIdentityInput,
+  getIdentityRegistry: () => Promise<IdentityRegistry>
+): Promise<VerifyIdentityOutput> {
+  logger.debug('handleVerifyIdentity called', { address: input.address });
+
+  if (!input.address || typeof input.address !== 'string') {
+    throw new ValidationError('Invalid input: address must be a non-empty string');
+  }
+
+  return {
+    reputation: await (await getIdentityRegistry()).reputation(input.address),
+  };
+}
+
+/**
+ * Tool: delta_canon_qualify
+ * Assesses canon qualification without writing or canonizing anything.
+ */
+async function handleCanonQualify(
+  input: CanonQualifyInput,
+  getCanonRuntime: () => Promise<{ canon: Canon; stores: CanonStore[] }>
+): Promise<CanonQualifyOutput> {
+  if (!input.claimId || typeof input.claimId !== 'string') {
+    throw new ValidationError('Invalid input: claimId must be a non-empty string');
+  }
+  if (!input.snapshot || typeof input.snapshot !== 'object') {
+    throw new ValidationError('Invalid input: snapshot must be a DriftSnapshot');
+  }
+
+  const { canon } = await getCanonRuntime();
+  return {
+    result: canon.qualify(input.claimId, input.snapshot),
+  };
+}
+
+/**
+ * Tool: delta_canon_get
+ * Reads a canon receipt by id from the configured first CanonStore.
+ */
+async function handleCanonGet(
+  input: CanonGetInput,
+  getCanonRuntime: () => Promise<{ canon: Canon; stores: CanonStore[] }>
+): Promise<CanonGetOutput> {
+  if (!input.canonId || typeof input.canonId !== 'string') {
+    throw new ValidationError('Invalid input: canonId must be a non-empty string');
+  }
+
+  const { stores } = await getCanonRuntime();
+  return {
+    receipt: await stores[0].read(input.canonId),
+  };
+}
+
+/**
+ * Tool: delta_score_claim
+ * Fetches configured connector sources, runs consensus/core/measure, and returns a MasterReceipt.
+ */
+async function handleScoreClaim(input: ScoreClaimInput, config: RuntimeConfig): Promise<ScoreClaimOutput> {
+  logger.debug('handleScoreClaim called', { claimId: input.claimId });
+
+  try {
+    if (!input.claim || typeof input.claim !== 'string') {
+      throw new ValidationError('Invalid input: claim must be a non-empty string');
+    }
+
+    const registration = claimRegistrationFromInput(input);
+    const nodes: NodeStatusRecord[] = [];
+    const farmResults: FarmResult[] = [];
+    let evidenceMode: 'host_sources' | 'connector' | 'mock';
+
+    // Host-evidence precedence: any non-empty `sources` array means the caller
+    // requested host-evidence mode, so exactly one source is a hard error — it does
+    // NOT silently fall back to connectors/mock. Empty `[]` or omitted `sources`
+    // fall through to the connector/mock path below.
+    if (input.sources && input.sources.length > 0 && input.sources.length < 2) {
+      throw new ValidationError('Host evidence requires at least 2 sources');
+    }
+
+    if (input.sources && input.sources.length >= 2) {
+      // Path 1: host-provided evidence. The caller searched and supplied sources directly.
+      // evidenceScore (if present) is carried on the FarmSource.evidenceScore field and
+      // preferred by consensus/normalize numeric extraction — see extractMetricValue().
+      evidenceMode = 'host_sources';
+      for (const s of input.sources) {
+        assertFiniteRange(s.credibility, 'credibility', 0, 1);
+        assertFiniteRange(s.evidenceScore, 'evidenceScore', 0, 100);
+      }
+      const observedAt = new Date().toISOString();
+      farmResults.push({
+        claimId: registration.id,
+        fetchedAt: observedAt,
+        durationMs: 0,
+        sources: input.sources.map((s) => ({
+          url: s.url,
+          title: s.title,
+          snippet: s.snippet,
+          publishedAt: s.publishedAt,
+          credibility: s.credibility,
+          evidenceScore: s.evidenceScore,
+        })),
+      });
+      nodes.push({
+        id: 'HostSources',
+        status: 'on',
+        detail: `${input.sources.length} host sources`,
+        observedAt,
+      });
+    } else {
+      // Path 2: configured connectors, or the zero-external mock fallback.
+      const connectors = config.connectors && config.connectors.length > 0
+        ? config.connectors
+        : [new DefaultMockConnector()];
+      evidenceMode = config.connectors && config.connectors.length > 0 ? 'connector' : 'mock';
+
+      for (const [index, connector] of connectors.entries()) {
+        const nodeId = connector.constructor.name || `connector-${index + 1}`;
+        try {
+          const result = await connector.fetch(registration);
+          farmResults.push(result);
+          nodes.push({
+            id: nodeId,
+            status: result.sources.length > 0 ? 'on' : 'unavailable',
+            detail: result.sources.length > 0 ? `${result.sources.length} sources fetched` : 'empty result',
+            observedAt: result.fetchedAt,
+          });
+        } catch (error) {
+          nodes.push({
+            id: nodeId,
+            status: 'off',
+            detail: error instanceof Error ? error.message : String(error),
+            observedAt: new Date().toISOString(),
+          });
+        }
+      }
+    }
+
+    const merged = mergeFarmResults(registration, farmResults);
+    if (merged.sources.length < 2) {
+      throw new ExecutionError('Score claim requires at least two fetched sources after connector failures', { nodes });
+    }
+
+    const normalized = normalize(merged.sources, 'general');
+    const consensus = new ConsensusEngine({ sources: merged, claim: input.claim }).buildConsensusResult(input.claim);
+    const base = runDeltaEngine(consensus.bundle);
+    const breakdown = new ScoreBreakdown(consensus.components, SCORE_PROFILES.general);
+    const measurements = defaultRegistry().runAll({
+      claim: input.claim,
+      sources: normalized.sources.map((source, index): MeasurementSource => ({
+        id: `${source.name}-${index}`,
+        kind: typeof source.value === 'number' ? 'numeric' : 'categorical',
+        value: typeof source.value === 'number' ? source.value : undefined,
+        assertion: typeof source.value === 'string' ? source.value : undefined,
+        label: source.name,
+        ts: toIsoTimestamp(source.timestamp, merged.fetchedAt),
+        attributes: {
+          unit: source.unit,
+          credibility: source.credibility,
+          normalizer: source.normalizer,
+        },
+        status: 'on',
+      })),
+      context: {
+        components: consensus.components,
+      },
+    });
+
+    return {
+      masterReceipt: buildMasterReceipt({
+        base,
+        claim: input.claim,
+        measurements,
+        nodes,
+      }),
+      v_score: breakdown.final,
+      claimId: registration.id,
+      evidenceMode,
+      // Post-parse/post-dedupe count of sources actually scored by consensus —
+      // not the raw merged count (MINOR-2).
+      sourceCount: consensus.stats.sourceCount,
+    };
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof ExecutionError) {
+      throw error;
+    }
+
+    const message = error instanceof Error ? error.message : String(error);
+    const errorDetails = config.verboseErrors ? { originalError: error } : undefined;
+    logger.error('Score claim failed', { error: message });
+    throw new ExecutionError(`Score claim failed: ${message}`, errorDetails);
+  }
+}
+
+function toIsoTimestamp(value: unknown, fallback: string): string {
+  const candidate = typeof value === 'string' || typeof value === 'number' || value instanceof Date
+    ? new Date(value)
+    : undefined;
+  if (candidate && !Number.isNaN(candidate.getTime())) {
+    return candidate.toISOString();
+  }
+
+  const fallbackDate = new Date(fallback);
+  if (!Number.isNaN(fallbackDate.getTime())) {
+    return fallbackDate.toISOString();
+  }
+
+  return new Date().toISOString();
+}
+
+/**
+ * Validates an optional numeric field is a finite number within [min, max].
+ * Clients may not enforce the JSON-schema bounds, so we re-check at the handler
+ * boundary. `undefined` is allowed (field is optional); everything else must be a
+ * finite number in range — rejects non-number, NaN, Infinity, and out-of-range.
+ */
+function assertFiniteRange(value: unknown, field: string, min: number, max: number): void {
+  if (
+    value !== undefined &&
+    (typeof value !== 'number' || !Number.isFinite(value) || value < min || value > max)
+  ) {
+    throw new ValidationError(`${field} must be a finite number between ${min} and ${max}`);
+  }
+}
+
+function claimRegistrationFromInput(input: ScoreClaimInput): ClaimRegistration {
+  // When no explicit claimId is supplied, derive a human-readable slug and append a
+  // deterministic short hash of the original claim so distinct claims that slug to the
+  // same string (punctuation/symbol differences) don't collide (MINOR-3).
+  let id: string;
+  if (input.claimId) {
+    id = input.claimId;
+  } else {
+    const slug = input.claim.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'claim';
+    const hash = createHash('sha256').update(input.claim).digest('hex').slice(0, 8);
+    id = `${slug}-${hash}`;
+  }
+  return {
+    id,
+    label: input.label ?? input.claim,
+    query: input.claim,
+    driftConfig: profileFor('default'),
+    intervalMs: 0,
+    tags: ['mcp'],
+    metadata: {
+      source: 'uvrn-mcp',
+    },
+  };
+}
+
+function mergeFarmResults(registration: ClaimRegistration, results: FarmResult[]): FarmResult {
+  const sources = results.flatMap((result) => result.sources);
+  return {
+    claimId: registration.id,
+    sources,
+    fetchedAt: new Date().toISOString(),
+    durationMs: results.reduce((sum, result) => sum + result.durationMs, 0),
+  };
+}
+
+/**
+ * DefaultMockConnector provides deterministic zero-external claim evidence for MCP demos and tests.
+ * It is intentionally local to MCP and is not a provider-specific service default.
+ */
+class DefaultMockConnector implements FarmConnector {
+  async fetch(claim: ClaimRegistration): Promise<FarmResult> {
+    const now = new Date('2026-06-05T00:00:00.000Z').toISOString();
+    return {
+      claimId: claim.id,
+      fetchedAt: now,
+      durationMs: 0,
+      sources: [
+        {
+          url: `mock://source-a/${claim.id}`,
+          title: 'Mock Source A',
+          snippet: 'Reported metric value 100 for the claim.',
+          publishedAt: now,
+          credibility: 0.9,
+        },
+        {
+          url: `mock://source-b/${claim.id}`,
+          title: 'Mock Source B',
+          snippet: 'Reported metric value 102 for the claim.',
+          publishedAt: now,
+          credibility: 0.85,
+        },
+      ],
     };
   }
 }

@@ -18,16 +18,20 @@ export interface PromptTemplate {
  */
 export const verifyDataPrompt: PromptTemplate = {
   name: 'verify_data',
-  description: 'Template for verifying data across multiple sources',
+  description: 'Template for verifying data across UVRN MCP tools',
   parameters: ['claim', 'sources'],
   template: `I need to verify the following claim using Delta Engine:
 
 Claim: {{claim}}
 
-Please help me:
+Please help me use the UVRN 23-package protocol surface:
 1. Create a DeltaBundle with data from these sources: {{sources}}
-2. Run the delta_run_engine tool to process the bundle
-3. Analyze the receipt and explain:
+2. Run delta_validate_bundle before execution
+3. Run delta_run_engine to process the bundle
+4. Use delta_verify_receipt to check the hash
+5. If I already have scored/enriched inputs, use delta_score_drift or delta_compare as appropriate
+6. If live connectors are configured, consider delta_score_claim for a MasterReceipt
+7. Analyze the receipt and explain:
    - What is the consensus outcome?
    - What is the final delta between sources?
    - Are the sources in agreement within the threshold?
@@ -57,7 +61,7 @@ Please guide me through:
    - thresholdPct: acceptable variance (0.0 to 1.0)
    - maxRounds: optional, defaults to 5
 
-Once we have the bundle structure, we can use delta_validate_bundle to check it before running.`,
+Once we have the bundle structure, we can use delta_validate_bundle to check it before running. If configured connectors are available, delta_score_claim can build a MasterReceipt directly from a claim.`,
 };
 
 /**
@@ -80,6 +84,8 @@ Help me understand:
 5. For each round, what were the deltas by metric?
 6. Is the receipt hash valid? (use delta_verify_receipt to check)
 7. What does this tell us about data agreement across sources?
+8. If this is a MasterReceipt, what measurements ran and which nodes were off or unavailable?
+9. If canon tools are relevant, use delta_canon_qualify for read-only candidacy assessment; do not canonize automatically.
 
 Provide a clear explanation of the verification results.`,
 };

@@ -4,6 +4,14 @@
 
 Part of the [UVRN](https://uvrn.org) ecosystem. Depends on `@uvrn/drift` for scoring and `@uvrn/core` for receipt types.
 
+## Minimal install
+
+```bash
+npm install @uvrn/agent @uvrn/drift @uvrn/core @uvrn/score
+```
+
+`@uvrn/agent` declares `@uvrn/drift` as its peer dependency; `@uvrn/drift` in turn peers on `@uvrn/core` and `@uvrn/score`. Install all peer dependencies explicitly — peers are not guaranteed to be auto-installed by your package manager. No other `@uvrn/*` package is required at runtime.
+
 ---
 
 ## What it does

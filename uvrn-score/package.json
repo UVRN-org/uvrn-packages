@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/score",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "description": "V-Score composition internals and domain-specific scoring profiles for UVRN",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -15,7 +15,7 @@
     "clean": "rm -rf dist"
   },
   "peerDependencies": {
-    "@uvrn/core": ">=1.0.0"
+    "@uvrn/core": "^3.0.0"
   },
   "devDependencies": {
     "@uvrn/core": "workspace:*",

@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/watch",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "description": "Subscription and threshold alerts for UVRN claim monitoring",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -15,8 +15,8 @@
     "clean": "rm -rf dist"
   },
   "peerDependencies": {
-    "@uvrn/agent": ">=1.0.0",
-    "@uvrn/drift": ">=1.0.0"
+    "@uvrn/agent": "^3.0.0",
+    "@uvrn/drift": "^3.0.0"
   },
   "devDependencies": {
     "@uvrn/agent": "workspace:*",

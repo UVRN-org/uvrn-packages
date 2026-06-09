@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/mcp",
-  "version": "1.0.2",
+  "version": "3.0.0",
   "description": "UVRN MCP server — AI-native bundle processing",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -25,13 +25,31 @@
     "format": "prettier --write \"src/**/*.ts\""
   },
   "peerDependencies": {
-    "@uvrn/core": ">=1.0.0"
+    "@uvrn/agent": "^3.0.0",
+    "@uvrn/canon": "^3.0.0",
+    "@uvrn/compare": "^3.0.0",
+    "@uvrn/consensus": "^3.0.0",
+    "@uvrn/core": "^3.0.0",
+    "@uvrn/drift": "^3.0.0",
+    "@uvrn/identity": "^3.0.0",
+    "@uvrn/measure": "^3.0.0",
+    "@uvrn/normalize": "^3.0.0",
+    "@uvrn/score": "^3.0.0"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0"
   },
   "devDependencies": {
+    "@uvrn/agent": "workspace:*",
+    "@uvrn/canon": "workspace:*",
+    "@uvrn/compare": "workspace:*",
+    "@uvrn/consensus": "workspace:*",
     "@uvrn/core": "workspace:*",
+    "@uvrn/drift": "workspace:*",
+    "@uvrn/identity": "workspace:*",
+    "@uvrn/measure": "workspace:*",
+    "@uvrn/normalize": "workspace:*",
+    "@uvrn/score": "workspace:*",
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
@@ -42,5 +60,6 @@
     "vitest": "^1.0.0"
   },
   "engines": { "node": ">=18.0.0" },
-  "files": ["dist", "README.md", "LICENSE"]
+  "files": ["dist", "README.md", "CONNECT.md", "LICENSE", "plugin-manifest.json", "connectors"],
+  "publishConfig": { "access": "public" }
 }

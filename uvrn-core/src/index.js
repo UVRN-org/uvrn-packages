@@ -23,3 +23,4 @@ __exportStar(require("./core/validation"), exports);
 __exportStar(require("./core/engine"), exports);
 __exportStar(require("./core/serialization"), exports);
 __exportStar(require("./core/verification"), exports);
+__exportStar(require("./core/master-receipt"), exports);

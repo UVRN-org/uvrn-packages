@@ -88,7 +88,10 @@ describe('@uvrn/timeline', () => {
       }),
     });
 
-    const result = await timeline.query('clm_timeline');
+    const result = await timeline.query('clm_timeline', {
+      from: '2026-04-01T00:00:00.000Z',
+      to: '2026-04-03T00:00:00.000Z',
+    });
     const chart = result.chart();
 
     expect(chart.canonMarkers).toHaveLength(1);
@@ -110,7 +113,10 @@ describe('@uvrn/timeline', () => {
       }),
     });
 
-    const result = await timeline.query('clm_timeline');
+    const result = await timeline.query('clm_timeline', {
+      from: '2026-04-01T00:00:00.000Z',
+      to: '2026-04-03T00:00:00.000Z',
+    });
 
     expect(result.summary).toContain('Claim clm_timeline');
     expect(result.summary).toContain('1 canonization event');

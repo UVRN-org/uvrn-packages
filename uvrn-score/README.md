@@ -70,7 +70,7 @@ const breakdown = new ScoreBreakdown(
 
 - `ScoreBreakdown`
 - `SCORE_PROFILES`
-- `WEIGHTS`
+- `WEIGHTS` — re-exported from `@uvrn/core`'s canonical `VSCORE_WEIGHTS` (passthrough, not a second definition)
 - `ScoringProfile`
 - `ComponentBreakdown`
 - `ScoreBreakdownResult`

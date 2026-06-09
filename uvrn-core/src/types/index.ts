@@ -62,3 +62,17 @@ export interface EngineOpts {
   // Option to inject external timestamp if needed for envelope
   timestamp?: string;
 }
+
+/**
+ * Canonical V-Score component weights. The V-Score formula lives only in
+ * `@uvrn/core` (house rule #1); `@uvrn/score` re-exports these as `WEIGHTS` and
+ * decomposes them into a ScoreBreakdown. Single source of truth — do not redefine.
+ */
+export const VSCORE_WEIGHTS = {
+  completeness: 0.35,
+  parity: 0.35,
+  freshness: 0.3,
+} as const;
+
+export * from './measurement';
+export * from './master-receipt';

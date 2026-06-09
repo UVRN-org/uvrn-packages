@@ -1,7 +1,9 @@
 # UVRN Package Roadmap — Open Protocol Specs
 
 **Status:** Active — updated as packages ship
-**Last updated:** 2026-04-03
+**Last updated:** 2026-06-09
+
+> **UVRN Packages v3 (canonical).** All 23 packages are aligned to `3.0.0` with `^3.0.0` internal peer ranges. This generation is the source of truth and supersedes prior npm/official versions. See `CHANGELOG.md`.
 
 > This document contains the full technical specifications for every upcoming UVRN package. Each spec includes the package intent, public API sketch, dependency requirements, interface contracts, and authoring notes — enough detail to serve as a seed for building a compatible implementation against the UVRN protocol.
 >
@@ -27,7 +29,7 @@ Each package spec follows a consistent format:
 
 ## Protocol Layer Model
 
-All 20 UVRN packages are organized across four layers. Every package belongs to exactly one layer.
+All 23 UVRN packages are organized across four layers. Every package belongs to exactly one layer.
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -35,14 +37,14 @@ All 20 UVRN packages are organized across four layers. Every package belongs to 
 │  @uvrn/embed  @uvrn/watch  @uvrn/mcp  @uvrn/api  @uvrn/cli    │
 ├─────────────────────────────────────────────────────────────────┤
 │  Layer 3 — Temporal & Lifecycle                                 │
-│  @uvrn/drift  @uvrn/agent  @uvrn/canon  @uvrn/timeline         │
+│  @uvrn/drift  @uvrn/agent  @uvrn/canon  @uvrn/timeline  @uvrn/algox │
 ├─────────────────────────────────────────────────────────────────┤
-│  Layer 2 — Receipt & Verification                               │
+│  Layer 2 — Receipt, Measurement & Verification                  │
 │  @uvrn/core  @uvrn/sdk  @uvrn/adapter  @uvrn/score             │
-│  @uvrn/compare  @uvrn/identity  @uvrn/test                     │
+│  @uvrn/compare  @uvrn/measure  @uvrn/identity  @uvrn/test      │
 ├─────────────────────────────────────────────────────────────────┤
 │  Layer 1 — Data & Consensus                                     │
-│  @uvrn/farm  @uvrn/consensus  @uvrn/normalize  @uvrn/signal    │
+│  @uvrn/farm  @uvrn/consensus  @uvrn/normalize  @uvrn/lattice  @uvrn/signal │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -50,7 +52,7 @@ All 20 UVRN packages are organized across four layers. Every package belongs to 
 
 ## Core Protocol Constants
 
-These values are canonical and must not be redefined by any package. V-Score formula and `WEIGHTS` live in `@uvrn/score`. `@uvrn/core` is Delta-only (convergence math, `deltaFinal`, DeltaReceipts) and does not own V-Score weights. `@uvrn/drift` imports `WEIGHTS` from `@uvrn/score` (required peer).
+These values are canonical and must not be redefined by any package. They live in `@uvrn/core`.
 
 **V-Score formula:**
 ```
@@ -87,7 +89,7 @@ These architectural choices must be preserved in any compatible implementation:
 ```
 @uvrn/core  (Layer 2 — no deps)
     │
-    ├── @uvrn/drift       (Layer 3 — peers: core, score)
+    ├── @uvrn/drift       (Layer 3 — peer: core)
     │       │
     │       ├── @uvrn/agent    (Layer 3 — peer: drift)
     │       │       │
@@ -152,7 +154,7 @@ These three packages are built, tested, and audited. They ship as part of the ne
 ### `@uvrn/drift` — Temporal Decay Scoring
 
 **Layer:** 3 — Temporal & Lifecycle
-**Status:** Pre-release (built, audited — v1.0.0)
+**Status:** Pre-release (built, audited — v3.0.0)
 
 **What it does:** Models how a receipt's V-Score degrades over time. Uses configurable decay curves and claim-type profiles so different kinds of claims (financial vs. research vs. news) can decay at different rates. Only the Freshness component decays — Completeness and Parity are re-scored when new sources arrive.
 
@@ -171,7 +173,7 @@ const snapshot = engine.score(receipt, { now: Date.now() });
 // snapshot.decayRate       → current decay velocity
 ```
 
-**Dependencies:** Peer dep on `@uvrn/core` (receipt types); peer dep on `@uvrn/score` (`WEIGHTS` for V-Score recompute)
+**Dependencies:** Peer dep on `@uvrn/core` (receipt types, V-Score math)
 
 **Interface contracts:**
 - Input: a valid DRVC3 receipt (as produced by `@uvrn/core`)
@@ -184,7 +186,7 @@ const snapshot = engine.score(receipt, { now: Date.now() });
 ### `@uvrn/agent` — Continuous Claim Monitoring
 
 **Layer:** 3 — Temporal & Lifecycle
-**Status:** Pre-release (built, audited — v1.0.0)
+**Status:** Pre-release (built, audited — v3.0.0)
 
 **What it does:** Registers claims, polls on configurable intervals, calls drift scoring, and emits unsigned `AgentDriftReceipt` envelopes. This is the monitoring loop — it watches claims over time and reports when consensus shifts. It does NOT sign receipts (that's canon's job) and does NOT fetch data itself (that's farm's job via the `FarmConnector` interface).
 
@@ -237,7 +239,7 @@ agent.on('claim:threshold', (event) => {
 ### `@uvrn/canon` — Canonization Engine
 
 **Layer:** 3 — Temporal & Lifecycle
-**Status:** Pre-release (built, audited — v1.0.0)
+**Status:** Pre-release (built, audited — v3.0.0)
 
 **What it does:** Locks a receipt as a permanent, human-confirmed, signed canonical record. Auto-suggests candidates for canonization but never auto-canonizes — a human or explicitly confirmed system trigger must call `canonize()`. Storage is pluggable — bring your own backend.
 
@@ -518,7 +520,7 @@ breakdown.explanation    // human-readable + LLM-friendly string
 **Dependencies:** `@uvrn/core`
 
 **Interface contracts:**
-- The canonical weight formula (0.35 / 0.35 / 0.30) and `WEIGHTS` live in THIS package (`@uvrn/score`) — it is the single source of truth. `@uvrn/core` is Delta-only and does not own V-Score weights; `@uvrn/drift` imports `WEIGHTS` from here.
+- The canonical weight formula (0.35 / 0.35 / 0.30) lives in `@uvrn/core` as `VSCORE_WEIGHTS` — this package must not redefine it; it re-exports it as `WEIGHTS` and only exposes and decomposes it
 - Domain profiles explain weights for a claim type — they do not change the formula
 - `explanation` string must be LLM-friendly (short, factual)
 
@@ -721,32 +723,35 @@ import { ConsensusBadge } from '@uvrn/embed';
 
 | Package | Layer | Status | Role |
 |---------|-------|--------|------|
-| `@uvrn/core` | 2 | Live (npm) | Deterministic delta engine — convergence math, validation, DRVC3 receipts |
+| `@uvrn/core` | 2 | Live (npm) | Deterministic delta engine — V-Score math, validation, DRVC3 receipts |
 | `@uvrn/sdk` | 2 | Live (npm) | TypeScript SDK — submit claims, read receipts |
 | `@uvrn/adapter` | 2 | Live (npm) | DRVC3 envelope adapter — EIP-191 signatures |
 | `@uvrn/mcp` | 4 | Live (npm) | MCP server — AI agent native access |
 | `@uvrn/api` | 4 | Live (npm) | Fastify REST API — self-hosted deployments |
 | `@uvrn/cli` | 4 | Live (npm) | CLI — `uvrn run bundle.json` → receipt |
-| `@uvrn/drift` | 3 | Live (npm) — v1.0.0 | Temporal decay scoring |
-| `@uvrn/agent` | 3 | Live (npm) — v1.0.0 | Continuous claim monitoring loop |
-| `@uvrn/canon` | 3 | Live (npm) — v1.0.0 | Canonization engine — permanent signed records |
-| `@uvrn/farm` | 1 | Live (npm) — v1.0.0 | Data source connectors |
-| `@uvrn/consensus` | 1 | Live (npm) — v1.0.0 | Multi-source signal aggregation |
-| `@uvrn/normalize` | 1 | Live (npm) — v1.0.0 | Source normalization layer |
-| `@uvrn/signal` | 1 | Live (npm) — v1.0.0 | Internal event bus |
-| `@uvrn/timeline` | 3 | Live (npm) — v1.0.0 | Time-series query layer |
-| `@uvrn/score` | 2 | Live (npm) — v1.0.0 | V-Score composition & profiles |
-| `@uvrn/compare` | 2 | Live (npm) — v1.0.0 | Cross-receipt comparison |
-| `@uvrn/identity` | 2 | Live (npm) — v1.0.0 | Signer reputation layer |
-| `@uvrn/test` | 2 | Live (npm) — v1.0.0 | Testing utilities & mocks |
-| `@uvrn/watch` | 4 | Live (npm) — v1.0.0 | Subscription & threshold alerts |
-| `@uvrn/embed` | 4 | Live (npm) — v1.0.0 | Embeddable consensus badges |
+| `@uvrn/drift` | 3 | Live (npm) — v3.0.0 | Temporal decay scoring |
+| `@uvrn/agent` | 3 | Live (npm) — v3.0.0 | Continuous claim monitoring loop |
+| `@uvrn/canon` | 3 | Live (npm) — v3.0.0 | Canonization engine — permanent signed records |
+| `@uvrn/farm` | 1 | Live (npm) — v3.0.0 | Data source connectors |
+| `@uvrn/consensus` | 1 | Live (npm) — v3.0.0 | Multi-source signal aggregation |
+| `@uvrn/normalize` | 1 | Live (npm) — v3.0.0 | Source normalization layer |
+| `@uvrn/signal` | 1 | Live (npm) — v3.0.0 | Internal event bus |
+| `@uvrn/timeline` | 3 | Live (npm) — v3.0.0 | Time-series query layer |
+| `@uvrn/score` | 2 | Live (npm) — v3.0.0 | V-Score composition & profiles |
+| `@uvrn/compare` | 2 | Live (npm) — v3.0.0 | Cross-receipt comparison |
+| `@uvrn/identity` | 2 | Live (npm) — v3.0.0 | Signer reputation layer |
+| `@uvrn/test` | 2 | Live (npm) — v3.0.0 | Testing utilities & mocks |
+| `@uvrn/measure` | 2 | Built — v3.0.0 | Pluggable agree/disagree/conflict/potential measurements + registry |
+| `@uvrn/lattice` | 1 | Built — v0.4.1 | Cross-domain question decomposition |
+| `@uvrn/algox` | 3 | Built — v3.0.0 | Signal ranking and selection |
+| `@uvrn/watch` | 4 | Live (npm) — v3.0.0 | Subscription & threshold alerts |
+| `@uvrn/embed` | 4 | Live (npm) — v3.0.0 | Embeddable consensus badges |
 
 ---
 
-## Publish Order (Full 20-Package Sequence)
+## Publish Order (Full 23-Package Sequence)
 
-1. `@uvrn/core` → 2. `@uvrn/drift` → 3. `@uvrn/sdk` → 4. `@uvrn/adapter` → 5. `@uvrn/canon` → 6. `@uvrn/agent` → 7. `@uvrn/farm` → 8. `@uvrn/normalize` → 9. `@uvrn/consensus` → 10. `@uvrn/signal` → 11. `@uvrn/score` → 12. `@uvrn/compare` → 13. `@uvrn/identity` → 14. `@uvrn/test` → 15. `@uvrn/timeline` → 16. `@uvrn/mcp` → 17. `@uvrn/api` → 18. `@uvrn/cli` → 19. `@uvrn/watch` → 20. `@uvrn/embed`
+1. `@uvrn/core` → 2. `@uvrn/drift` → 3. `@uvrn/sdk` → 4. `@uvrn/adapter` → 5. `@uvrn/canon` → 6. `@uvrn/agent` → 7. `@uvrn/farm` → 8. `@uvrn/normalize` → 9. `@uvrn/lattice` → 10. `@uvrn/consensus` → 11. `@uvrn/signal` → 12. `@uvrn/score` → 13. `@uvrn/measure` → 14. `@uvrn/compare` → 15. `@uvrn/identity` → 16. `@uvrn/test` → 17. `@uvrn/timeline` → 18. `@uvrn/algox` → 19. `@uvrn/mcp` → 20. `@uvrn/api` → 21. `@uvrn/cli` → 22. `@uvrn/watch` → 23. `@uvrn/embed`
 
 ---
 

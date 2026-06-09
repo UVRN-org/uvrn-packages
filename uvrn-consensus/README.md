@@ -30,7 +30,7 @@ const result = engine.buildConsensusResult('claim: Exchange X holds full reserve
 
 ## Ranking model
 
-Source weighting in this package is separate from the canonical V-Score formula in `@uvrn/score`.
+Source weighting in this package is separate from the canonical V-Score formula, whose weights live in `@uvrn/core` (`VSCORE_WEIGHTS`, re-exported by `@uvrn/score` as `WEIGHTS`).
 
 This v1 implementation ranks sources with a weighted sum:
 

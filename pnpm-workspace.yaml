@@ -10,6 +10,7 @@ packages:
   - 'uvrn-drift'
   - 'uvrn-canon'
   - 'uvrn-agent'
+  - 'uvrn-algox'
   # Wave 1 — built + audited
   - 'uvrn-signal'
   - 'uvrn-score'
@@ -17,9 +18,11 @@ packages:
   # Wave 2 — built + audited
   - 'uvrn-farm'
   - 'uvrn-normalize'
+  - 'uvrn-lattice'
   # Wave 3 — built + audited
   - 'uvrn-consensus'
   - 'uvrn-compare'
+  - 'uvrn-measure'
   - 'uvrn-identity'
   - 'uvrn-timeline'
   # Wave 4 — built + audited

@@ -1,7 +1,10 @@
-import { handleRunEngine } from '../../tools/handlers';
+import { resolveRuntimeConfig } from '../../config';
+import { buildHandlers } from '../../tools/handlers';
 import { createDivergentBundle, createTestBundle } from '../fixtures/bundles';
 
 describe('Sample Bundle Processing', () => {
+  const { handleRunEngine } = buildHandlers(resolveRuntimeConfig());
+
   it('should process revenue bundle from examples', async () => {
     const bundle = createTestBundle({
       bundleId: 'revenue-q1-2024',

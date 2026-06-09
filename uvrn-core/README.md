@@ -2,7 +2,7 @@
 
 UVRN Delta Engine core — deterministic multi-source comparison and verification. Runs the Delta formula on bundles, produces canonical receipts with SHA-256 hashes, and validates or verifies bundles and receipts.
 
-**Package provides:** `runDeltaEngine`, `validateBundle`, `verifyReceipt`, `canonicalSerialize`, `hashReceipt`; types (`DeltaBundle`, `DeltaReceipt`, etc.). Pure logic — no I/O, no signer, no storage.
+**Package provides:** `runDeltaEngine`, `validateBundle`, `verifyReceipt`, `canonicalSerialize`, `hashReceipt`, `buildMasterReceipt`, `verifyMasterReceipt`; types (`DeltaBundle`, `DeltaReceipt`, `Measurement`, `MasterReceipt`, etc.). Pure logic — no I/O, no signer, no storage.
 
 **You provide:** Bundle data (claim, threshold, at least two data specs with metrics). No connectors or keys required for basic use.
 
@@ -61,6 +61,20 @@ console.log(receipt.hash);      // SHA-256 of canonical receipt
 - **Produce verifiable receipts** — Every receipt has a canonical hash; use `verifyReceipt(receipt)` to recompute and check integrity.
 - **Validate before running** — Use `validateBundle(bundle)` to check structure and threshold without executing the engine.
 - **Integrate into pipelines** — Use as a library in CI, ETL, or any service that needs deterministic comparison and proof.
+
+## Measurement contract
+
+`@uvrn/core` exports the shared `Measurement` contract types so hosts and packages can describe relationship checks over evidence in one stable shape. Core owns the type boundary only: it does not run agree/disagree/conflict/potential logic, register measurement modules, fetch sources, or store results.
+
+Measurement implementations live in packages such as `@uvrn/measure` or in host applications. A custom measurement implements `Measurement.evaluate(input)` and returns a `MeasurementResult` with a short factual explanation and evidence references.
+
+## Master receipt
+
+`MasterReceipt` is an additive envelope over an existing `DeltaReceipt`. It records the base receipt, measurement results, and node status records for every participating source or node. A node that is `off` or `unavailable` is recorded directly in `nodes[]`; missing capacity is not hidden.
+
+`buildMasterReceipt()` computes a separate `masterHash` from the envelope version, claim, `base.hash`, measurements, nodes, and timestamp. The full base receipt does not enter the master hash, and `hashReceipt()` / `verifyReceipt()` behavior for existing `DeltaReceipt` values is unchanged.
+
+`verifyMasterReceipt()` delegates base verification to `verifyReceipt(base)` and then recomputes the additive master hash.
 
 ## Links
 

@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/drift",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Temporal decay scoring for UVRN verification receipts",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -21,10 +21,11 @@
     "clean": "rm -rf dist"
   },
   "peerDependencies": {
-    "@uvrn/core": ">=1.0.0",
-    "@uvrn/score": ">=1.0.0"
+    "@uvrn/core": "^3.0.0",
+    "@uvrn/score": "^3.0.0"
   },
   "devDependencies": {
+    "@uvrn/core": "workspace:*",
     "@uvrn/score": "workspace:*",
     "@types/jest": "^29.5.0",
     "@types/node": "^20.0.0",

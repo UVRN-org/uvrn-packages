@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/agent",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "description": "Continuous claim monitoring loop for the UVRN protocol",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -20,7 +20,7 @@
     "clean": "rm -rf dist"
   },
   "peerDependencies": {
-    "@uvrn/drift": ">=1.0.0"
+    "@uvrn/drift": "^3.0.0"
   },
   "devDependencies": {
     "@uvrn/drift": "workspace:*",

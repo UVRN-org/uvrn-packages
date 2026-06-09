@@ -87,6 +87,55 @@ describe('@uvrn/normalize', () => {
     expect(normalize.getTransformer('CoinGeckoFarm')).toBeDefined();
   });
 
+  it('normalize(sources, general) prefers evidenceScore over a numeric title', () => {
+    const source = buildSource({
+      title: 'Top 10 trend report',
+      snippet: 'Strong demand observed.',
+      evidenceScore: 80,
+    });
+
+    const result = normalize([source], 'general');
+
+    expect(result.sources[0]?.value).toBe(80);
+    expect(result.sources[0]?.unit).toBe('number');
+  });
+
+  it('normalize(sources, general) honors evidenceScore: 0 (not treated as missing)', () => {
+    const source = buildSource({
+      title: 'Top 10 trend report',
+      snippet: 'Strong demand observed.',
+      evidenceScore: 0,
+    });
+
+    const result = normalize([source], 'general');
+
+    expect(result.sources[0]?.value).toBe(0);
+    expect(result.sources[0]?.unit).toBe('number');
+  });
+
+  it('normalize(sources, general) honors a decimal evidenceScore', () => {
+    const source = buildSource({
+      title: 'Top 10 trend report',
+      snippet: 'Strong demand observed.',
+      evidenceScore: 42.5,
+    });
+
+    const result = normalize([source], 'general');
+
+    expect(result.sources[0]?.value).toBe(42.5);
+  });
+
+  it('normalize(sources, general) falls back to regex extraction when evidenceScore is missing', () => {
+    const source = buildSource({
+      title: 'Reserve ratio 73',
+      snippet: 'No explicit score supplied.',
+    });
+
+    const result = normalize([source], 'general');
+
+    expect(result.sources[0]?.value).toBe(73);
+  });
+
   it('all output NormalizedSource objects contain all required fields', () => {
     const source = buildSource({ credibility: 75 });
 

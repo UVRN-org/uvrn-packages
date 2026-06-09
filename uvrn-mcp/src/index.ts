@@ -8,6 +8,9 @@
 import { startServer } from './server.js';
 import { logger } from './logger.js';
 
+export { createServer, startServer } from './server.js';
+export type { RuntimeConfig } from './types.js';
+
 // Handle process termination
 process.on('SIGINT', () => {
   logger.info('Received SIGINT, shutting down gracefully...');
@@ -30,9 +33,10 @@ process.on('unhandledRejection', (reason) => {
   process.exit(1);
 });
 
-// Start the server
-startServer().catch((error) => {
-  logger.error('Failed to start server:', error);
-  process.exit(1);
-});
+if (require.main === module) {
+  startServer().catch((error) => {
+    logger.error('Failed to start server:', error);
+    process.exit(1);
+  });
+}
 

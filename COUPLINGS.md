@@ -8,8 +8,10 @@ duplication is not.**
 
 `@uvrn/drift` imports `WEIGHTS` from `@uvrn/score` in both `src/index.ts` and
 `src/agent-api.ts` to recompute V-Score with decayed freshness. This is a peer
-dependency. `@uvrn/score` is the single source of truth for V-Score weights —
-`@uvrn/drift` must not redefine them.
+dependency. `@uvrn/core` is the single source of truth for V-Score weights
+(`VSCORE_WEIGHTS`); `@uvrn/score` re-exports them as `WEIGHTS` (passthrough, not
+duplication). `@uvrn/drift` imports `WEIGHTS` from `@uvrn/score` and must not
+redefine them.
 
 This is an intentional upward coupling from Layer 3 to Layer 2. Drift needs
 the canonical weights to recompute composite scores after freshness decay;

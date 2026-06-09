@@ -8,3 +8,4 @@ export * from './core/validation';
 export * from './core/engine';
 export * from './core/serialization';
 export * from './core/verification';
+export * from './core/master-receipt';

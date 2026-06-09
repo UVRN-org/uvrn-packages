@@ -311,7 +311,7 @@ LOG_LEVEL=debug
 
 **Related Documentation:**
 - [README.md](./README.md) - Package overview
-- [CLAUDE_DESKTOP_SETUP.md](./CLAUDE_DESKTOP_SETUP.md) - Integration guide
+- [CONNECT.md](./CONNECT.md) - Connect any MCP client
 - [.env.example](./.env.example) - Example configuration
 
 ---

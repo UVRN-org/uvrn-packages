@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/sdk",
-  "version": "1.0.2",
+  "version": "3.0.0",
   "description": "UVRN TypeScript SDK — programmatic access to deterministic verification",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -28,7 +28,7 @@
     "lint": "eslint src/**/*.ts"
   },
   "peerDependencies": {
-    "@uvrn/core": "^1.0.0"
+    "@uvrn/core": "^3.0.0"
   },
   "dependencies": {},
   "devDependencies": {
@@ -43,5 +43,6 @@
     "typescript": "^5.3.0"
   },
   "engines": { "node": ">=18.0.0" },
-  "files": ["dist", "README.md", "LICENSE"]
+  "files": ["dist", "README.md", "LICENSE"],
+  "publishConfig": { "access": "public" }
 }

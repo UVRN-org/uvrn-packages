@@ -5,7 +5,7 @@
 **Monorepo**: UVRN (Universal Verification Receipt Network) — full 20-package protocol
 **Active branch**: `feature/updates` (git worktree from `uvrn-packages/`)
 **Build standard**: Bloom Protocol v1.7 — `.admin/protocols/BLOOM-PROTOCOL.md`
-**Last updated**: 2026-04-01
+**Last updated**: 2026-06-08 (PR #4 — `delta_score_claim` host-evidence; weights reconciled to `@uvrn/core`)
 
 ---
 
@@ -15,7 +15,7 @@ This is the **active development worktree** for expanding the UVRN protocol from
 
 UVRN is a **Universal Verification Receipt Network** — an open protocol for scoring claim consensus using structured data bundles, the V-Score formula, and signed DRVC3 receipts.
 
-**V-Score formula (canonical, owned by `@uvrn/score`, never redefined):**
+**V-Score formula (canonical, defined in `@uvrn/core`, never redefined):**
 ```
 V-Score = (Completeness × 0.35) + (Parity × 0.35) + (Freshness × 0.30)
 ```
@@ -116,7 +116,7 @@ Every package in this protocol is built around its **interface contract**, not a
 
 ## Critical Design Rules (Non-Negotiable)
 
-1. **Never redefine V-Score weights.** They live in `@uvrn/score` only. `@uvrn/drift` imports `WEIGHTS` from `@uvrn/score` (required peer). `@uvrn/core` is Delta-only and does not own V-Score weights.
+1. **Never redefine V-Score weights.** They live in `@uvrn/core` only, exported as `VSCORE_WEIGHTS`. `@uvrn/score` re-exports them as `WEIGHTS` and decomposes — a passthrough, not a second definition. `@uvrn/drift` imports `WEIGHTS` from `@uvrn/score`.
 2. **`canonize()` must always require explicit human/system invocation.** Never auto-canonize.
 3. **`@uvrn/agent` emits `AgentDriftReceipt` only** — not signed DRVC3. Signing is `@uvrn/canon`'s job.
 4. **Decay only affects Freshness.** Completeness and Parity are re-scored when new sources arrive.
@@ -129,6 +129,7 @@ Every package in this protocol is built around its **interface contract**, not a
 11. **Provider-agnostic interfaces.** Any package that touches an external system must expose a pluggable interface for it. Reference implementations are examples, not requirements. The protocol logic must never be coupled to a specific third-party service at the type or import level.
 12. **The zero-external path must always work.** Every package must be fully usable without signing up for any external service — via mocks, in-memory stores, in-process callbacks, or reference implementations that use free/open APIs.
 13. **Document the interface separately from the example.** In READMEs and build plans, clearly distinguish "this is the interface you implement" from "this is a reference implementation." Users need to know what is theirs to own and what is just a working example.
+14. **Never encode protocol data in free-text fields.** Structured values (scores, ids, flags) travel as typed fields, never string-prefixed into `snippet`/`title`/labels. A downstream parser reading "the first number in the text" must never be the carrier for a real value. (PR #4 lesson: host `evidenceScore` was once prefixed into `snippet`; numeric titles silently overrode it. It is now the typed `FarmSource.evidenceScore` field that extractors prefer.)
 
 ---
 

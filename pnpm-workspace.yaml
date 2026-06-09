@@ -28,3 +28,8 @@ packages:
   # Wave 4 — built + audited
   - 'uvrn-watch'
   - 'uvrn-embed'
+
+# Approve esbuild's install/build script (used by @uvrn/embed's UMD bundle).
+# pnpm 11 otherwise exits non-zero on a fresh install with ERR_PNPM_IGNORED_BUILDS.
+onlyBuiltDependencies:
+  - esbuild

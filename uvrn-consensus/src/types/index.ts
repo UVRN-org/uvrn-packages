@@ -7,10 +7,43 @@ export interface SourceWeights {
   coverage: number;
 }
 
+/**
+ * Configuration for near-identical source deduplication.
+ *
+ * Two sources are collapsed when their metric values are "near-identical" AND their
+ * publication timestamps fall within the dedup time window. The defaults reproduce the
+ * historical (v3) hardcoded behavior exactly: ±1% relative tolerance within 24 hours.
+ *
+ * Modes:
+ * - `'relative'` (default): values match when |a−b| / max(|a|, |b|, 1) <= relativeTolerance
+ * - `'absolute'`: values match when |a−b| <= relativeTolerance (the tolerance is read as an
+ *   absolute delta in this mode)
+ * - `'off'`: deduplication is disabled — every parsed source is retained
+ */
+export interface DedupConfig {
+  /**
+   * Value tolerance. In `'relative'` mode this is a ratio (default `0.01` = ±1%); in
+   * `'absolute'` mode it is an absolute delta in the metric's own unit.
+   */
+  relativeTolerance?: number;
+  /**
+   * Maximum publication-time distance (ms) for two sources to be considered duplicates.
+   * Default `86_400_000` (1 day).
+   */
+  timeWindowMs?: number;
+  /** Dedup comparison mode. Default `'relative'`. */
+  mode?: 'relative' | 'absolute' | 'off';
+}
+
 export interface ConsensusEngineOptions {
   sources: import('@uvrn/agent').FarmResult;
   weights?: Partial<SourceWeights>;
   claim?: string;
+  /**
+   * Near-identical source deduplication thresholds. Omitting this (or any field) preserves
+   * v3 behavior exactly: relative mode, ±1% tolerance, 1-day window.
+   */
+  dedup?: DedupConfig;
 }
 
 export interface ConsensusStats {

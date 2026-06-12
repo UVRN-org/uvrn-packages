@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/embed",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "Embeddable consensus badges for any webpage — React component and plain JS",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -19,6 +19,7 @@
   "scripts": {
     "build": "tsc && node build-umd.mjs",
     "test": "jest",
+    "test:coverage": "jest --coverage",
     "clean": "rm -rf dist"
   },
   "peerDependencies": {

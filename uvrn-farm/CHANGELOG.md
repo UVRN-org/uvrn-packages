@@ -1,5 +1,16 @@
 # Changelog
 
+## [4.0.0] - 2026-06-10 (unreleased)
+
+### Added
+- **Rate limiting enforced.** The previously declared-but-unenforced `ConnectorConfig.rateLimitPerMinute` is now enforced in `BaseConnector` via a sliding 60-second window. Requests that would exceed the limit reject with the new `RateLimitError` (extends `FarmConnectorError`, carries `limit` and `retryAfterMs`) before any network I/O. Unset by default — no limit unless configured.
+- **Circuit breaker on `BaseConnector`.** Opens after `circuitBreakerThreshold` consecutive request failures (default `5`); while open, requests reject fast with the new `CircuitOpenError` (extends `FarmConnectorError`, carries `retryAfterMs`). After `circuitBreakerResetMs` (default `30_000`), the circuit goes half-open and admits a single probe — success closes it, failure reopens it.
+- **Injectable clock.** New `ConnectorConfig.now` hook (defaults to `Date.now`) drives both guards so tests can advance time without sleeping.
+- Protected `BaseConnector.withGuards(fn)` helper for custom connectors that bypass `requestJson()`.
+
+### Changed
+- `requestJson()` is now wrapped by the guards above. Existing connectors with no new config behave exactly as before, **except** that 5 consecutive failures now open the breaker for 30 seconds (previously consecutive failures never tripped anything). Constructor and config shapes are unchanged (all new fields optional).
+
 ## [3.0.0] - 2026-06-09
 
 ### Changed

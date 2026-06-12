@@ -1,5 +1,14 @@
 # Changelog
 
+## [4.0.0] - 2026-06-10 (unreleased, v4 / fable-refactor-1)
+
+### Added
+- **`insufficient-data` verdict** per `SPEC/uvrn-measurement-v1.md` §4. All four starter measurements now emit `insufficient-data` (confidence 0 unless specified) when they cannot measure: too few usable sources for their evidence type, thin history, or a sub-floor potential signal. v3 emitted `no-agreement` (agree) or `none` (disagree/conflict/potential) for these thin-evidence cases; explanations now state what was missing.
+- **`conflictRangeTolerance` context key** (default `0` = v3 behavior). Disjoint ranges on the same field conflict only when the gap between intervals exceeds the tolerance; hosts widen it to demand a material gap.
+
+### Changed
+- **Potential confidence hardening.** When `potential` fires, confidence is scaled by sample size and trend strength (`current × (0.5 × sampleFactor + 0.5 × trendStrength)`). When the computed confidence falls below `context.confidenceFloor` (default `0.25`), the measurement emits `insufficient-data` instead of `potential` so weak early signals are never overstated.
+
 ## [3.0.0] - 2026-06-09
 
 ### Changed

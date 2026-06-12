@@ -1,5 +1,5 @@
 import EventEmitter from 'events';
-import { Watcher, type AlertEvent, type DeliveryTarget } from '../src';
+import { Watcher, type AlertEvent, type DeliveryTarget, type Subscription, type WatchStore } from '../src';
 import type { DriftThresholdEvent } from '@uvrn/drift';
 
 class MockAgent extends EventEmitter {}
@@ -29,9 +29,32 @@ function buildEvent(overrides: Partial<DriftThresholdEvent> = {}): DriftThreshol
   };
 }
 
+/** Drains pending async work (retry chains run on microtasks when sleep is stubbed). */
 async function flushPromises(): Promise<void> {
-  await Promise.resolve();
-  await Promise.resolve();
+  await new Promise((resolve) => setTimeout(resolve, 0));
+  await new Promise((resolve) => setTimeout(resolve, 0));
+}
+
+const noopSleep = async (): Promise<void> => {};
+
+class RecordingStore implements WatchStore {
+  private readonly records = new Map<string, Subscription>();
+
+  async saveSubscription(subscription: Subscription): Promise<void> {
+    this.records.set(subscription.subscriberId, { ...subscription });
+  }
+
+  async getSubscription(subscriberId: string): Promise<Subscription | null> {
+    return this.records.get(subscriberId) ?? null;
+  }
+
+  async listSubscriptions(): Promise<Subscription[]> {
+    return Array.from(this.records.values());
+  }
+
+  async removeSubscription(subscriberId: string): Promise<boolean> {
+    return this.records.delete(subscriberId);
+  }
 }
 
 describe('@uvrn/watch', () => {
@@ -234,7 +257,7 @@ describe('@uvrn/watch', () => {
       .mockResolvedValueOnce({ ok: false, status: 500 } as Response)
       .mockResolvedValueOnce({ ok: true, status: 200 } as Response);
 
-    const watcher = new Watcher({ agent });
+    const watcher = new Watcher({ agent, retryAttempts: 0 });
     watcher.subscribe('clm_sol_001', {
       on: 'CRITICAL',
       notify: {
@@ -269,5 +292,219 @@ describe('@uvrn/watch', () => {
 
     expect(callback).not.toHaveBeenCalled();
     expect(watcher.subscriptions()).toHaveLength(0);
+  });
+
+  describe('delivery retry', () => {
+    it('retries a flaky webhook delivery and succeeds on the 3rd attempt', async () => {
+      const agent = new MockAgent();
+      const fetchMock = global.fetch as jest.MockedFunction<typeof fetch>;
+
+      fetchMock
+        .mockRejectedValueOnce(new Error('network down'))
+        .mockResolvedValueOnce({ ok: false, status: 503 } as Response)
+        .mockResolvedValueOnce({ ok: true, status: 200 } as Response);
+
+      const watcher = new Watcher({ agent, sleep: noopSleep });
+      watcher.subscribe('clm_sol_001', {
+        on: 'CRITICAL',
+        notify: { webhook: 'https://example.com/webhook' },
+        cooldown: 0,
+      });
+
+      agent.emit('claim:threshold', buildEvent());
+      await flushPromises();
+
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+      expect(console.error).not.toHaveBeenCalled();
+    });
+
+    it('surfaces failure after exhausting retries', async () => {
+      const agent = new MockAgent();
+      const fetchMock = global.fetch as jest.MockedFunction<typeof fetch>;
+      fetchMock.mockResolvedValue({ ok: false, status: 500 } as Response);
+
+      const watcher = new Watcher({ agent, retryAttempts: 2, sleep: noopSleep });
+      watcher.subscribe('clm_sol_001', {
+        on: 'CRITICAL',
+        notify: { webhook: 'https://example.com/webhook' },
+        cooldown: 0,
+      });
+
+      agent.emit('claim:threshold', buildEvent());
+      await flushPromises();
+
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+      expect(console.error).toHaveBeenCalledTimes(1);
+      expect((console.error as jest.Mock).mock.calls[0][0]).toContain('after 3 attempt(s)');
+    });
+
+    it('doubles the backoff delay on each retry', async () => {
+      const agent = new MockAgent();
+      const fetchMock = global.fetch as jest.MockedFunction<typeof fetch>;
+      fetchMock.mockResolvedValue({ ok: false, status: 500 } as Response);
+
+      const sleeps: number[] = [];
+      const watcher = new Watcher({
+        agent,
+        retryBackoffMs: 100,
+        sleep: async (ms) => {
+          sleeps.push(ms);
+        },
+      });
+
+      watcher.subscribe('clm_sol_001', {
+        on: 'CRITICAL',
+        notify: { webhook: 'https://example.com/webhook' },
+        cooldown: 0,
+      });
+
+      agent.emit('claim:threshold', buildEvent());
+      await flushPromises();
+
+      expect(sleeps).toEqual([100, 200, 400]);
+    });
+
+    it('honors per-subscription retry overrides', async () => {
+      const agent = new MockAgent();
+      const fetchMock = global.fetch as jest.MockedFunction<typeof fetch>;
+      fetchMock.mockResolvedValue({ ok: false, status: 500 } as Response);
+
+      const watcher = new Watcher({ agent, retryAttempts: 5, sleep: noopSleep });
+      watcher.subscribe('clm_sol_001', {
+        on: 'CRITICAL',
+        notify: { webhook: 'https://example.com/webhook' },
+        cooldown: 0,
+        retryAttempts: 1,
+      });
+
+      agent.emit('claim:threshold', buildEvent());
+      await flushPromises();
+
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(console.error).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('webhook URL validation', () => {
+    it('rejects an unparseable webhook URL at subscribe time', () => {
+      const watcher = new Watcher({ agent: new MockAgent() });
+
+      expect(() =>
+        watcher.subscribe('clm_sol_001', {
+          on: 'CRITICAL',
+          notify: { webhook: 'not a url' },
+        })
+      ).toThrow(/invalid webhook URL "not a url": not a parseable URL/);
+      expect(watcher.subscriptions()).toHaveLength(0);
+    });
+
+    it('rejects non-http(s) protocols across webhook, slack, and discord targets', () => {
+      const watcher = new Watcher({ agent: new MockAgent() });
+
+      expect(() =>
+        watcher.subscribe('clm_sol_001', {
+          on: 'CRITICAL',
+          notify: { webhook: 'ftp://example.com/hook' },
+        })
+      ).toThrow(/protocol must be http or https/);
+
+      expect(() =>
+        watcher.subscribe('clm_sol_001', {
+          on: 'CRITICAL',
+          notify: { slack: 'file:///etc/passwd' },
+        })
+      ).toThrow(/invalid slack webhook URL/);
+
+      expect(() =>
+        watcher.subscribe('clm_sol_001', {
+          on: 'CRITICAL',
+          notify: { discord: 'not-a-url' },
+        })
+      ).toThrow(/invalid discord webhook URL/);
+
+      expect(watcher.subscriptions()).toHaveLength(0);
+    });
+
+    it('accepts valid http and https URLs', () => {
+      const watcher = new Watcher({ agent: new MockAgent() });
+
+      expect(() =>
+        watcher.subscribe('clm_sol_001', {
+          on: 'CRITICAL',
+          notify: {
+            webhook: 'http://localhost:8080/hook',
+            slack: 'https://hooks.slack.com/services/123',
+          },
+        })
+      ).not.toThrow();
+      expect(watcher.subscriptions()).toHaveLength(1);
+    });
+  });
+
+  describe('WatchStore injection', () => {
+    it('round-trips subscriptions through an injected store', async () => {
+      const store = new RecordingStore();
+      const watcher = new Watcher({ agent: new MockAgent(), store });
+
+      const subscription = watcher.subscribe('clm_sol_001', {
+        on: 'CRITICAL',
+        notify: { callback: jest.fn() },
+      });
+      await watcher.flush();
+
+      const listed = await store.listSubscriptions();
+      expect(listed).toHaveLength(1);
+      expect(listed[0]).toMatchObject({
+        claimId: 'clm_sol_001',
+        subscriberId: subscription.subscriberId,
+        active: true,
+        alertCount: 0,
+      });
+      expect(await store.getSubscription(subscription.subscriberId)).not.toBeNull();
+
+      watcher.unsubscribe(subscription.subscriberId);
+      await watcher.flush();
+
+      expect(await store.listSubscriptions()).toHaveLength(0);
+    });
+
+    it('writes alert bookkeeping through the store', async () => {
+      const store = new RecordingStore();
+      const agent = new MockAgent();
+      const watcher = new Watcher({ agent, store });
+
+      const subscription = watcher.subscribe('clm_sol_001', {
+        on: 'CRITICAL',
+        notify: { callback: jest.fn() },
+        cooldown: 0,
+      });
+
+      agent.emit('claim:threshold', buildEvent());
+      await flushPromises();
+      await watcher.flush();
+
+      const stored = await store.getSubscription(subscription.subscriberId);
+      expect(stored?.alertCount).toBe(1);
+      expect(stored?.lastAlertAt).toBeDefined();
+    });
+
+    it('removes once-mode subscriptions from the store after firing', async () => {
+      const store = new RecordingStore();
+      const agent = new MockAgent();
+      const watcher = new Watcher({ agent, store });
+
+      watcher.subscribe('clm_sol_001', {
+        on: 'CRITICAL',
+        notify: { callback: jest.fn() },
+        mode: 'once',
+        cooldown: 0,
+      });
+
+      agent.emit('claim:threshold', buildEvent());
+      await flushPromises();
+      await watcher.flush();
+
+      expect(await store.listSubscriptions()).toHaveLength(0);
+    });
   });
 });

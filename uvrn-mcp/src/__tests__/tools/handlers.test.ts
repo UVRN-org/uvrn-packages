@@ -367,11 +367,13 @@ describe('delta_score_claim', () => {
     expect(result.masterReceipt.nodes).toEqual([
       expect.objectContaining({ status: 'on' }),
     ]);
+    // v4: thin history is reported as insufficient-data, never 'none'
+    // (SPEC/uvrn-measurement-v1.md §3.4/§4 — the mock path supplies no agreement history).
     expect(result.masterReceipt.measurements).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           type: 'potential',
-          verdict: 'none',
+          verdict: 'insufficient-data',
         }),
       ])
     );
@@ -645,6 +647,102 @@ describe('delta_score_claim', () => {
       expect(source.ts).toBeDefined();
       expect(new Date(source.ts!).toISOString()).toBe(source.ts);
     }
+  });
+
+  it('returns a verified NetworkReceipt + HumanView with a normalized topic on the zero-external mock path (v4 e2e)', async () => {
+    vi.doUnmock('@uvrn/core');
+    vi.resetModules();
+    const { handleScoreClaim } = await loadHandlers();
+    const result = await handleScoreClaim({
+      claim: 'Mock claim has value 100',
+      topic: 'Markets/Crypto',
+    });
+
+    // Signed uvrn-receipt-4 envelope, verifiable with the run's ephemeral public key.
+    expect(result.networkReceipt.schemaVersion).toBe('uvrn-receipt-4');
+    expect(result.networkReceipt.kind).toBe('master');
+    expect(result.networkReceipt.signature?.publicKeyRef).toBe('uvrn-mcp-ephemeral');
+    expect(typeof result.signerPublicKey).toBe('string');
+
+    const { verifyReceiptFull } = await import('@uvrn/receipt');
+    const verification = verifyReceiptFull(result.networkReceipt, {
+      publicKey: result.signerPublicKey,
+    });
+    expect(verification.verified).toBe(true);
+
+    // Human view is render-ready.
+    expect(typeof result.humanView.verdictLabel).toBe('string');
+    expect(result.humanView.verdictLabel.length).toBeGreaterThan(0);
+    expect(result.humanView.measurements.length).toBeGreaterThan(0);
+    expect(result.humanView.scoreCard.vScore).toBe(result.v_score);
+
+    // Topic is normalized onto the envelope.
+    expect(result.networkReceipt.topic).toBe('markets/crypto');
+
+    // Existing fields are unchanged (additive contract).
+    expect(result.masterReceipt.masterHash).toBeDefined();
+    expect(typeof result.v_score).toBe('number');
+    expect(result.evidenceMode).toBe('mock');
+  });
+
+  it('enriches measurements with humanExplanation INSIDE the hashed master envelope', async () => {
+    vi.doUnmock('@uvrn/core');
+    vi.resetModules();
+    const { handleScoreClaim } = await loadHandlers();
+    const result = await handleScoreClaim({ claim: 'Mock claim has value 100' });
+
+    for (const measurement of result.masterReceipt.measurements) {
+      expect(typeof (measurement as { humanExplanation?: string }).humanExplanation).toBe('string');
+    }
+    // The master hash must still verify — proof enrichment happened before hashing.
+    const { verifyMasterReceipt } = await import('@uvrn/core');
+    expect(verifyMasterReceipt(result.masterReceipt).verified).toBe(true);
+  });
+
+  it('omits topic from the NetworkReceipt when not supplied and rejects empty topic', async () => {
+    vi.doUnmock('@uvrn/core');
+    vi.resetModules();
+    const { handleScoreClaim } = await loadHandlers();
+
+    const result = await handleScoreClaim({ claim: 'Mock claim has value 100' });
+    expect(result.networkReceipt.topic).toBeUndefined();
+
+    await expect(
+      handleScoreClaim({ claim: 'Mock claim has value 100', topic: '' })
+    ).rejects.toMatchObject({ name: 'ValidationError' });
+  });
+
+  it('uses injected explicit signing keys and never emits signerPublicKey (RuntimeConfig injection)', async () => {
+    vi.doUnmock('@uvrn/core');
+    vi.resetModules();
+    const { generateReceiptKeyPair, verifyReceiptFull } = await import('@uvrn/receipt');
+    const keyPair = generateReceiptKeyPair();
+    const { handleScoreClaim } = await loadHandlers({
+      signing: { privateKey: keyPair.privateKey, publicKeyRef: 'test-producer-v1' },
+    });
+    const result = await handleScoreClaim({ claim: 'Mock claim has value 100' });
+
+    expect(result.signerPublicKey).toBeUndefined();
+    expect(result.networkReceipt.signature?.publicKeyRef).toBe('test-producer-v1');
+    // No private key material anywhere in the serialized result.
+    expect(JSON.stringify(result)).not.toContain(keyPair.privateKey);
+    expect(
+      verifyReceiptFull(result.networkReceipt, { keys: { 'test-producer-v1': keyPair.publicKey } })
+        .verified
+    ).toBe(true);
+  });
+
+  it('generates one ephemeral keypair per handler construction, reused across calls', async () => {
+    vi.doUnmock('@uvrn/core');
+    vi.resetModules();
+    const { handleScoreClaim } = await loadHandlers();
+    const first = await handleScoreClaim({ claim: 'Mock claim has value 100' });
+    const second = await handleScoreClaim({ claim: 'Mock claim has value 102' });
+    expect(first.signerPublicKey).toBe(second.signerPublicKey);
+
+    const { handleScoreClaim: other } = await loadHandlers();
+    const fresh = await other({ claim: 'Mock claim has value 100' });
+    expect(fresh.signerPublicKey).not.toBe(first.signerPublicKey);
   });
 
   it('should wrap unexpected score-claim failures in ExecutionError', async () => {

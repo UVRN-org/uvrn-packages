@@ -1,11 +1,12 @@
 /**
  * Conflict measurement: fires when two sources assert mutually exclusive values.
  * The rule is: boolean/categorical assertions conflict when they differ on the same field, and ranges
- * conflict when two asserted intervals on the same field are disjoint. Pure numeric spread is never conflict.
+ * conflict when two asserted intervals on the same field are separated by more than
+ * `context.conflictRangeTolerance` (default 0). Pure numeric spread is never conflict.
  */
 
 import type { Measurement, MeasurementSource } from '@uvrn/core';
-import { fieldKey, normalizeAssertion, sourceLabel } from '../internal/evidence';
+import { contextNumber, fieldKey, normalizeAssertion, sourceLabel } from '../internal/evidence';
 
 interface ConflictPair {
   left: MeasurementSource;
@@ -20,7 +21,19 @@ interface ConflictPair {
 export const conflictMeasurement: Measurement = {
   type: 'conflict',
   evaluate(input) {
-    const pair = findConflict(input.sources);
+    const usable = input.sources.filter(isUsableConflictSource);
+    if (usable.length < 2) {
+      return {
+        type: 'conflict',
+        verdict: 'insufficient-data',
+        confidence: 0,
+        explanation: `Conflict requires at least two categorical, boolean, or range assertions; received ${usable.length}.`,
+        evidenceRefs: input.sources.map((source) => source.id),
+      };
+    }
+
+    const tolerance = contextNumber(input, 'conflictRangeTolerance', 0);
+    const pair = findConflict(input.sources, tolerance);
     if (!pair) {
       return {
         type: 'conflict',
@@ -41,7 +54,16 @@ export const conflictMeasurement: Measurement = {
   },
 };
 
-function findConflict(sources: ReadonlyArray<MeasurementSource>): ConflictPair | undefined {
+function isUsableConflictSource(source: MeasurementSource): boolean {
+  const hasAssertion =
+    (source.kind === 'boolean' || source.kind === 'categorical') &&
+    typeof source.assertion === 'string' &&
+    source.assertion.length > 0;
+  const hasRange = source.kind === 'range' && source.range !== undefined;
+  return hasAssertion || hasRange;
+}
+
+function findConflict(sources: ReadonlyArray<MeasurementSource>, tolerance: number): ConflictPair | undefined {
   for (let leftIndex = 0; leftIndex < sources.length; leftIndex += 1) {
     for (let rightIndex = leftIndex + 1; rightIndex < sources.length; rightIndex += 1) {
       const left = sources[leftIndex];
@@ -58,7 +80,7 @@ function findConflict(sources: ReadonlyArray<MeasurementSource>): ConflictPair |
         };
       }
 
-      if (rangesConflict(left, right)) {
+      if (rangesConflict(left, right, tolerance)) {
         return {
           left,
           right,
@@ -81,10 +103,10 @@ function assertionsConflict(left: MeasurementSource, right: MeasurementSource): 
   return normalizeAssertion(left.assertion) !== normalizeAssertion(right.assertion);
 }
 
-function rangesConflict(left: MeasurementSource, right: MeasurementSource): boolean {
+function rangesConflict(left: MeasurementSource, right: MeasurementSource, tolerance: number): boolean {
   if (left.kind !== 'range' || right.kind !== 'range' || !left.range || !right.range) {
     return false;
   }
 
-  return left.range.max < right.range.min || right.range.max < left.range.min;
+  return left.range.max + tolerance < right.range.min || right.range.max + tolerance < left.range.min;
 }

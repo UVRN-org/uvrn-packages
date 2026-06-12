@@ -1,11 +1,19 @@
 {
   "name": "@uvrn/mcp",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "UVRN MCP server — AI-native bundle processing",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "bin": { "uvrn-mcp": "dist/index.js" },
-  "keywords": ["uvrn", "mcp", "verification", "receipt", "ai"],
+  "bin": {
+    "uvrn-mcp": "dist/index.js"
+  },
+  "keywords": [
+    "uvrn",
+    "mcp",
+    "verification",
+    "receipt",
+    "ai"
+  ],
   "author": "UVRN",
   "license": "MIT",
   "repository": {
@@ -25,21 +33,25 @@
     "format": "prettier --write \"src/**/*.ts\""
   },
   "peerDependencies": {
-    "@uvrn/agent": "^3.0.0",
-    "@uvrn/canon": "^3.0.0",
-    "@uvrn/compare": "^3.0.0",
-    "@uvrn/consensus": "^3.0.0",
-    "@uvrn/core": "^3.0.0",
-    "@uvrn/drift": "^3.0.0",
-    "@uvrn/identity": "^3.0.0",
-    "@uvrn/measure": "^3.0.0",
-    "@uvrn/normalize": "^3.0.0",
-    "@uvrn/score": "^3.0.0"
+    "@uvrn/agent": "^4.0.0",
+    "@uvrn/canon": "^4.0.0",
+    "@uvrn/compare": "^4.0.0",
+    "@uvrn/consensus": "^4.0.0",
+    "@uvrn/core": "^4.0.0",
+    "@uvrn/drift": "^4.0.0",
+    "@uvrn/identity": "^4.0.0",
+    "@uvrn/measure": "^4.0.0",
+    "@uvrn/normalize": "^4.0.0",
+    "@uvrn/receipt": "^4.0.0",
+    "@uvrn/score": "^4.0.0"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0"
   },
   "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
     "@uvrn/agent": "workspace:*",
     "@uvrn/canon": "workspace:*",
     "@uvrn/compare": "workspace:*",
@@ -49,17 +61,27 @@
     "@uvrn/identity": "workspace:*",
     "@uvrn/measure": "workspace:*",
     "@uvrn/normalize": "workspace:*",
+    "@uvrn/receipt": "workspace:*",
     "@uvrn/score": "workspace:*",
-    "@types/node": "^20.0.0",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
+    "@vitest/coverage-v8": "^1.6.1",
     "eslint": "^8.0.0",
     "prettier": "^3.0.0",
     "tsx": "^4.0.0",
     "typescript": "^5.3.0",
     "vitest": "^1.0.0"
   },
-  "engines": { "node": ">=18.0.0" },
-  "files": ["dist", "README.md", "CONNECT.md", "LICENSE", "plugin-manifest.json", "connectors"],
-  "publishConfig": { "access": "public" }
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CONNECT.md",
+    "LICENSE",
+    "plugin-manifest.json",
+    "connectors"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }

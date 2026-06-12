@@ -6,12 +6,16 @@ import EventEmitter from 'events';
 import { computeDriftFromInput } from '@uvrn/drift';
 import { Scheduler } from './scheduler';
 import { normalizeFarmResult } from './farm/normalizer';
+import { InMemoryAgentStateStore } from './store/index';
 import type {
   AgentConfig,
+  AgentStateStore,
   AgentStatus,
   ClaimRegistration,
   ClaimState,
   ClaimAgentStatus,
+  PersistedAgentState,
+  PersistedClaimState,
 } from './types/index';
 import type { DriftSnapshot } from '@uvrn/drift';
 
@@ -19,9 +23,11 @@ const AGENT_VERSION = '0.1.0';
 const AGENT_ID      = `@uvrn/agent@${AGENT_VERSION}`;
 
 export class Agent extends EventEmitter {
-  private config:    AgentConfig;
-  private claims:    Map<string, ClaimState> = new Map();
-  private scheduler: Scheduler;
+  private config:     AgentConfig;
+  private claims:     Map<string, ClaimState> = new Map();
+  private scheduler:  Scheduler;
+  private stateStore: AgentStateStore;
+  private agentId:    string;
   private running  = false;
   private startedAt: string | null = null;
   private totalRuns = 0;
@@ -35,6 +41,8 @@ export class Agent extends EventEmitter {
       agentId:              AGENT_ID,
       ...config,
     };
+    this.agentId    = this.config.agentId ?? AGENT_ID;
+    this.stateStore = this.config.stateStore ?? new InMemoryAgentStateStore();
     this.scheduler = new Scheduler(
       (claimId) => this.runClaim(claimId),
       this.config.jitterMs
@@ -58,12 +66,47 @@ export class Agent extends EventEmitter {
       this.scheduler.register(registration.id, registration.intervalMs);
     }
 
+    void this.persistState();
     return this;
   }
 
   unregister(claimId: string): this {
     this.scheduler.unregister(claimId);
     this.claims.delete(claimId);
+    void this.persistState();
+    return this;
+  }
+
+  /**
+   * Loads persisted state from the configured `AgentStateStore` and rebuilds
+   * the claim map: registrations, last snapshots, receipt sequences, and
+   * failure counts. Call after construction (and optionally before `start()`)
+   * to resume where a previous process left off. A no-op when the store holds
+   * no state for this agent id.
+   */
+  async restore(): Promise<this> {
+    const persisted = await this.stateStore.loadState(this.agentId);
+    if (!persisted) return this;
+
+    this.totalRuns = persisted.totalRuns;
+
+    for (const [claimId, claim] of Object.entries(persisted.claims)) {
+      const state: ClaimState = {
+        registration:     claim.registration,
+        lastSnapshot:     claim.lastSnapshot,
+        lastVerifiedAt:   claim.lastVerifiedAt,
+        receiptSequence:  claim.receiptSequence,
+        consecutiveFails: claim.consecutiveFails,
+        status:           claim.lastSnapshot ? this.mapDriftStatus(claim.lastSnapshot.status) : 'idle',
+      };
+
+      this.claims.set(claimId, state);
+
+      if (this.running) {
+        this.scheduler.register(claimId, claim.registration.intervalMs);
+      }
+    }
+
     return this;
   }
 
@@ -161,6 +204,34 @@ export class Agent extends EventEmitter {
         );
         this.scheduler.unregister(claimId);
       }
+    }
+
+    await this.persistState();
+  }
+
+  private snapshotState(): PersistedAgentState {
+    const claims: Record<string, PersistedClaimState> = {};
+
+    for (const [claimId, state] of this.claims) {
+      claims[claimId] = {
+        registration:     state.registration,
+        lastSnapshot:     state.lastSnapshot,
+        lastVerifiedAt:   state.lastVerifiedAt,
+        receiptSequence:  state.receiptSequence,
+        consecutiveFails: state.consecutiveFails,
+      };
+    }
+
+    return { claims, totalRuns: this.totalRuns };
+  }
+
+  private async persistState(): Promise<void> {
+    try {
+      await this.stateStore.saveState(this.agentId, this.snapshotState());
+    } catch (err) {
+      console.error(
+        `[uvrn/agent] state store save failed: ${err instanceof Error ? err.message : String(err)}`
+      );
     }
   }
 

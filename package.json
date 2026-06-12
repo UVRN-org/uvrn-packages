@@ -1,7 +1,7 @@
 {
   "name": "uvrn-packages",
   "private": true,
-  "description": "UVRN protocol packages — full 23-package open protocol. Publish to npm under @uvrn scope.",
+  "description": "UVRN protocol packages — full 26-package open protocol. Publish to npm under @uvrn scope.",
   "workspaces": [
     "uvrn-core",
     "uvrn-sdk",
@@ -25,11 +25,15 @@
     "uvrn-identity",
     "uvrn-timeline",
     "uvrn-watch",
-    "uvrn-embed"
+    "uvrn-embed",
+    "uvrn-receipt",
+    "uvrn-store-sqlite",
+    "uvrn-protocol"
   ],
   "scripts": {
     "build": "pnpm -r run build",
     "test": "pnpm -r --if-present run test",
+    "test:coverage": "pnpm -r run test:coverage",
     "lint": "pnpm -r --if-present run lint",
     "build:wave1": "pnpm --filter @uvrn/signal --filter @uvrn/score --filter @uvrn/test run build",
     "test:wave1": "pnpm --filter @uvrn/signal --filter @uvrn/score --filter @uvrn/test run test",

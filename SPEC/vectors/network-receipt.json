@@ -1,0 +1,156 @@
+{
+  "spec": "uvrn-receipt-v1 §2.4/§3, uvrn-signing-v1 §2",
+  "keys": {
+    "privateKeySeed": "dXZybi1zcGVjLXZlY3Rvci1zZWVkLTAwMDAwMDAwMDE=",
+    "publicKey": "w3IQVOJs6tNyvvcVJSUT1pPJIorT3V+eFIrCschFyV4=",
+    "publicKeyRef": "uvrn-spec-pk-2026-v1"
+  },
+  "receipt": {
+    "schemaVersion": "uvrn-receipt-4",
+    "receiptHash": "sha256:08e320bbb5d0a2aa5397dd1393460b14802dea0011e8766541993ac9dffb1179",
+    "kind": "delta",
+    "claim": {
+      "id": "btc-traded-above-100k-on-2026-06-09-0f91343d",
+      "text": "BTC traded above 100k on 2026-06-09"
+    },
+    "source": "uvrn-sdk",
+    "action": "delta.consensus",
+    "occurredAt": "2026-06-10T12:00:00.000Z",
+    "payload": {
+      "bundleId": "bundle-vector-1",
+      "deltaFinal": 0.042,
+      "sources": [
+        "Source A",
+        "Source B",
+        "Source C"
+      ],
+      "rounds": [
+        {
+          "round": 1,
+          "deltasByMetric": {
+            "price": 0.042
+          },
+          "withinThreshold": true,
+          "witnessRequired": false
+        }
+      ],
+      "suggestedFixes": [],
+      "outcome": "consensus",
+      "ts": "2026-06-10T12:00:00.000Z",
+      "hash": "08df288978275f48e78bf36e56546e904622a6f40f5b5df9c804a1a624a0e160"
+    },
+    "topic": "markets/crypto/BTC",
+    "tags": [
+      "spec-vector"
+    ],
+    "signature": {
+      "alg": "ed25519",
+      "publicKeyRef": "uvrn-spec-pk-2026-v1",
+      "sig": "KKbUoBMV4rAKixLaTgNCl77Of0m7ZBuVRybr1yZ8hbcAkTUY9nCuAYtU0leR5z3HhWLQfnqmm1moM4Vp3AglCg==",
+      "signedAt": "2026-06-10T12:10:00.000Z"
+    }
+  },
+  "expect": {
+    "receiptHash": "sha256:08e320bbb5d0a2aa5397dd1393460b14802dea0011e8766541993ac9dffb1179",
+    "baseDeltaHash": "08df288978275f48e78bf36e56546e904622a6f40f5b5df9c804a1a624a0e160",
+    "verified": true
+  },
+  "mustFail": [
+    {
+      "reason": "tampered claim text — integrity check fails",
+      "receipt": {
+        "schemaVersion": "uvrn-receipt-4",
+        "receiptHash": "sha256:08e320bbb5d0a2aa5397dd1393460b14802dea0011e8766541993ac9dffb1179",
+        "kind": "delta",
+        "claim": {
+          "id": "btc-traded-above-100k-on-2026-06-09-0f91343d",
+          "text": "BTC traded above 200k on 2026-06-09"
+        },
+        "source": "uvrn-sdk",
+        "action": "delta.consensus",
+        "occurredAt": "2026-06-10T12:00:00.000Z",
+        "payload": {
+          "bundleId": "bundle-vector-1",
+          "deltaFinal": 0.042,
+          "sources": [
+            "Source A",
+            "Source B",
+            "Source C"
+          ],
+          "rounds": [
+            {
+              "round": 1,
+              "deltasByMetric": {
+                "price": 0.042
+              },
+              "withinThreshold": true,
+              "witnessRequired": false
+            }
+          ],
+          "suggestedFixes": [],
+          "outcome": "consensus",
+          "ts": "2026-06-10T12:00:00.000Z",
+          "hash": "08df288978275f48e78bf36e56546e904622a6f40f5b5df9c804a1a624a0e160"
+        },
+        "topic": "markets/crypto/BTC",
+        "tags": [
+          "spec-vector"
+        ],
+        "signature": {
+          "alg": "ed25519",
+          "publicKeyRef": "uvrn-spec-pk-2026-v1",
+          "sig": "KKbUoBMV4rAKixLaTgNCl77Of0m7ZBuVRybr1yZ8hbcAkTUY9nCuAYtU0leR5z3HhWLQfnqmm1moM4Vp3AglCg==",
+          "signedAt": "2026-06-10T12:10:00.000Z"
+        }
+      }
+    },
+    {
+      "reason": "tampered signature — signature check fails",
+      "receipt": {
+        "schemaVersion": "uvrn-receipt-4",
+        "receiptHash": "sha256:08e320bbb5d0a2aa5397dd1393460b14802dea0011e8766541993ac9dffb1179",
+        "kind": "delta",
+        "claim": {
+          "id": "btc-traded-above-100k-on-2026-06-09-0f91343d",
+          "text": "BTC traded above 100k on 2026-06-09"
+        },
+        "source": "uvrn-sdk",
+        "action": "delta.consensus",
+        "occurredAt": "2026-06-10T12:00:00.000Z",
+        "payload": {
+          "bundleId": "bundle-vector-1",
+          "deltaFinal": 0.042,
+          "sources": [
+            "Source A",
+            "Source B",
+            "Source C"
+          ],
+          "rounds": [
+            {
+              "round": 1,
+              "deltasByMetric": {
+                "price": 0.042
+              },
+              "withinThreshold": true,
+              "witnessRequired": false
+            }
+          ],
+          "suggestedFixes": [],
+          "outcome": "consensus",
+          "ts": "2026-06-10T12:00:00.000Z",
+          "hash": "08df288978275f48e78bf36e56546e904622a6f40f5b5df9c804a1a624a0e160"
+        },
+        "topic": "markets/crypto/BTC",
+        "tags": [
+          "spec-vector"
+        ],
+        "signature": {
+          "alg": "ed25519",
+          "publicKeyRef": "uvrn-spec-pk-2026-v1",
+          "sig": "AKbUoBMV4rAKixLaTgNCl77Of0m7ZBuVRybr1yZ8hbcAkTUY9nCuAYtU0leR5z3HhWLQfnqmm1moM4Vp3AglCg==",
+          "signedAt": "2026-06-10T12:10:00.000Z"
+        }
+      }
+    }
+  ]
+}

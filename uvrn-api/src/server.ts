@@ -11,6 +11,7 @@ import { loadConfig } from './config/loader';
 import { ServerConfig } from './config/types';
 import { registerDeltaRoutes } from './routes/delta';
 import { registerHealthRoutes } from './routes/health';
+import { registerAuth } from './middleware/auth';
 import { registerErrorHandler } from './middleware/errorHandler';
 
 /**
@@ -58,6 +59,9 @@ export async function createServer(config?: ServerConfig): Promise<FastifyInstan
       }
     })
   });
+
+  // Optional API-key auth for delta routes (no-op when no key is configured)
+  registerAuth(server, serverConfig);
 
   // Add request logging hook
   server.addHook('onRequest', async (request, _reply) => {

@@ -1,0 +1,71 @@
+{
+  "name": "@uvrn/receipt",
+  "version": "4.0.0",
+  "description": "The canonical UVRN receipt object model: NetworkReceipt envelope, JCS canonicalization, Ed25519 signing, topics, vocabulary, and UI-agnostic human rendering",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./canonical": {
+      "types": "./dist/canonical/index.d.ts",
+      "default": "./dist/canonical/index.js"
+    },
+    "./vocabulary": {
+      "types": "./dist/vocabulary/index.d.ts",
+      "default": "./dist/vocabulary/index.js"
+    },
+    "./schema": {
+      "types": "./dist/schema/index.d.ts",
+      "default": "./dist/schema/index.js"
+    },
+    "./render": {
+      "types": "./dist/render/index.d.ts",
+      "default": "./dist/render/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "clean": "rm -rf dist"
+  },
+  "peerDependencies": {
+    "@uvrn/core": "^4.0.0"
+  },
+  "devDependencies": {
+    "@uvrn/core": "workspace:*",
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT",
+  "keywords": [
+    "uvrn",
+    "receipt",
+    "ed25519",
+    "canonicalization",
+    "jcs",
+    "verification"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UVRN-org/uvrn-packages.git",
+    "directory": "uvrn-receipt"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

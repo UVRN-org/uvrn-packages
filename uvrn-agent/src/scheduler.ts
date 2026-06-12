@@ -48,8 +48,17 @@ export class Scheduler {
     this.claims.delete(claimId);
   }
 
+  /**
+   * Stops the scheduler: clears every pending timer and forgets all claims.
+   * After this resolves synchronously there are no live timer handles, so a
+   * process (or Jest worker) holding only this scheduler can exit cleanly.
+   */
+  stop(): void {
+    this.stopAll();
+  }
+
   stopAll(): void {
-    for (const [id] of this.claims) {
+    for (const id of Array.from(this.claims.keys())) {
       this.unregister(id);
     }
   }

@@ -259,6 +259,58 @@ async function verifyCommand(input: string | undefined, options: CliOptions): Pr
 }
 
 /**
+ * Command: verify-receipt
+ * Full verification of a NetworkReceipt (uvrn-receipt-4): hash recompute + Ed25519 signature.
+ * Honest vocabulary: integrity alone is reported as integrity-checked, never verified.
+ */
+async function verifyNetworkReceiptCommand(
+  input: string | undefined,
+  options: CliOptions & { key?: string; human?: boolean }
+): Promise<void> {
+  try {
+    const receiptJson = await readInput(input);
+    const receipt = parseJson<import('@uvrn/receipt').NetworkReceipt>(receiptJson, 'receipt');
+    const { verifyReceiptFull, toHumanView } = require('@uvrn/receipt') as typeof import('@uvrn/receipt');
+
+    const result = verifyReceiptFull(receipt, options.key ? { publicKey: options.key } : {});
+
+    if (!options.quiet) {
+      if (result.verified) {
+        console.log('✓ Receipt VERIFIED (integrity + signature)');
+      } else if (result.integrityOk) {
+        console.log(`○ Receipt integrity-checked only — ${result.error ?? 'signature not verified'}`);
+      } else {
+        console.error('✗ Receipt verification failed:', result.error);
+      }
+      console.log('  Hash:', receipt.receiptHash);
+      if (options.human) {
+        const view = toHumanView(receipt);
+        console.log('  Verdict:', view.verdictLabel);
+        console.log('  Claim:', view.claim);
+        console.log('  ', view.headline);
+      }
+    }
+    writeOutput(
+      {
+        verified: result.verified,
+        integrityOk: result.integrityOk,
+        signed: result.signed,
+        signatureOk: result.signatureOk,
+        error: result.error,
+        hash: receipt.receiptHash,
+      },
+      options
+    );
+    process.exit(result.integrityOk ? EXIT_SUCCESS : EXIT_ENGINE_ERROR);
+  } catch (error) {
+    if (!options.quiet) {
+      console.error('Error:', (error as Error).message);
+    }
+    process.exit(EXIT_IO_ERROR);
+  }
+}
+
+/**
  * Main CLI setup
  */
 function main(): void {
@@ -292,6 +344,16 @@ function main(): void {
     .option('-q, --quiet', 'Suppress informational messages')
     .option('-p, --pretty', 'Pretty-print JSON output')
     .action(verifyCommand);
+
+  program
+    .command('verify-receipt [receipt]')
+    .description('Fully verify a NetworkReceipt (uvrn-receipt-4): hash recompute + Ed25519 signature')
+    .option('-k, --key <base64>', 'Producer public key (base64 raw 32 bytes) for signature verification')
+    .option('--human', 'Also print the human view (verdict, claim, headline)')
+    .option('-o, --output <file>', 'Write output to file instead of stdout')
+    .option('-q, --quiet', 'Suppress informational messages')
+    .option('-p, --pretty', 'Pretty-print JSON output')
+    .action(verifyNetworkReceiptCommand);
 
   program.parse(process.argv);
 

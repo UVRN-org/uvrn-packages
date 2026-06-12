@@ -28,8 +28,16 @@ packages:
   # Wave 4 — built + audited
   - 'uvrn-watch'
   - 'uvrn-embed'
-
-# Approve esbuild's install/build script (used by @uvrn/embed's UMD bundle).
-# pnpm 11 otherwise exits non-zero on a fresh install with ERR_PNPM_IGNORED_BUILDS.
+  # v4 / fable-refactor-1 additions
+  - 'uvrn-receipt'
+  - 'uvrn-store-sqlite'
+  - 'uvrn-protocol'
+# Approve install/build scripts: esbuild (@uvrn/embed UMD bundle) and better-sqlite3
+# (@uvrn/store-sqlite native driver). pnpm 11 otherwise exits non-zero on a fresh
+# install with ERR_PNPM_IGNORED_BUILDS.
+allowBuilds:
+  esbuild: true
+  better-sqlite3: true
 onlyBuiltDependencies:
   - esbuild
+  - better-sqlite3

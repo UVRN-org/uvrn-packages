@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/sdk",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "UVRN TypeScript SDK — programmatic access to deterministic verification",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -10,7 +10,14 @@
       "types": "./dist/index.d.ts"
     }
   },
-  "keywords": ["uvrn", "sdk", "verification", "receipt", "deterministic", "typescript"],
+  "keywords": [
+    "uvrn",
+    "sdk",
+    "verification",
+    "receipt",
+    "deterministic",
+    "typescript"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -28,7 +35,7 @@
     "lint": "eslint src/**/*.ts"
   },
   "peerDependencies": {
-    "@uvrn/core": "^3.0.0"
+    "@uvrn/core": "^4.0.0"
   },
   "dependencies": {},
   "devDependencies": {
@@ -42,7 +49,15 @@
     "ts-jest": "^29.1.0",
     "typescript": "^5.3.0"
   },
-  "engines": { "node": ">=18.0.0" },
-  "files": ["dist", "README.md", "LICENSE"],
-  "publishConfig": { "access": "public" }
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }

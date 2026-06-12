@@ -10,4 +10,10 @@ module.exports = {
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
+  // Gate applies only when coverage is collected (test:coverage); plain jest runs stay fast.
+  coverageThreshold: {
+    global: {
+      lines: 60
+    }
+  }
 };

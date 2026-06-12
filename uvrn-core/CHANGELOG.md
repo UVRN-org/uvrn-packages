@@ -1,5 +1,20 @@
 # Changelog
 
+## [4.0.0] - 2026-06-10 (unreleased, v4 / fable-refactor-1)
+
+- Master-receipt ordering rule (SPEC/uvrn-receipt-v1.md §2.2): `buildMasterReceipt` sorts
+  `measurements` by (type, first evidence ref, insertion index) and `nodes` by id before
+  hashing, and stores that order. Verification recomputes over the stored order, so receipts
+  produced before this rule remain byte-for-byte valid. Shuffled input now yields an identical
+  `masterHash`.
+- Additive `MeasurementResult.humanExplanation?` (Layer D human vocabulary; populated via
+  `@uvrn/receipt`'s `enrichMeasurements()` before hashing).
+- Removed stale committed `src/*.js` / `*.d.ts` build artifacts — `tsc → dist/` is the single
+  build path (v3 findings note 4).
+- The frozen v3 paths are untouched: `canonicalSerialize`, `hashReceipt`, `verifyReceipt`, and
+  the DeltaReceipt shape are byte-for-byte identical to 3.0.0.
+- Internal `@uvrn/*` peer ranges moved to `^4.0.0`.
+
 ## [3.0.0] - 2026-06-09
 
 ### Changed

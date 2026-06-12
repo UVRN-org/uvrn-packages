@@ -1,6 +1,6 @@
 /**
  * MCP Tool Handlers
- * Implements the three core tools for Delta Engine MCP server
+ * Implements the nine tools for the Delta Engine MCP server
  */
 
 import { createHash } from 'node:crypto';
@@ -23,6 +23,14 @@ import { ScoreBreakdown, SCORE_PROFILES } from '@uvrn/score';
 import type { Canon, CanonStore } from '@uvrn/canon';
 import type { ClaimRegistration, FarmConnector, FarmResult } from '@uvrn/agent';
 import type { IdentityRegistry } from '@uvrn/identity';
+import {
+  enrichMeasurements,
+  generateReceiptKeyPair,
+  normalizeTopic,
+  signReceipt,
+  toHumanView,
+  wrapMasterReceipt,
+} from '@uvrn/receipt';
 import {
   CanonGetInput,
   CanonGetOutput,
@@ -53,9 +61,35 @@ import { logger } from '../logger';
  * buildHandlers creates the MCP tool handler bundle for one resolved runtime configuration.
  * Stateful defaults, such as the identity mock store, are imported lazily only when their tool runs.
  */
+/**
+ * ReceiptSigner is the resolved signing identity for one handler bundle.
+ * `ephemeralPublicKey` is set only in ephemeral mode, where the public key is safe (and
+ * necessary) to emit in tool results so callers can verify.
+ */
+interface ReceiptSigner {
+  privateKey: string;
+  publicKeyRef: string;
+  ephemeralPublicKey?: string;
+}
+
+function resolveSigner(config: RuntimeConfig): ReceiptSigner {
+  const signing = config.signing ?? 'ephemeral';
+  if (signing === 'ephemeral') {
+    const keyPair = generateReceiptKeyPair();
+    return {
+      privateKey: keyPair.privateKey,
+      publicKeyRef: 'uvrn-mcp-ephemeral',
+      ephemeralPublicKey: keyPair.publicKey,
+    };
+  }
+  // Explicit keys: use them and never emit the private side (or echo the public side) anywhere.
+  return { privateKey: signing.privateKey, publicKeyRef: signing.publicKeyRef };
+}
+
 export function buildHandlers(config: RuntimeConfig): ToolHandlers {
   let identityRegistryPromise: Promise<IdentityRegistry> | undefined;
   let canonPromise: Promise<{ canon: Canon; stores: CanonStore[] }> | undefined;
+  const signer = resolveSigner(config);
 
   async function getIdentityRegistry(): Promise<IdentityRegistry> {
     if (!identityRegistryPromise) {
@@ -101,7 +135,7 @@ export function buildHandlers(config: RuntimeConfig): ToolHandlers {
     handleVerifyIdentity: (input) => handleVerifyIdentity(input, getIdentityRegistry),
     handleCanonQualify: (input) => handleCanonQualify(input, getCanonRuntime),
     handleCanonGet: (input) => handleCanonGet(input, getCanonRuntime),
-    handleScoreClaim: (input) => handleScoreClaim(input, config),
+    handleScoreClaim: (input) => handleScoreClaim(input, config, signer),
   };
 }
 
@@ -396,13 +430,22 @@ async function handleCanonGet(
  * Tool: delta_score_claim
  * Fetches configured connector sources, runs consensus/core/measure, and returns a MasterReceipt.
  */
-async function handleScoreClaim(input: ScoreClaimInput, config: RuntimeConfig): Promise<ScoreClaimOutput> {
+async function handleScoreClaim(
+  input: ScoreClaimInput,
+  config: RuntimeConfig,
+  signer: ReceiptSigner
+): Promise<ScoreClaimOutput> {
   logger.debug('handleScoreClaim called', { claimId: input.claimId });
 
   try {
     if (!input.claim || typeof input.claim !== 'string') {
       throw new ValidationError('Invalid input: claim must be a non-empty string');
     }
+    if (input.topic !== undefined && (typeof input.topic !== 'string' || input.topic.length === 0)) {
+      throw new ValidationError('Invalid input: topic must be a non-empty string when provided');
+    }
+    // Normalization never rejects: unknown domains land under custom/ — recorded, not hidden.
+    const topic = input.topic !== undefined ? normalizeTopic(input.topic).topic : undefined;
 
     const registration = claimRegistrationFromInput(input);
     const nodes: NodeStatusRecord[] = [];
@@ -484,7 +527,7 @@ async function handleScoreClaim(input: ScoreClaimInput, config: RuntimeConfig): 
     const consensus = new ConsensusEngine({ sources: merged, claim: input.claim }).buildConsensusResult(input.claim);
     const base = runDeltaEngine(consensus.bundle);
     const breakdown = new ScoreBreakdown(consensus.components, SCORE_PROFILES.general);
-    const measurements = defaultRegistry().runAll({
+    const measurementResults = defaultRegistry().runAll({
       claim: input.claim,
       sources: normalized.sources.map((source, index): MeasurementSource => ({
         id: `${source.name}-${index}`,
@@ -504,20 +547,51 @@ async function handleScoreClaim(input: ScoreClaimInput, config: RuntimeConfig): 
         components: consensus.components,
       },
     });
+    // Enrich BEFORE buildMasterReceipt so humanExplanation sits inside the hashed
+    // master envelope (B5.2) — enriching afterwards would invalidate masterHash.
+    const measurements = enrichMeasurements(measurementResults);
+
+    const masterReceipt = buildMasterReceipt({
+      base,
+      claim: input.claim,
+      measurements,
+      nodes,
+    });
+
+    const networkReceipt = signReceipt(
+      wrapMasterReceipt(masterReceipt, {
+        claim: { id: registration.id, text: input.claim },
+        source: 'uvrn-mcp',
+        action: 'delta_score_claim',
+        ...(topic !== undefined ? { topic } : {}),
+      }),
+      { privateKey: signer.privateKey, publicKeyRef: signer.publicKeyRef }
+    );
+
+    const humanView = toHumanView(networkReceipt, {
+      scores: {
+        vScore: breakdown.final,
+        completeness: consensus.components.completeness,
+        parity: consensus.components.parity,
+        freshness: consensus.components.freshness,
+      },
+    });
 
     return {
-      masterReceipt: buildMasterReceipt({
-        base,
-        claim: input.claim,
-        measurements,
-        nodes,
-      }),
+      masterReceipt,
       v_score: breakdown.final,
       claimId: registration.id,
       evidenceMode,
       // Post-parse/post-dedupe count of sources actually scored by consensus —
       // not the raw merged count (MINOR-2).
       sourceCount: consensus.stats.sourceCount,
+      networkReceipt,
+      humanView,
+      // Ephemeral mode only: emit the public key so callers can verify this run's
+      // signature. Explicit keys are never echoed in results.
+      ...(signer.ephemeralPublicKey !== undefined
+        ? { signerPublicKey: signer.ephemeralPublicKey }
+        : {}),
     };
   } catch (error) {
     if (error instanceof ValidationError || error instanceof ExecutionError) {

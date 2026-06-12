@@ -23,6 +23,7 @@ import type { FarmConnector } from '@uvrn/agent';
 import type { IdentityStore } from '@uvrn/identity';
 import type { ReputationScore } from '@uvrn/identity';
 import type { MasterReceipt } from '@uvrn/core';
+import type { HumanView, NetworkReceipt } from '@uvrn/receipt';
 
 // Re-export core types for consumers of this module
 export type {
@@ -184,10 +185,12 @@ export interface ScoreClaimInput {
   claimId?: string;
   label?: string;
   sources?: HostSource[]; // Optional host-provided evidence; skips connector fetch when present (≥2)
+  topic?: string; // Optional topic, normalized via @uvrn/receipt normalizeTopic() onto the NetworkReceipt
 }
 
 /**
- * ScoreClaimOutput returns the master receipt, the canonical V-Score, and provenance metadata.
+ * ScoreClaimOutput returns the master receipt, the canonical V-Score, and provenance metadata,
+ * plus the v4 additions: the signed NetworkReceipt envelope and its UI-agnostic HumanView.
  */
 export interface ScoreClaimOutput {
   masterReceipt: MasterReceipt;
@@ -195,6 +198,15 @@ export interface ScoreClaimOutput {
   claimId: string; // Echoed from input or derived slug
   evidenceMode: 'host_sources' | 'connector' | 'mock'; // Which evidence path was taken
   sourceCount: number; // Number of sources actually scored, after numeric extraction and deduplication
+  networkReceipt: NetworkReceipt; // Signed uvrn-receipt-4 envelope wrapping the MasterReceipt
+  humanView: HumanView; // toHumanView(networkReceipt) — render-ready, protocol-free
+  /**
+   * Ephemeral mode only: the base64 raw Ed25519 public key matching the run's ephemeral
+   * signature, so callers can verifyReceiptFull(networkReceipt, { publicKey }). Honest
+   * vocabulary: an ephemeral signature proves integrity + origin-of-this-process only — it is
+   * not a durable identity. Absent when explicit signing keys are configured.
+   */
+  signerPublicKey?: string;
 }
 
 /**
@@ -266,6 +278,13 @@ export interface RuntimeConfig extends ServerConfig {
   identityStore?: IdentityStore;
   /** Farm connectors used by live claim scoring; no provider connector is hardcoded as a default. */
   connectors?: FarmConnector[];
+  /**
+   * Receipt signing for delta_score_claim NetworkReceipts. Default `'ephemeral'`: one fresh
+   * Ed25519 keypair is generated per handler construction (publicKeyRef `uvrn-mcp-ephemeral`)
+   * and the public key is returned in each tool result as `signerPublicKey`. With explicit
+   * keys, those are used and no key material is ever emitted in results.
+   */
+  signing?: { privateKey: string; publicKeyRef: string } | 'ephemeral';
 }
 
 /**

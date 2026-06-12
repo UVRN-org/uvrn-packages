@@ -1,5 +1,16 @@
 # Changelog
 
+## [4.0.0] - 2026-06-10 (unreleased, v4 / fable-refactor-1)
+
+- Version aligned to the v4 generation; internal `@uvrn/*` peer ranges moved to `^4.0.0`.
+  No behavioral changes in this package beyond the generation-wide hardening documented in
+  the root CHANGELOG.
+- **Added `NOTICE` file with Apache-2.0 attribution** for the ranking approach adapted from
+  [`xai-org/x-algorithm`](https://github.com/xai-org/x-algorithm) (X's open-sourced "For You"
+  algorithm); `NOTICE` added to the npm `files` array so it ships in the tarball; README gained
+  an Attribution section. No code changes — documentation/licensing hygiene before the first
+  public 4.0.0 release.
+
 ## [3.0.0] - 2026-06-09
 
 ### Changed

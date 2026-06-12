@@ -71,6 +71,33 @@ const farm = new MultiFarm([
 
 `ConnectorRegistry` stores named connectors and can assemble a `MultiFarm` instance from all registered connectors or a named subset.
 
+## Rate limiting and circuit breaker
+
+Every `BaseConnector` request made through `requestJson()` (or the protected `withGuards()` helper) is guarded by an in-process rate limiter and a circuit breaker. Both are configured per connector instance via `ConnectorConfig`:
+
+| Option | Default | Behavior |
+|---|---|---|
+| `rateLimitPerMinute` | unset (no limit) | Sliding 60-second window. A request that would exceed the limit rejects with `RateLimitError` before any network I/O. |
+| `circuitBreakerThreshold` | `5` | Consecutive request failures before the circuit opens. |
+| `circuitBreakerResetMs` | `30_000` | Time the circuit stays open. After it elapses, one half-open probe is admitted — success closes the circuit, failure reopens it. |
+| `now` | `Date.now` | Injectable clock (epoch ms) so tests can advance time without sleeping. |
+
+While the circuit is open, requests reject fast with `CircuitOpenError`. Both error types extend `FarmConnectorError` and carry a `retryAfterMs` hint.
+
+```ts
+import { CoinGeckoFarm, RateLimitError, CircuitOpenError } from '@uvrn/farm';
+
+const connector = new CoinGeckoFarm({
+  rateLimitPerMinute: 30,
+  circuitBreakerThreshold: 5,
+  circuitBreakerResetMs: 30_000,
+});
+```
+
+**Zero-config note:** connectors constructed without these options behave exactly as before, except that 5 consecutive failures now open the breaker for 30 seconds (previously failures never tripped anything). There is no default rate limit.
+
+Custom connectors that bypass `requestJson()` can opt in by wrapping their own I/O in `this.withGuards(fn)`.
+
 ## Public API
 
 - `BaseConnector`
@@ -88,6 +115,8 @@ const farm = new MultiFarm([
 - `ConnectorConfig`
 - `MultiFarmOptions`
 - `FarmConnectorError`
+- `RateLimitError`
+- `CircuitOpenError`
 
 ## Dependencies
 

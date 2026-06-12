@@ -13,10 +13,13 @@ list of the **most prominent signals** — scored, de-duplicated, diversity-capp
 and freshness-filtered. It is pure logic with **no UI**, so any dashboard can call
 it and render the result.
 
-The ranking shape is ported from x-algo (X's open-sourced "For You" feed
-algorithm): a staged pipeline of `Filter → Scorer → Selector`. The reusable
-lessons kept here are **weighted scoring**, **anti-domination diversity**, and
-**freshness** — everything is a tunable knob, nothing is hardcoded.
+The ranking shape is adapted from the
+[x-algorithm](https://github.com/xai-org/x-algorithm) (X's open-sourced
+"For You" feed algorithm, Apache License 2.0): a staged pipeline of
+`Filter → Scorer → Selector`. The reusable lessons kept here are **weighted
+scoring**, **anti-domination diversity**, and **freshness** — everything is a
+tunable knob, nothing is hardcoded. See the [Attribution](#attribution)
+section and the `NOTICE` file for the full credit.
 
 ## What this package provides
 
@@ -94,9 +97,20 @@ ctx.selected; // ranked output
 
 ## Status
 
-`v2.0.0` — integrated into the LIVE monorepo workspace with v2 remediation
-applied. See `CHANGELOG.md`.
+`v4.0.0` — part of the v4 protocol generation. See `CHANGELOG.md`.
+
+## Attribution
+
+The signal-ranking approach in this package — the staged
+`Filter → Scorer → Selector` pipeline shape, weighted scoring,
+anti-domination diversity capping, and freshness filtering — was adapted
+from [`xai-org/x-algorithm`](https://github.com/xai-org/x-algorithm), the
+open-sourced recommendation system behind X's "For You" feed, released under
+the Apache License 2.0. The package name `algox` nods to that origin. The
+adaptation is a reimplementation for UVRN's use case, not a copy; full
+details in the `NOTICE` file shipped with this package. This package is not
+affiliated with or endorsed by X Corp. or X.AI Corp.
 
 ## License
 
-MIT — Suttle Media LLC / UVRN-org.
+MIT — Suttle Media LLC / UVRN-org. Third-party attribution: see `NOTICE`.

@@ -7,6 +7,7 @@ export { Scheduler }                                 from './scheduler';
 export { normalizeFarmResult }                       from './farm/normalizer';
 export { MockFarmConnector }                         from './farm/mock';
 export { ConsoleEmitter, FileEmitter, WebhookEmitter, MultiEmitter } from './emitter/index';
+export { InMemoryAgentStateStore }                   from './store/index';
 
 export type {
   ClaimRegistration,
@@ -18,8 +19,11 @@ export type {
   NormalizedComponents,
   ReceiptEmitter,
   AgentConfig,
+  AgentStateStore,
   AgentStatus,
   AgentEvents,
+  PersistedAgentState,
+  PersistedClaimState,
 } from './types/index';
 
 export { PROFILES } from '@uvrn/drift';

@@ -232,6 +232,11 @@ export const scoreClaimSchema = {
       type: 'string',
       description: 'Optional display label for the claim registration.',
     },
+    topic: {
+      type: 'string',
+      description:
+        'Optional topic for the resulting NetworkReceipt, serialized as domain[/subject[/instrument]] (e.g. "markets/crypto/BTC"). Normalized via @uvrn/receipt normalizeTopic(): segments are lowercased and unknown domains are accepted under custom/ — never rejected.',
+    },
     sources: {
       type: 'array',
       description:

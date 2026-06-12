@@ -5,7 +5,7 @@
  */
 
 import type { Measurement } from '@uvrn/core';
-import { divergenceThreshold, numericAgreement } from '../internal/evidence';
+import { divergenceThreshold, numericAgreement, numericSources } from '../internal/evidence';
 
 /**
  * disagreeMeasurement checks for material numeric divergence between comparable sources.
@@ -18,9 +18,9 @@ export const disagreeMeasurement: Measurement = {
     if (!numeric) {
       return {
         type: 'disagree',
-        verdict: 'none',
+        verdict: 'insufficient-data',
         confidence: 0,
-        explanation: 'Disagree requires at least two numeric evidence values.',
+        explanation: `Disagree requires at least two numeric evidence values; received ${numericSources(input).length}.`,
         evidenceRefs: input.sources.map((source) => source.id),
       };
     }

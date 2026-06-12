@@ -67,6 +67,54 @@ export interface AgentConfig {
   maxConsecutiveFails?: number;
   jitterMs?:        number;
   agentId?:         string;
+  /**
+   * Optional persistence seam for durable agent state. The agent saves its
+   * state through this store whenever it changes (register, unregister, each
+   * run). Defaults to an `InMemoryAgentStateStore`, preserving the existing
+   * in-memory behavior. Inject a durable implementation (e.g. a SQLite-backed
+   * store) and call `agent.restore()` after construction so registrations,
+   * snapshots, and failure counts survive restarts.
+   */
+  stateStore?:      AgentStateStore;
+}
+
+/**
+ * Durable per-claim state captured by the agent: the registration itself plus
+ * the run bookkeeping (`lastSnapshot`, `lastVerifiedAt`, `receiptSequence`,
+ * `consecutiveFails`). The transient `status` field is intentionally not
+ * persisted — it is rederived from `lastSnapshot` on restore.
+ */
+export interface PersistedClaimState {
+  registration:     ClaimRegistration;
+  lastSnapshot:     DriftSnapshot | null;
+  lastVerifiedAt:   string | null;
+  receiptSequence:  number;
+  consecutiveFails: number;
+}
+
+/**
+ * Snapshot of everything an agent needs to resume after a restart: every
+ * tracked claim's `PersistedClaimState` plus the lifetime run counter.
+ */
+export interface PersistedAgentState {
+  claims:    Record<string, PersistedClaimState>;
+  totalRuns: number;
+}
+
+/**
+ * Pluggable persistence seam for durable agent state.
+ *
+ * The agent writes a full `PersistedAgentState` snapshot through this
+ * interface at every state-changing point and reads it back via
+ * `agent.restore()`. The default `InMemoryAgentStateStore` keeps the existing
+ * in-memory behavior. Implementations are injected — this package ships no
+ * storage of its own.
+ */
+export interface AgentStateStore {
+  /** Load the persisted state for an agent id, or `null` when none exists. */
+  loadState(agentId: string): Promise<PersistedAgentState | null>;
+  /** Persist a full state snapshot for an agent id, replacing any previous one. */
+  saveState(agentId: string, state: PersistedAgentState): Promise<void>;
 }
 
 export interface FarmConnector {

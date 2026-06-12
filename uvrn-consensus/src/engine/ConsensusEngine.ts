@@ -6,6 +6,7 @@ import type {
   ConsensusEngineOptions,
   ConsensusResult,
   ConsensusStats,
+  DedupConfig,
   RankedSource,
   SourceWeights,
 } from '../types';
@@ -15,11 +16,13 @@ export class ConsensusEngine {
   readonly #sources;
   readonly #weights: SourceWeights;
   readonly #claim?: string;
+  readonly #dedup?: DedupConfig;
 
   constructor(options: ConsensusEngineOptions) {
     this.#sources = options.sources;
     this.#weights = resolveWeights(options.weights);
     this.#claim = options.claim;
+    this.#dedup = options.dedup;
   }
 
   buildBundle(claim?: string): DeltaBundle {
@@ -97,7 +100,7 @@ export class ConsensusEngine {
   }
 
   #rankedSources(): RankedSource[] {
-    return extractRankedSources(this.#sources, this.#weights);
+    return extractRankedSources(this.#sources, this.#weights, this.#dedup);
   }
 
   #summary(

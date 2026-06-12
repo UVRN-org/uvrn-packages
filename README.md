@@ -1,15 +1,18 @@
 # UVRN — Universal Verification Receipt Network
 
-Full 23-package open protocol for measuring and proving the relationship state of evidence about a claim.
+Full 26-package open protocol for measuring and proving the relationship state of evidence about a claim.
 
 UVRN measures whether independent evidence **agrees, disagrees, conflicts, or shows early potential** about a claim — and makes that measurement **provable** to anyone, human or machine.
 
-All packages are built, tested, and audited. **This is the canonical UVRN Packages v3 generation: all 23 packages are aligned to `3.0.0` with `^3.0.0` internal peer ranges, and supersede prior npm/official versions.** See [`CHANGELOG.md`](CHANGELOG.md).
+**This is the v4 / fable-refactor-1 generation** — 26 packages aligned to `4.0.0` (unpublished; supersedes the v3 LIVE generation on publish). v4 makes the protocol's claims true end-to-end: an implementation-independent spec (`SPEC/` — receipt hash contracts, Ed25519 signing, normative measurement semantics, network API), the canonical `@uvrn/receipt` object module every surface consumes, real producer signatures (*integrity-checked* vs *signed* vs *verifiable* are now distinct, earned words), durable state via `@uvrn/store-sqlite`, and the `@uvrn/protocol` umbrella. Existing v3 receipts and `verifyReceipt()` remain byte-for-byte valid (additive-only rule, golden-vector enforced). See [`CHANGELOG.md`](CHANGELOG.md).
 
 **Build standard**: Bloom Protocol v1.7 — Plan → Build → Check → Update → Reflect → Continue
 **Agent context**: `AGENTS.md` (Cursor/Codex) | `CLAUDE.md` (Claude Code)
-**Architecture of record**: `.admin/executive/ARCHITECTURE-uvrn-master.md`
-**Build plans**: `.admin/build-plans/`
+**Protocol contracts of record**: [`SPEC/`](SPEC/) (receipt hashing, signing, measurement semantics, network API)
+**Package interface specs**: `ROADMAP.md`
+
+> Internal planning, architecture, and audit documents live in the maintainers' private
+> workspace and are not part of this repository.
 
 ---
 
@@ -36,6 +39,8 @@ The starter relationship vocabulary is a set of **first-class, modular measureme
 
 The vocabulary is **open**. Adopters may define additional measurement types (e.g. *partial*, *stale*, *unverifiable*) by implementing the same contract. The four above are the official starters, not a closed set.
 
+Since v4 the starters are **decision-complete** — `SPEC/uvrn-measurement-v1.md` locks the exact rules (when conflict fires, what potential requires) — and every starter emits the honest `insufficient-data` verdict when evidence is too thin to measure, never a guess.
+
 - The **contract** (the `Measurement` type) lives in `@uvrn/core` — additive type surface only, it does not touch the live hash/verify path.
 - The **logic** lives in `@uvrn/measure` — four pluggable modules plus a registry. Host-owned, swappable, no fork required.
 
@@ -49,7 +54,7 @@ Measurements roll up into a single verifiable **master receipt** — an additive
 2. **Every measurement result** that ran (agree / disagree / conflict / potential + any custom).
 3. **Node status** for each participating source — **on / off / unavailable**. If a node was down, the receipt says so. Gaps are **recorded, not hidden.**
 
-**Hard constraint — core is live.** The master receipt is **additive only**. The base receipt's canonical hashing and `verifyReceipt()` are byte-for-byte unchanged; existing receipts stay valid and re-checkable. The master envelope carries its own hash, so the aggregate — including an honest record of what was missing or down — is independently verifiable.
+**Hard constraint — core is live.** The master receipt is **additive only**. The base receipt's canonical hashing and `verifyReceipt()` are byte-for-byte unchanged; existing receipts stay valid and re-checkable. The master envelope carries its own hash — since v4 over a spec-exact payload with canonical ordering (`SPEC/uvrn-receipt-v1.md` §2.2) — so the aggregate, including an honest record of what was missing or down, is independently *integrity-checked*; wrap it in a signed NetworkReceipt (`@uvrn/receipt`) and it becomes *verifiable*.
 
 ---
 
@@ -162,8 +167,11 @@ The measurement function has several front doors. They are access layers onto th
 | `@uvrn/identity` | 2 | ✅ Built + audited | Signer reputation layer |
 | `@uvrn/timeline` | 3 | ✅ Built + audited | Time-series query layer |
 | `@uvrn/algox` | 3 | ✅ Built + audited | Signal ranking and selection |
-| `@uvrn/watch` | 4 | ✅ Built + audited | Subscription & threshold alerts |
+| `@uvrn/watch` | 4 | ✅ Built + audited | Subscription & threshold alerts — `WatchStore` seam, delivery retry |
 | `@uvrn/embed` | 4 | ✅ Built + audited | Embeddable React badge + UMD script |
+| `@uvrn/receipt` | 2 | 🆕 v4 | **The canonical receipt object model** — NetworkReceipt envelope, JCS canonicalization (single ecosystem implementation), Ed25519 signing, topics, Layer D vocabulary, `toHumanView()` |
+| `@uvrn/store-sqlite` | 3 | 🆕 v4 | Every store interface against one local SQLite file + `pushToNetwork()` — durable AND zero-signup |
+| `@uvrn/protocol` | — | 🆕 v4 | Single-install umbrella: core + receipt + measure + consensus + score + signal |
 
 ---
 
@@ -222,48 +230,50 @@ pnpm run test
 
 ```
 uvrn-packages/
-├── .admin/                     ← governance + protocol surface
-│   ├── protocols/              ← Bloom Protocol, Agent Coordination
-│   ├── guides/                 ← Constitution, house rules
-│   ├── build-plans/            ← Master build plan, per-package prompts
-│   ├── handoffs/               ← Active coordination docs
-│   ├── audits/                 ← Audit protocol + reports
-│   ├── reports/                ← Execution + remediation reports
-│   ├── findings/               ← Audit findings and observations
-│   └── executive/              ← Architecture of record
+├── SPEC/                       ← normative protocol specifications (hashing, signing, measurement, network)
 ├── AGENTS.md                   ← Cursor/Codex agent context (read this)
 ├── CLAUDE.md                   ← Claude Code context (read this)
 ├── uvrn-core/     uvrn-sdk/   uvrn-adapter/
 ├── uvrn-mcp/      uvrn-api/   uvrn-cli/
 ├── uvrn-drift/    uvrn-agent/ uvrn-canon/
-├── uvrn-signal/   uvrn-score/ uvrn-test/                 ← Wave 1 ✅
-├── uvrn-farm/     uvrn-normalize/ uvrn-lattice/          ← Wave 2 ✅
-├── uvrn-consensus/ uvrn-compare/ uvrn-measure/ uvrn-identity/ uvrn-timeline/ ← Wave 3 ✅
-└── uvrn-watch/    uvrn-embed/                            ← Wave 4 ✅
+├── uvrn-signal/   uvrn-score/ uvrn-test/
+├── uvrn-farm/     uvrn-normalize/ uvrn-lattice/
+├── uvrn-consensus/ uvrn-compare/ uvrn-measure/ uvrn-identity/ uvrn-timeline/
+├── uvrn-watch/    uvrn-embed/
+└── uvrn-receipt/  uvrn-store-sqlite/ uvrn-protocol/      ← new in v4
 ```
 
 ---
 
 ## Publish order
 
+The six `@uvrn/protocol` dependencies publish first, then the remaining packages, then the
+`@uvrn/protocol` umbrella last (so its dependents already resolve on the registry):
+
 ```
- 1. @uvrn/core      →  2. @uvrn/drift   →  3. @uvrn/sdk      →  4. @uvrn/adapter
- 5. @uvrn/canon     →  6. @uvrn/agent   →  7. @uvrn/farm     →  8. @uvrn/normalize
- 9. @uvrn/lattice   → 10. @uvrn/consensus → 11. @uvrn/signal  → 12. @uvrn/score
-13. @uvrn/measure   → 14. @uvrn/compare → 15. @uvrn/identity  → 16. @uvrn/test
-17. @uvrn/timeline  → 18. @uvrn/algox   → 19. @uvrn/mcp       → 20. @uvrn/api
-21. @uvrn/cli       → 22. @uvrn/watch   → 23. @uvrn/embed
+Protocol deps (1–6):
+ 1. @uvrn/core   →  2. @uvrn/receipt → 3. @uvrn/measure
+ 4. @uvrn/consensus → 5. @uvrn/score → 6. @uvrn/signal
+
+Remaining packages (7–25):
+ 7. @uvrn/sdk    →  8. @uvrn/adapter → 9. @uvrn/farm    → 10. @uvrn/normalize
+11. @uvrn/lattice → 12. @uvrn/compare → 13. @uvrn/identity → 14. @uvrn/test
+15. @uvrn/drift  → 16. @uvrn/agent  → 17. @uvrn/canon   → 18. @uvrn/timeline
+19. @uvrn/algox  → 20. @uvrn/mcp    → 21. @uvrn/api     → 22. @uvrn/cli
+23. @uvrn/embed  → 24. @uvrn/watch  → 25. @uvrn/store-sqlite
+
+Umbrella (last):
+26. @uvrn/protocol
 ```
 
 ---
 
 ## Reference
 
-- **Function-first architecture**: `.admin/executive/ARCHITECTURE-uvrn-master.md` (architecture of record)
+- **Protocol contracts**: [`SPEC/`](SPEC/) — receipt hash contract, Ed25519 signing, measurement semantics, network API, golden vectors
 - **Full package specs**: `ROADMAP.md` (canonical spec — interface contracts and design notes for all packages)
-- **Build plans**: `.admin/build-plans/` (incl. `MASTER-BUILD-PLAN.md`)
-- **Audit reports**: `.admin/audits/`
-- **Design philosophy**: "Provider-Agnostic by Design" in `ROADMAP.md`, `AGENTS.md`, and ARCHITECTURE §7
+- **Design philosophy**: "Provider-Agnostic by Design" in `ROADMAP.md` and `AGENTS.md`
+- Internal architecture, build-plan, and audit documents are maintained in the maintainers' private workspace, not in this repository.
 
 ## Open source
 

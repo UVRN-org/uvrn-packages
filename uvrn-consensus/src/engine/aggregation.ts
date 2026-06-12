@@ -1,7 +1,7 @@
 import type { DataSpec } from '@uvrn/core';
 import type { FarmResult, FarmSource } from '@uvrn/agent';
 
-import type { RankedSource, SourceWeights } from '../types';
+import type { DedupConfig, RankedSource, SourceWeights } from '../types';
 import {
   calculateRecencyScore,
   calculateWeightedScore,
@@ -99,17 +99,48 @@ function toDataSpec(parsed: ParsedMetricSource, index: number): DataSpec {
   };
 }
 
-function areNearIdentical(a: ParsedMetricSource, b: ParsedMetricSource): boolean {
-  const max = Math.max(Math.abs(a.metricValue), Math.abs(b.metricValue), 1);
-  const relativeDifference = Math.abs(a.metricValue - b.metricValue) / max;
-  const timeDifference = Math.abs(a.publishedAtMs - b.publishedAtMs);
+/** Resolved dedup defaults — these reproduce the historical (v3) hardcoded behavior exactly. */
+const DEFAULT_DEDUP: Required<DedupConfig> = {
+  relativeTolerance: 0.01,
+  timeWindowMs: DAY_IN_MS,
+  mode: 'relative',
+};
 
-  return relativeDifference <= 0.01 && timeDifference <= DAY_IN_MS;
+function resolveDedup(dedup?: DedupConfig): Required<DedupConfig> {
+  return {
+    relativeTolerance: dedup?.relativeTolerance ?? DEFAULT_DEDUP.relativeTolerance,
+    timeWindowMs: dedup?.timeWindowMs ?? DEFAULT_DEDUP.timeWindowMs,
+    mode: dedup?.mode ?? DEFAULT_DEDUP.mode,
+  };
+}
+
+function areNearIdentical(
+  a: ParsedMetricSource,
+  b: ParsedMetricSource,
+  dedup: Required<DedupConfig>
+): boolean {
+  if (dedup.mode === 'off') {
+    return false;
+  }
+
+  const timeDifference = Math.abs(a.publishedAtMs - b.publishedAtMs);
+  if (timeDifference > dedup.timeWindowMs) {
+    return false;
+  }
+
+  const valueDifference = Math.abs(a.metricValue - b.metricValue);
+  if (dedup.mode === 'absolute') {
+    return valueDifference <= dedup.relativeTolerance;
+  }
+
+  const max = Math.max(Math.abs(a.metricValue), Math.abs(b.metricValue), 1);
+  return valueDifference / max <= dedup.relativeTolerance;
 }
 
 export function extractRankedSources(
   farmResult: FarmResult,
-  weights: SourceWeights
+  weights: SourceWeights,
+  dedup?: DedupConfig
 ): RankedSource[] {
   const fetchedAtMs = parseIsoDate(farmResult.fetchedAt, Date.now());
   const usable: ParsedMetricSource[] = [];
@@ -157,9 +188,10 @@ export function extractRankedSources(
     })
     .sort((left, right) => right.weightScore - left.weightScore);
 
+  const resolvedDedup = resolveDedup(dedup);
   const deduped: ParsedMetricSource[] = [];
   for (const candidate of ranked) {
-    if (!deduped.some((existing) => areNearIdentical(existing, candidate))) {
+    if (!deduped.some((existing) => areNearIdentical(existing, candidate, resolvedDedup))) {
       deduped.push(candidate);
     }
   }

@@ -25,9 +25,9 @@ npm install @uvrn/agent @uvrn/drift @uvrn/core @uvrn/score
 
 To get **signed, replayable DRVC3 receipts**, wire the agent’s receipt emitter to `@uvrn/canon`: pass each emitted receipt (or its drift snapshot) into canon’s pipeline so canon can sign and persist. The agent does not depend on canon; you connect them in your app.
 
-**Package provides:** `Agent`, emitters (`ConsoleEmitter`, `FileEmitter`, `WebhookEmitter`, `MultiEmitter`), `MockFarmConnector`, `PROFILES`. Registration, interval loop, drift scoring via `@uvrn/drift`, and emission of unsigned `AgentDriftReceipt`s.
+**Package provides:** `Agent`, emitters (`ConsoleEmitter`, `FileEmitter`, `WebhookEmitter`, `MultiEmitter`), `MockFarmConnector`, `InMemoryAgentStateStore`, `PROFILES`. Registration, interval loop, drift scoring via `@uvrn/drift`, and emission of unsigned `AgentDriftReceipt`s.
 
-**You provide:** A `FarmConnector` (to fetch sources for each claim) and a `ReceiptEmitter` (where to send receipts). Claims to register (id, query, drift profile, interval). Optional: wire to `@uvrn/canon` for signed receipts.
+**You provide:** A `FarmConnector` (to fetch sources for each claim) and a `ReceiptEmitter` (where to send receipts). Claims to register (id, query, drift profile, interval). Optional: wire to `@uvrn/canon` for signed receipts, and inject an `AgentStateStore` for durable state across restarts.
 
 ---
 
@@ -73,6 +73,41 @@ agent
 | `FileEmitter(path)` | NDJSON append |
 | `WebhookEmitter(url)` | POST to Supabase, Cloudflare Worker, Discord |
 | `MultiEmitter([...])` | Fan out to multiple emitters |
+
+---
+
+## Durable state: `AgentStateStore`
+
+`AgentStateStore` is the injectable persistence seam for the agent's durable state. The agent saves a full `PersistedAgentState` snapshot through the store at every state-changing point — register, unregister, and after every run (success or failure). The snapshot holds each tracked claim's registration, last drift snapshot, last verified time, receipt sequence, and consecutive-failure count, plus the lifetime `totalRuns` counter. The transient `status` field is rederived on restore.
+
+```ts
+interface AgentStateStore {
+  loadState(agentId: string): Promise<PersistedAgentState | null>;
+  saveState(agentId: string, state: PersistedAgentState): Promise<void>;
+}
+```
+
+The default is `InMemoryAgentStateStore` (zero-dep, process-lifetime only) — existing behavior is unchanged. To survive restarts, inject a durable implementation (e.g. a SQLite-backed store from a reference-store package) and call `restore()` after construction:
+
+```ts
+const agent = new Agent({
+  farmConnector:  myFarm,
+  receiptEmitter: myEmitter,
+  stateStore:     new SqliteAgentState(db),
+  agentId:        'my-agent',
+})
+
+await agent.restore()   // registrations, snapshots, failure counts come back
+agent.start()
+```
+
+This package ships no storage of its own — stores are injected interfaces (protocol-package house rule).
+
+---
+
+## Clean shutdown
+
+`agent.stop()` (via `Scheduler.stop()` / `stopAll()`) clears every pending timer the scheduler created, so a process — or a Jest worker — holding only the agent exits cleanly. The test suite runs without `--forceExit` and asserts zero pending timers after `stop()`.
 
 ---
 

@@ -54,3 +54,40 @@ If a new package needs to import constants, types, or functions from a sibling:
 1. Add it as a peer dependency in `package.json`
 2. Document it here with the reason and usage pattern
 3. Never duplicate the constant — import it
+
+## @uvrn/receipt → @uvrn/core (v4)
+
+`@uvrn/receipt` peer-depends on `@uvrn/core` for the protocol types
+(`DeltaReceipt`, `MasterReceipt`) and, in tests, the frozen v3 hash path
+(`hashReceipt`, `verifyReceipt`, `verifyMasterReceipt`) to prove that wrapping
+never disturbs base-receipt verifiability. It has **no other dependencies** and
+zero UI dependencies.
+
+Reverse rule: every other surface (packages, MCP, worker, site, dashboard)
+consumes `@uvrn/receipt` for envelope shape, canonicalization
+(`@uvrn/receipt/canonical`), signing, and human vocabulary
+(`@uvrn/receipt/vocabulary`). No surface defines its own receipt shape or
+duplicates JCS/hash logic — that duplication (worker `src/index.ts`, site
+`src/api/uvrn.js`) is retired in Phases 5–6.
+
+## @uvrn/store-sqlite → canon / identity / timeline / watch / agent / receipt (v4)
+
+`@uvrn/store-sqlite` implements the store interfaces those packages define
+(`CanonStore`, `IdentityStore`, `TimelineStore`, `WatchStore`, `AgentStateStore`)
+against one local SQLite file, plus the `SqliteReceiptStore` outbox with
+`pushToNetwork()`. All optional peer deps; `better-sqlite3` is a lazily-required
+optional peer. Direction is one-way (store-sqlite → protocol packages); no
+protocol package gains storage — the interfaces stay the seam.
+
+## @uvrn/protocol → core / receipt / measure / consensus / score / signal (v4)
+
+The umbrella package (decision D-3) re-exports the common path as real
+`workspace:^` dependencies (rewritten to `^4.0.0` on publish). It adds no logic;
+the coupling is the package's entire purpose.
+
+## @uvrn/mcp → @uvrn/receipt and @uvrn/cli → @uvrn/receipt (v4)
+
+Both consume the canonical receipt object model: mcp's `delta_score_claim`
+returns a signed NetworkReceipt + HumanView (enriched before hashing); cli's
+`verify-receipt` command runs `verifyReceiptFull`. Peer deps, no cycles
+(receipt depends only on core).

@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.0.0] - 2026-06-10 (unreleased, v4 / fable-refactor-1)
+
+### Added
+- `MockDomainConnector` now emits a loud one-time `console.warn` when constructed outside test
+  environments (`NODE_ENV !== 'test'` and `JEST_WORKER_ID` unset): the connector supplies
+  SYNTHETIC data and must not be trusted for real results. Once per process; dependency-free;
+  silent under Jest and in test runs.
+- README promotes `AsyncClaimClassifier` as the documented first-class production
+  classification path, with a type-correct example of an MCP host implementing the interface
+  around an LLM call and feeding `verifyClaimAsync`. `RuleBasedClaimClassifier` remains the
+  zero-dep default.
+
 ## [3.0.0] - 2026-06-09
 
 ### Changed

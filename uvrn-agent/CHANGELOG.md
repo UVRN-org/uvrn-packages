@@ -1,5 +1,21 @@
 # Changelog
 
+## [4.0.0] - 2026-06-10
+
+Unreleased.
+
+### Added
+- `AgentStateStore` interface — injectable persistence seam for durable agent state (`loadState(agentId)` / `saveState(agentId, state)` over a `PersistedAgentState` snapshot: tracked claim registrations, last drift snapshots, receipt sequences, consecutive-failure counts, and `totalRuns`). `AgentConfig.stateStore` accepts a durable implementation. No storage ships in this package — the agent still emits unsigned `AgentDriftReceipt`s only.
+- `InMemoryAgentStateStore` — default zero-dependency `AgentStateStore`, preserving the historical in-memory behavior.
+- `PersistedAgentState` / `PersistedClaimState` types describing the durable state snapshot.
+- `Agent.restore()` — loads persisted state from the configured store and rebuilds the claim map so registrations, snapshots, and failure counts survive restarts. State is saved at every state-changing point (register, unregister, after each run).
+- `Scheduler.stop()` — clears every pending timer and forgets all claims (alias of `stopAll()`), guaranteeing clean shutdown with no leaked handles.
+
+### Fixed
+- Jest open-handles issue: `jest --forceExit` removed from the test script; the suite now exits cleanly because tests shut the scheduler down and assert `jest.getTimerCount() === 0` after `stop()`.
+
+All changes are additive — existing constructors and call sites keep working without the new options.
+
 ## [3.0.0] - 2026-06-09
 
 ### Changed

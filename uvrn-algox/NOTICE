@@ -1,0 +1,22 @@
+@uvrn/algox
+Copyright (c) 2026 Suttle Media LLC / UVRN-org
+
+This package's signal-ranking approach (the staged Filter → Scorer → Selector
+pipeline shape, weighted scoring, anti-domination diversity capping, and
+freshness filtering) was adapted from the x-algorithm — X's open-sourced
+"For You" feed recommendation system:
+
+    https://github.com/xai-org/x-algorithm
+    Copyright X.AI Corp. and contributors
+    Licensed under the Apache License, Version 2.0
+    https://www.apache.org/licenses/LICENSE-2.0
+
+The adaptation was a study-and-reimplementation for UVRN's signal-ranking use
+case (different language, different runtime, different data model); no source
+files were copied verbatim. This NOTICE is provided in the spirit of Apache
+License 2.0 §4(d) attribution and as an honest record of where the ranking
+ideas came from.
+
+All original code in this package is licensed under the MIT License — see the
+LICENSE file. Nothing in this NOTICE grants any right to use the trade names,
+trademarks, or product names of X Corp. or X.AI Corp.

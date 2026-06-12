@@ -132,7 +132,7 @@ export function createServer(runtimeConfig?: RuntimeConfig): Server {
         {
           name: 'delta_score_claim',
           description:
-            'Score a claim against evidence and return a verifiable MasterReceipt + canonical V-Score. Evidence options: (1) if you can search the web, gather sources and pass them as `sources`; (2) if you cannot, have an admin configure a connector; (3) otherwise it runs on built-in mock data. Check `evidenceMode` in the result to see which path was used (`mock` = no real evidence, low-confidence score).',
+            'Score a claim against evidence and return a verifiable MasterReceipt + canonical V-Score, plus a signed NetworkReceipt envelope (`networkReceipt`) and a render-ready `humanView`. Optionally pass `topic` ("domain/subject/instrument") to organize the receipt. Evidence options: (1) if you can search the web, gather sources and pass them as `sources`; (2) if you cannot, have an admin configure a connector; (3) otherwise it runs on built-in mock data. Check `evidenceMode` in the result to see which path was used (`mock` = no real evidence, low-confidence score).',
           inputSchema: scoreClaimSchema,
         },
       ],

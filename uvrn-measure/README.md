@@ -20,10 +20,24 @@ pnpm add @uvrn/measure @uvrn/core
 
 ## Measurements
 
-- **Agree:** emits `agree` when comparable sources converge at or above `context.agreeThreshold` (default `0.9`), otherwise `no-agreement`.
-- **Disagree:** emits `disagree` when numeric spread exceeds `context.divergenceThreshold` (default `0.1`). Pure numeric spread is never `conflict`.
-- **Conflict:** emits `conflict` when two sources on the same field assert mutually exclusive categorical/boolean values or disjoint ranges.
-- **Potential:** emits `potential` when at least three agreement observations are rising over the last three points but still below the agree threshold. Thin history emits `none`.
+- **Agree:** emits `agree` when comparable sources converge at or above `context.agreeThreshold` (default `0.9`), otherwise `no-agreement`. Fewer than two comparable sources emits `insufficient-data`.
+- **Disagree:** emits `disagree` when numeric spread exceeds `context.divergenceThreshold` (default `0.1`), otherwise `none`. Pure numeric spread is never `conflict`. Fewer than two numeric values emits `insufficient-data`.
+- **Conflict:** emits `conflict` when two sources on the same field assert mutually exclusive categorical/boolean values or ranges separated by more than `context.conflictRangeTolerance` (default `0`), otherwise `none`. Fewer than two categorical, boolean, or range assertions emits `insufficient-data`.
+- **Potential:** emits `potential` when at least `context.minObservations` (default `3`) agreement observations are rising over the last `context.windowSize` (default `3`) points but still below the agree threshold. Confidence is scaled by sample size and trend strength; thin history or a signal below `context.confidenceFloor` (default `0.25`) emits `insufficient-data` so weak early signals are never overstated.
+
+Every measurement emits `insufficient-data` per `SPEC/uvrn-measurement-v1.md` §4 when it cannot measure, with an explanation stating what was missing. UIs should render it as "Not enough evidence", never as agreement or as an error.
+
+### Context keys
+
+| Key | Default | Used by |
+|---|---|---|
+| `agreeThreshold` | `0.9` | agree, potential |
+| `divergenceThreshold` | `0.1` | disagree |
+| `conflictRangeTolerance` | `0` | conflict |
+| `minObservations` | `3` | potential |
+| `windowSize` | `3` | potential |
+| `history` / `agreementHistory` | — | potential (scores 0..1, oldest first) |
+| `confidenceFloor` | `0.25` | potential |
 
 ## Usage
 

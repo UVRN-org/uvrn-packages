@@ -79,6 +79,11 @@ export interface MeasurementResult {
   explanation: string;
   /** Source ids that drove the verdict. */
   evidenceRefs: string[];
+  /**
+   * Human-vocabulary explanation (Layer D, additive in v4). Populated from the shared
+   * vocabulary so receipts read the same on every surface; absent fields are absent from hashes.
+   */
+  humanExplanation?: string;
 }
 
 /**

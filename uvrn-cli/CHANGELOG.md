@@ -1,5 +1,10 @@
 # Changelog
 
+## [4.0.0] - 2026-06-10 (unreleased)
+
+### Changed
+- Test suite deepened to meet the 60% coverage gate (A7).
+
 ## [3.0.0] - 2026-06-09
 
 ### Changed

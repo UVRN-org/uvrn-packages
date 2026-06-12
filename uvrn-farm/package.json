@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/farm",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "Standardized data source connectors for the UVRN protocol",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -22,12 +22,13 @@
   "scripts": {
     "build": "tsc",
     "test": "jest",
+    "test:coverage": "jest --coverage",
     "test:watch": "jest --watch",
     "clean": "rm -rf dist"
   },
   "peerDependencies": {
-    "@uvrn/core": "^3.0.0",
-    "@uvrn/agent": "^3.0.0"
+    "@uvrn/core": "^4.0.0",
+    "@uvrn/agent": "^4.0.0"
   },
   "devDependencies": {
     "@uvrn/core": "workspace:*",

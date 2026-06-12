@@ -32,14 +32,24 @@ describe('@uvrn/measure starter measurements', () => {
       expect(result.verdict).toBe('no-agreement');
     });
 
-    it('emits no-agreement for missing comparable evidence', () => {
+    it('emits insufficient-data for missing comparable evidence', () => {
       const result = agreeMeasurement.evaluate({
         claim: 'not enough evidence',
         sources: [{ id: 'a', kind: 'numeric', value: 100 }],
       });
 
-      expect(result.verdict).toBe('no-agreement');
+      expect(result.verdict).toBe('insufficient-data');
       expect(result.confidence).toBe(0);
+    });
+
+    it('explains what was missing on insufficient-data', () => {
+      const result = agreeMeasurement.evaluate({
+        claim: 'not enough evidence',
+        sources: [{ id: 'a', kind: 'numeric', value: 100 }],
+      });
+
+      expect(result.verdict).toBe('insufficient-data');
+      expect(result.explanation).toBe('Agree requires at least two comparable evidence sources; received 1 usable.');
     });
   });
 
@@ -68,14 +78,27 @@ describe('@uvrn/measure starter measurements', () => {
       expect(result.verdict).toBe('none');
     });
 
-    it('emits none for missing numeric values', () => {
+    it('emits insufficient-data for missing numeric values', () => {
       const result = disagreeMeasurement.evaluate({
         claim: 'not numeric',
         sources: [{ id: 'a', kind: 'categorical', assertion: 'yes' }],
       });
 
-      expect(result.verdict).toBe('none');
+      expect(result.verdict).toBe('insufficient-data');
       expect(result.confidence).toBe(0);
+    });
+
+    it('explains what was missing on insufficient-data', () => {
+      const result = disagreeMeasurement.evaluate({
+        claim: 'one numeric value',
+        sources: [
+          { id: 'a', kind: 'numeric', value: 100 },
+          { id: 'b', kind: 'categorical', assertion: 'yes' },
+        ],
+      });
+
+      expect(result.verdict).toBe('insufficient-data');
+      expect(result.explanation).toBe('Disagree requires at least two numeric evidence values; received 1.');
     });
   });
 
@@ -105,7 +128,19 @@ describe('@uvrn/measure starter measurements', () => {
       expect(result.verdict).toBe('conflict');
     });
 
-    it('does not emit conflict for pure numeric spread', () => {
+    it('emits none when matching assertions provide no exclusion', () => {
+      const result = conflictMeasurement.evaluate({
+        claim: 'agreeing assertions',
+        sources: [
+          { id: 'a', kind: 'categorical', assertion: 'rain', attributes: { field: 'weather' } },
+          { id: 'b', kind: 'categorical', assertion: 'Rain', attributes: { field: 'weather' } },
+        ],
+      });
+
+      expect(result.verdict).toBe('none');
+    });
+
+    it('emits insufficient-data for pure numeric spread', () => {
       const result = conflictMeasurement.evaluate({
         claim: 'numeric spread',
         sources: [
@@ -114,7 +149,45 @@ describe('@uvrn/measure starter measurements', () => {
         ],
       });
 
+      expect(result.verdict).not.toBe('conflict');
+      expect(result.verdict).toBe('insufficient-data');
+    });
+
+    it('emits none when conflictRangeTolerance absorbs the range gap', () => {
+      const result = conflictMeasurement.evaluate({
+        claim: 'tolerated gap',
+        sources: [
+          { id: 'a', kind: 'range', range: { min: 1, max: 3 }, attributes: { field: 'count' } },
+          { id: 'b', kind: 'range', range: { min: 8, max: 10 }, attributes: { field: 'count' } },
+        ],
+        context: { conflictRangeTolerance: 10 },
+      });
+
       expect(result.verdict).toBe('none');
+    });
+
+    it('emits conflict when the range gap exceeds conflictRangeTolerance', () => {
+      const result = conflictMeasurement.evaluate({
+        claim: 'material gap',
+        sources: [
+          { id: 'a', kind: 'range', range: { min: 1, max: 3 }, attributes: { field: 'count' } },
+          { id: 'b', kind: 'range', range: { min: 8, max: 10 }, attributes: { field: 'count' } },
+        ],
+        context: { conflictRangeTolerance: 2 },
+      });
+
+      expect(result.verdict).toBe('conflict');
+      expect(result.evidenceRefs).toEqual(['a', 'b']);
+    });
+
+    it('explains what was missing on insufficient-data', () => {
+      const result = conflictMeasurement.evaluate({
+        claim: 'one assertion',
+        sources: [{ id: 'a', kind: 'categorical', assertion: 'rain' }],
+      });
+
+      expect(result.verdict).toBe('insufficient-data');
+      expect(result.explanation).toBe('Conflict requires at least two categorical, boolean, or range assertions; received 1.');
     });
   });
 
@@ -130,6 +203,8 @@ describe('@uvrn/measure starter measurements', () => {
       });
 
       expect(result.verdict).toBe('potential');
+      expect(result.confidence).toBeGreaterThanOrEqual(0.25);
+      expect(result.confidence).toBeLessThanOrEqual(1);
     });
 
     it('emits none when history is already at agreement threshold', () => {
@@ -145,7 +220,7 @@ describe('@uvrn/measure starter measurements', () => {
       expect(result.verdict).toBe('none');
     });
 
-    it('emits none on thin history', () => {
+    it('emits insufficient-data on thin history', () => {
       const result = potentialMeasurement.evaluate({
         claim: 'thin history',
         sources: [{ id: 'a', kind: 'numeric', value: 1 }],
@@ -154,8 +229,38 @@ describe('@uvrn/measure starter measurements', () => {
         },
       });
 
-      expect(result.verdict).toBe('none');
-      expect(result.confidence).toBeLessThan(1);
+      expect(result.verdict).toBe('insufficient-data');
+      expect(result.confidence).toBe(0);
+    });
+
+    it('emits insufficient-data instead of potential when confidence is below the floor', () => {
+      const result = potentialMeasurement.evaluate({
+        claim: 'weak early signal',
+        sources: [{ id: 'a', kind: 'numeric', value: 1 }],
+        context: {
+          agreeThreshold: 0.9,
+          history: [0.1, 0.15, 0.2],
+        },
+      });
+
+      expect(result.verdict).not.toBe('potential');
+      expect(result.verdict).toBe('insufficient-data');
+      expect(result.confidence).toBeGreaterThan(0);
+      expect(result.confidence).toBeLessThan(0.25);
+      expect(result.explanation).toContain('below the 0.25 floor');
+    });
+
+    it('explains what was missing on insufficient-data', () => {
+      const result = potentialMeasurement.evaluate({
+        claim: 'thin history',
+        sources: [{ id: 'a', kind: 'numeric', value: 1 }],
+        context: {
+          history: [0.7, 0.8],
+        },
+      });
+
+      expect(result.verdict).toBe('insufficient-data');
+      expect(result.explanation).toBe('Potential requires at least 3 observations; received 2.');
     });
   });
 });

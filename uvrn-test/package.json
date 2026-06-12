@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/test",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "Centralized mocks, fixtures, and factory functions for building on UVRN",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -12,12 +12,13 @@
   "scripts": {
     "build": "tsc",
     "test": "jest",
+    "test:coverage": "jest --coverage",
     "clean": "rm -rf dist"
   },
   "peerDependencies": {
-    "@uvrn/core": "^3.0.0",
-    "@uvrn/drift": "^3.0.0",
-    "@uvrn/canon": "^3.0.0"
+    "@uvrn/core": "^4.0.0",
+    "@uvrn/drift": "^4.0.0",
+    "@uvrn/canon": "^4.0.0"
   },
   "peerDependenciesMeta": {
     "@uvrn/drift": {

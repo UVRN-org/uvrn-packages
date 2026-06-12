@@ -2,27 +2,31 @@ import type { MeasurementResult } from '@uvrn/core';
 
 /**
  * AgreeVerdict is the outcome emitted by the agree measurement.
- * `agree` means available evidence converges within tolerance; `no-agreement` means it does not.
+ * `agree` means available evidence converges within tolerance; `no-agreement` means it does not;
+ * `insufficient-data` means there were too few usable comparable sources to measure.
  */
-export type AgreeVerdict = 'agree' | 'no-agreement';
+export type AgreeVerdict = 'agree' | 'no-agreement' | 'insufficient-data';
 
 /**
  * DisagreeVerdict is the outcome emitted by the disagree measurement.
- * `disagree` means available numeric evidence materially diverges; `none` means no material divergence was found.
+ * `disagree` means available numeric evidence materially diverges; `none` means no material divergence was found;
+ * `insufficient-data` means there were too few numeric values to measure.
  */
-export type DisagreeVerdict = 'disagree' | 'none';
+export type DisagreeVerdict = 'disagree' | 'none' | 'insufficient-data';
 
 /**
  * ConflictVerdict is the outcome emitted by the conflict measurement.
- * `conflict` means two sources assert mutually exclusive categorical, boolean, or range values.
+ * `conflict` means two sources assert mutually exclusive categorical, boolean, or range values;
+ * `insufficient-data` means there were too few categorical, boolean, or range assertions to measure.
  */
-export type ConflictVerdict = 'conflict' | 'none';
+export type ConflictVerdict = 'conflict' | 'none' | 'insufficient-data';
 
 /**
  * PotentialVerdict is the outcome emitted by the potential measurement.
- * `potential` means agreement is rising over time but still below the agree threshold.
+ * `potential` means agreement is rising over time but still below the agree threshold;
+ * `insufficient-data` means history was too thin or the signal fell below the confidence floor.
  */
-export type PotentialVerdict = 'potential' | 'none';
+export type PotentialVerdict = 'potential' | 'none' | 'insufficient-data';
 
 /**
  * PotentialHistoryPoint is one historical agreement observation used by the potential measurement.

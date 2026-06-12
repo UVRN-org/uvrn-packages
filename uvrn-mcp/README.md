@@ -477,6 +477,8 @@ The path taken is reported back as `evidenceMode` (`host_sources` | `connector` 
 ```
 `claimId` and `label` are optional. If `claimId` is omitted, a stable id is derived as a slug of the claim text plus a short hash (collision-resistant); pass an explicit `claimId` for stable cross-run comparison via `delta_compare`.
 
+**Optional `topic` input:** a serialized topic string (`domain[/subject[/instrument]]`, e.g. `"markets/crypto/BTC"`) recorded on the resulting `networkReceipt.topic`. It is normalized via `@uvrn/receipt` `normalizeTopic()` — segments lowercased, unknown domains accepted under `custom/` — never rejected (`"Markets/Crypto"` → `"markets/crypto"`).
+
 **Output:**
 ```json
 {
@@ -484,17 +486,39 @@ The path taken is reported back as `evidenceMode` (`host_sources` | `connector` 
     "envelopeVersion": 1,
     "claim": "Cottagecore prints are trending",
     "base": { "hash": "..." },
-    "measurements": [{ "type": "disagree", "verdict": "disagree" }],
+    "measurements": [{ "type": "disagree", "verdict": "disagree", "humanExplanation": "..." }],
     "nodes": [{ "id": "HostSources", "status": "on", "detail": "2 host sources" }],
     "masterHash": "..."
   },
   "v_score": 76,
   "claimId": "cottagecore-prints",
   "evidenceMode": "host_sources",
-  "sourceCount": 2
+  "sourceCount": 2,
+  "networkReceipt": {
+    "schemaVersion": "uvrn-receipt-4",
+    "receiptHash": "sha256:...",
+    "kind": "master",
+    "claim": { "id": "cottagecore-prints", "text": "Cottagecore prints are trending" },
+    "source": "uvrn-mcp",
+    "action": "delta_score_claim",
+    "topic": "products/pod",
+    "narrative": "...",
+    "payload": { "the": "MasterReceipt above, byte-for-byte" },
+    "signature": { "alg": "ed25519", "publicKeyRef": "uvrn-mcp-ephemeral", "sig": "..." }
+  },
+  "humanView": { "headline": "...", "verdictLabel": "...", "verdictTone": "...", "scoreCard": { "vScore": 76 }, "sources": [], "measurements": [], "gaps": [], "provenance": {}, "howToVerify": "..." },
+  "signerPublicKey": "base64 raw Ed25519 public key (ephemeral mode only)"
 }
 ```
 `v_score` is the canonical V-Score. `sourceCount` is the number of sources **actually scored** — after non-numeric sources are dropped and near-identical sources (within 1% of each other and 1 day apart) are deduplicated — so it may be lower than the number of `sources` supplied.
+
+**v4 result fields (additive — every pre-v4 field is unchanged):**
+
+- `networkReceipt` — the signed `uvrn-receipt-4` NetworkReceipt envelope wrapping `masterReceipt` (payload untouched, narrative auto-generated from the human vocabulary, optional normalized `topic`). Measurements inside the payload carry `humanExplanation`, stamped **before** master hashing so the human language is inside the hashed envelope.
+- `humanView` — `toHumanView(networkReceipt)` from `@uvrn/receipt`: a render-ready, protocol-free object (headline, verdict label/tone, score card carrying `v_score` plus the consensus `completeness`/`parity`/`freshness` components, sources, measurements, gaps, provenance, how-to-verify).
+- `signerPublicKey` — **ephemeral signing mode only** (the default): the base64 raw Ed25519 public key for this server run, so callers can `verifyReceiptFull(networkReceipt, { publicKey: signerPublicKey })`. Absent when explicit signing keys are configured — resolve the key from `signature.publicKeyRef` instead.
+
+**Honest vocabulary — what an ephemeral signature proves:** the default ephemeral keypair is generated fresh at handler construction and discarded with the process. Its signature proves **integrity plus origin-of-this-process only** — the receipt was produced, unmodified, by the same server run that handed you `signerPublicKey`. It is **not a durable identity**: nothing ties the key to any operator across runs. For durable producer identity, configure explicit keys via `RuntimeConfig.signing` and publish the public key under your `publicKeyRef`.
 
 ## Resources Reference
 
@@ -562,7 +586,7 @@ Use the analyze_receipt prompt to explain this receipt: {...}
 
 See [ENVIRONMENT.md](./ENVIRONMENT.md) for detailed configuration options.
 
-Runtime configuration is injected through `createServer(runtimeConfig?)`. Explicit startup arguments override environment-derived defaults. Omitted stateful capabilities use zero-external defaults only when a tool needs them.
+Runtime configuration is injected through `createServer(runtimeConfig?: RuntimeConfig)`, which resolves the config (`resolveRuntimeConfig`) and constructs the full tool-handler bundle via the `buildHandlers(runtimeConfig)` factory. **All tool handlers consume their dependencies (stores, signers, connectors, signing keys) through that injected path — there are no module-level config singletons.** Tests construct handlers directly with `buildHandlers(resolveRuntimeConfig(custom))` to inject mocks. Explicit startup arguments override environment-derived defaults. Omitted stateful capabilities use zero-external defaults only when a tool needs them.
 
 Precedence:
 
@@ -578,6 +602,7 @@ Default matrix:
 | Canon signer | Lazy `new MockSigner()` from `@uvrn/canon` when a signer is needed |
 | Identity store | Lazy `new MockIdentityStore()` from `@uvrn/identity` when identity tools run |
 | Connectors | `[]`; no provider such as `CoinGeckoFarm` is hardcoded |
+| Receipt signing (`signing`) | `'ephemeral'` — one fresh Ed25519 keypair per handler construction, `publicKeyRef: 'uvrn-mcp-ephemeral'`, public key echoed in results as `signerPublicKey` |
 
 Programmatic example:
 
@@ -590,6 +615,9 @@ const server = createServer({
   canonStores: [myCanonStore],
   canonSigner: myCanonSigner,
   identityStore: myIdentityStore,
+  // Durable producer identity for delta_score_claim NetworkReceipts (default: 'ephemeral').
+  // With explicit keys, no key material is ever emitted in tool results.
+  signing: { privateKey: process.env.UVRN_RECEIPT_KEY!, publicKeyRef: 'my-org-pk-2026-v1' },
 });
 ```
 

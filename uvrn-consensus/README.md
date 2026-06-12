@@ -44,8 +44,27 @@ This v1 implementation ranks sources with a weighted sum:
 
 - Numeric evidence is extracted from the first numeric token found in a source title or snippet.
 - Units are inferred from nearby symbols and keywords when possible.
-- Near-identical sources are collapsed when values are within 1% and timestamps are within 24 hours.
+- Near-identical sources are collapsed when values are within 1% and timestamps are within 24 hours (configurable — see `DedupConfig` below).
 - If fewer than two usable numeric sources remain after parsing and deduplication, `buildBundle()` throws `ConsensusError`.
+
+### `DedupConfig`
+
+The dedup thresholds are configurable via the optional `dedup` field on `ConsensusEngineOptions`. The defaults preserve the historical behavior exactly, and are regression-tested against it.
+
+```ts
+const engine = new ConsensusEngine({
+  sources: farmResult,
+  dedup: {
+    relativeTolerance: 0.01,   // default 0.01 (±1% in 'relative' mode; absolute delta in 'absolute' mode)
+    timeWindowMs: 86_400_000,  // default 1 day
+    mode: 'relative',          // 'relative' (default) | 'absolute' | 'off'
+  },
+});
+```
+
+- `'relative'` (default): sources match when `|a − b| / max(|a|, |b|, 1) <= relativeTolerance` and timestamps are within `timeWindowMs`.
+- `'absolute'`: sources match when `|a − b| <= relativeTolerance` (read as an absolute delta) and timestamps are within `timeWindowMs`.
+- `'off'`: deduplication is disabled — every parsed source is retained.
 
 ## Output contract
 
@@ -77,6 +96,7 @@ The `summary` field is intentionally short and verbatim-ready for logs or LLM re
 - `ConsensusResult`
 - `ConsensusError`
 - `SourceWeights`
+- `DedupConfig`
 - `ConsensusEngineOptions`
 - `ConsensusStats`
 - `RankedSource`

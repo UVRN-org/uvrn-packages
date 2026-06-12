@@ -4,9 +4,18 @@ module.exports = {
   testEnvironment: 'node',
   testMatch: ['**/tests/**/*.test.ts'],
   moduleFileExtensions: ['ts', 'js', 'json'],
-  collectCoverageFrom: ['src/**/*.ts'],
+  collectCoverageFrom: [
+    'src/**/*.ts',
+    '!src/**/*.d.ts',
+    '!src/index.ts' // re-exports only
+  ],
   moduleNameMapper: {
     '^@uvrn/core$': '<rootDir>/../uvrn-core/src'
+  },
+  // Gate applies only when coverage is collected (test:coverage); plain jest runs stay fast.
+  coverageThreshold: {
+    global: {
+      lines: 60
+    }
   }
 };
-

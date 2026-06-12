@@ -189,6 +189,117 @@ describe('@uvrn/consensus', () => {
     expect(stats.agreementScore).toBe(100);
   });
 
+  describe('DedupConfig', () => {
+    // Two near-identical sources: values 0.5% apart, published one hour apart — inside the
+    // default ±1% / 1-day dedup window, so v3 behavior collapses them to one.
+    function buildNearIdenticalPair(): FarmResult {
+      return buildFarmResult({
+        sources: [
+          buildSource({
+            url: 'https://example.com/high',
+            title: 'Reserve ratio 100',
+            snippet: 'Reported reserve ratio 100 USD.',
+            credibility: 0.95,
+            publishedAt: '2026-04-01T00:00:00.000Z',
+          }),
+          buildSource({
+            url: 'https://example.com/low',
+            title: 'Reserve ratio 100.5',
+            snippet: 'Reported reserve ratio 100.5 USD.',
+            credibility: 0.55,
+            publishedAt: '2026-04-01T01:00:00.000Z',
+          }),
+        ],
+      });
+    }
+
+    it('explicit default config produces identical output to no config', () => {
+      const implicit = new ConsensusEngine({ sources: buildNearIdenticalPair() });
+      const explicit = new ConsensusEngine({
+        sources: buildNearIdenticalPair(),
+        dedup: { relativeTolerance: 0.01, timeWindowMs: 86_400_000, mode: 'relative' },
+      });
+
+      // Both dedupe the ±1%-within-a-day pair down to a single source, exactly as today.
+      expect(implicit.stats().sourceCount).toBe(1);
+      expect(explicit.stats()).toEqual(implicit.stats());
+    });
+
+    it("mode 'off' disables deduplication and keeps both sources", () => {
+      const engine = new ConsensusEngine({
+        sources: buildNearIdenticalPair(),
+        dedup: { mode: 'off' },
+      });
+
+      expect(engine.stats().sourceCount).toBe(2);
+      expect(engine.buildBundle().dataSpecs).toHaveLength(2);
+    });
+
+    it('wider relativeTolerance dedupes sources 5% apart that the default keeps', () => {
+      const sources = () =>
+        buildFarmResult({
+          sources: [
+            buildSource({
+              url: 'https://example.com/base',
+              title: 'Reserve ratio 100',
+              snippet: 'Reported reserve ratio 100 USD.',
+              credibility: 0.95,
+              publishedAt: '2026-04-01T00:00:00.000Z',
+            }),
+            buildSource({
+              url: 'https://example.com/nearby',
+              title: 'Reserve ratio 105',
+              snippet: 'Reported reserve ratio 105 USD.',
+              credibility: 0.55,
+              publishedAt: '2026-04-01T01:00:00.000Z',
+            }),
+          ],
+        });
+
+      const defaultEngine = new ConsensusEngine({ sources: sources() });
+      const widened = new ConsensusEngine({
+        sources: sources(),
+        dedup: { relativeTolerance: 0.05 },
+      });
+
+      expect(defaultEngine.stats().sourceCount).toBe(2);
+      expect(widened.stats().sourceCount).toBe(1);
+    });
+
+    it("mode 'absolute' reads the tolerance as an absolute delta", () => {
+      const sources = () =>
+        buildFarmResult({
+          sources: [
+            buildSource({
+              url: 'https://example.com/a',
+              title: 'Reserve ratio 103',
+              snippet: 'Reported reserve ratio 103 USD.',
+              credibility: 0.95,
+              publishedAt: '2026-04-01T00:00:00.000Z',
+            }),
+            buildSource({
+              url: 'https://example.com/b',
+              title: 'Reserve ratio 100',
+              snippet: 'Reported reserve ratio 100 USD.',
+              credibility: 0.55,
+              publishedAt: '2026-04-01T01:00:00.000Z',
+            }),
+          ],
+        });
+
+      // 103 vs 100 is ~2.9% apart — outside the default ±1% relative window…
+      const defaultEngine = new ConsensusEngine({ sources: sources() });
+      expect(defaultEngine.stats().sourceCount).toBe(2);
+
+      // …but within an absolute delta of 5, so absolute mode collapses them.
+      const absolute = new ConsensusEngine({
+        sources: sources(),
+        dedup: { mode: 'absolute', relativeTolerance: 5 },
+      });
+      expect(absolute.stats().sourceCount).toBe(1);
+    });
+  });
+
   it('buildConsensusResult() returns bundle and mapped V-Score components', () => {
     const engine = new ConsensusEngine({ sources: buildFarmResult() });
 

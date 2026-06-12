@@ -1,5 +1,17 @@
 # Changelog
 
+## [4.0.0] - 2026-06-10 (unreleased, v4 / fable-refactor-1)
+
+### Added
+- `IdentityRegistry.recordEvent(args)`: evidence-based reputation recording. Events may carry `AttestedEvidence` (Ed25519 signature over the JCS-canonical `{ publicKeyRef, receiptHash, schemaVersion, sigVersion: 'uvrn-sig-1', signedAt? }` payload); verified events count fully and are keyed by the public key, unverified/evidence-free events are still accepted but flagged `attested: false` and weighted at `unattestedWeight` (default `0.25`).
+- `AttestedEvidence` and `RecordEventArgs` types; `ReputationScore.attestedReceipts` (additive).
+- `IdentityRegistryOptions.unattestedWeight` (default `0.25`) and `IdentityRegistryOptions.accuracyHalfLifeMs` (optional time decay on event weight, default off).
+- Exported `buildEvidencePayload()`, `verifyAttestedEvidence()`, and `SIG_VERSION` so hosts sign and verify the exact canonical payload (local RFC 8785 JCS copy — the package stays zero-dep).
+- README "Sybil note": UVRN claims sybil awareness, not sybil resistance.
+
+### Unchanged
+- Legacy `record()` keeps its v3 whole-receipt semantics for compatibility.
+
 ## [3.0.0] - 2026-06-09
 
 ### Changed

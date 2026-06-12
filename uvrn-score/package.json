@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/score",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "V-Score composition internals and domain-specific scoring profiles for UVRN",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -12,10 +12,11 @@
   "scripts": {
     "build": "tsc",
     "test": "jest",
+    "test:coverage": "jest --coverage",
     "clean": "rm -rf dist"
   },
   "peerDependencies": {
-    "@uvrn/core": "^3.0.0"
+    "@uvrn/core": "^4.0.0"
   },
   "devDependencies": {
     "@uvrn/core": "workspace:*",

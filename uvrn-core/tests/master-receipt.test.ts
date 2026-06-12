@@ -143,3 +143,41 @@ describe('Master receipt', () => {
     expect(runDeltaEngine(goldenBundle).hash).toBe('af0735636388f76e19be836337f3449ba38412e677cea1b0f0f51e63f3e3b477');
   });
 });
+
+describe('Master receipt ordering rule (SPEC uvrn-receipt-v1 §2.2)', () => {
+  it('sorts measurements by (type, first evidence ref) and nodes by id before hashing', () => {
+    const base = runDeltaEngine(bundle);
+    const args = {
+      base,
+      claim: 'ordering fixture',
+      timestamp: '2026-06-10T12:00:00.000Z',
+      measurements: [
+        { type: 'disagree', verdict: 'none', confidence: 1, explanation: 'x', evidenceRefs: ['src-b'] },
+        { type: 'agree', verdict: 'agree', confidence: 0.9, explanation: 'y', evidenceRefs: ['src-b'] },
+        { type: 'agree', verdict: 'agree', confidence: 0.9, explanation: 'z', evidenceRefs: ['src-a'] },
+      ],
+      nodes: [
+        { id: 'src-c', status: 'off' as const },
+        { id: 'src-a', status: 'on' as const },
+      ],
+    };
+    const receipt = buildMasterReceipt(args);
+    expect(receipt.measurements.map((m) => `${m.type}:${m.evidenceRefs[0]}`)).toEqual([
+      'agree:src-a',
+      'agree:src-b',
+      'disagree:src-b',
+    ]);
+    expect(receipt.nodes.map((n) => n.id)).toEqual(['src-a', 'src-c']);
+
+    // Producer ordering is canonical: shuffled input yields the identical masterHash.
+    const shuffled = buildMasterReceipt({
+      ...args,
+      measurements: [args.measurements[2], args.measurements[0], args.measurements[1]],
+      nodes: [args.nodes[1], args.nodes[0]],
+    });
+    expect(shuffled.masterHash).toBe(receipt.masterHash);
+
+    // Verification recomputes over stored order — pre-rule receipts stay valid.
+    expect(verifyMasterReceipt(receipt).verified).toBe(true);
+  });
+});

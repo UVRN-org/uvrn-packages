@@ -17,7 +17,12 @@ export function loadConfig(): ServerConfig {
     rateLimitMax: parseInt(process.env.RATE_LIMIT_MAX || '100', 10),
     rateLimitTimeWindow: process.env.RATE_LIMIT_TIME_WINDOW || '1 minute',
     logLevel: (process.env.LOG_LEVEL as ServerConfig['logLevel']) || 'info',
-    nodeEnv: (process.env.NODE_ENV as ServerConfig['nodeEnv']) || 'development'
+    nodeEnv: (process.env.NODE_ENV as ServerConfig['nodeEnv']) || 'development',
+    // Optional API-key auth for delta routes. Unset = open (pre-4.0 behavior).
+    apiKey: process.env.UVRN_API_KEY || undefined,
+    apiKeys: process.env.UVRN_API_KEYS
+      ? process.env.UVRN_API_KEYS.split(',').map(k => k.trim()).filter(k => k.length > 0)
+      : undefined
   };
 
   const errors = validateConfig(config);

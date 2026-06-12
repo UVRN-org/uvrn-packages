@@ -8,5 +8,11 @@ module.exports = {
     '!src/**/*.d.ts',
     '!src/index.ts'
   ],
-  verbose: true
+  verbose: true,
+  // Gate applies only when coverage is collected (test:coverage); plain jest runs stay fast.
+  coverageThreshold: {
+    global: {
+      lines: 80
+    }
+  }
 };

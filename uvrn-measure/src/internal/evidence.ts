@@ -19,6 +19,10 @@ export function sourceLabel(source: MeasurementSource): string {
   return source.label ?? source.id;
 }
 
+export function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
 export function contextNumber(input: MeasurementInput, key: string, fallback: number): number {
   const value = input.context?.[key];
   return typeof value === 'number' && Number.isFinite(value) ? value : fallback;

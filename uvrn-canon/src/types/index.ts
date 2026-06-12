@@ -56,7 +56,8 @@ export interface StorageProof {
   checksum:    string;       // store's own checksum/etag
 }
 
-export type StoreType = 'r2' | 'supabase' | 'ipfs';
+/** Known store backends plus an open extension for host stores (e.g. `sqlite` in v4). */
+export type StoreType = 'r2' | 'supabase' | 'ipfs' | 'sqlite' | (string & {});
 
 // ── Auto-suggestion — agent recommends canonization ───────
 // The agent emits this when a claim qualifies.

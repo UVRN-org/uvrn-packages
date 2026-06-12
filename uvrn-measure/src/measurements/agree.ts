@@ -18,9 +18,9 @@ export const agreeMeasurement: Measurement = {
     if (!agreement) {
       return {
         type: 'agree',
-        verdict: 'no-agreement',
+        verdict: 'insufficient-data',
         confidence: 0,
-        explanation: 'Agree requires at least two comparable evidence sources.',
+        explanation: `Agree requires at least two comparable evidence sources; received ${input.sources.length} usable.`,
         evidenceRefs: input.sources.map((source) => source.id),
       };
     }

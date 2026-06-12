@@ -10,8 +10,31 @@ const DOMAIN_BASELINES: Record<string, number> = {
   seo: 62,
 };
 
+// Once-per-process guard for the synthetic-data warning. Module-level by design: a process
+// constructing many mock connectors should see the warning exactly once.
+let warnedSyntheticData = false;
+
+function warnSyntheticDataOnce(): void {
+  if (
+    warnedSyntheticData ||
+    process.env.NODE_ENV === 'test' ||
+    process.env.JEST_WORKER_ID !== undefined
+  ) {
+    return;
+  }
+
+  warnedSyntheticData = true;
+  console.warn(
+    '[uvrn-lattice] MockDomainConnector is supplying SYNTHETIC data. This is a development stub — wire a real DomainConnector or AsyncClaimClassifier before trusting results.'
+  );
+}
+
 export class MockDomainConnector implements DomainConnector {
   readonly name = 'MockDomainConnector';
+
+  constructor() {
+    warnSyntheticDataOnce();
+  }
 
   async fetch(query: string, domainSpec: DomainSpec, context?: ConnectorContext): Promise<DomainSignal[]> {
     const now = context?.timestamp ?? new Date().toISOString();

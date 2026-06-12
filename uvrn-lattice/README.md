@@ -144,6 +144,51 @@ domain-specific vocabulary, or an `AsyncClaimClassifier` (LLM-driven) via `verif
 The score is named `evidenceCoverageScore`, deliberately **not** "confidence", to keep it
 distinct from the V-Score.
 
+### `AsyncClaimClassifier` — the production classification path
+
+The keyword-based `RuleBasedClaimClassifier` remains the zero-dep default, but for production
+use an `AsyncClaimClassifier` backed by a real model is the first-class path. The interface is
+two members; the host (for example an MCP host) owns the LLM call and returns a `ClaimSpec`:
+
+```ts
+import { verifyClaimAsync } from '@uvrn/lattice';
+import type { AsyncClaimClassifier, ClaimLevel, ClaimSpec, EvidenceClass } from '@uvrn/lattice';
+
+// An MCP host implementing the classifier: the host receives the claim text, asks its
+// model to grade it onto the L1–L5 ladder, and returns the typed ClaimSpec.
+class McpHostClaimClassifier implements AsyncClaimClassifier {
+  readonly name = 'mcp-host-llm-classifier';
+
+  async classify(claimText: string): Promise<ClaimSpec> {
+    // ← your MCP host / LLM SDK call goes here. Ask the model for the ladder level and
+    //   the evidence classes the claim requires, e.g. as structured JSON output.
+    const llm = await callModel({
+      prompt: `Grade this claim onto the UVRN ladder (L1–L5) and list the required evidence classes: "${claimText}"`,
+    });
+
+    return {
+      text: claimText,
+      level: llm.level as ClaimLevel,                       // e.g. 'L3'
+      requiredEvidence: llm.evidence as EvidenceClass[],    // e.g. ['purchase']
+      classifier: this.name,                                // provenance: who classified
+      explanation: llm.rationale,
+    };
+  }
+}
+
+const verdict = await verifyClaimAsync(
+  'People are buying maximalist POD products',
+  [{ source: 'Etsy sales' }, { source: 'marketplace velocity' }],
+  { classifier: new McpHostClaimClassifier() }
+);
+```
+
+Evidence tagging stays in-process — only claim classification is awaited. Pair this with a
+real `DomainConnector` (or `searchDelegate`) for fully non-synthetic runs: as of v4,
+`MockDomainConnector` logs a loud one-time warning when constructed outside test environments
+(`NODE_ENV !== 'test'` and no `JEST_WORKER_ID`), because mock signals are synthetic and must
+not be trusted as research output.
+
 ### Optional `runLattice` integration
 
 Pass `claim` to `runLattice()` to attach a `SufficiencyVerdict` to the receipt. Because lattice
@@ -171,7 +216,7 @@ claim to verify), but be aware the two reads then refer to different statements.
 ## Design
 
 - Provider integrations are pluggable through the `DomainConnector` interface.
-- The package ships `MockDomainConnector` so the zero-external path works.
+- The package ships `MockDomainConnector` so the zero-external path works. Its data is synthetic: constructing it outside test environments emits a one-time `console.warn` so mock signals are never mistaken for research output.
 - `ClaudeSearchConnector` supports manual Cowork sessions via a runtime `SearchDelegate`, wired automatically when you pass `searchDelegate` to `runLattice()`.
 - Receipts are reproducible: `runLattice` threads its single run timestamp to every connector via `ConnectorContext`, so the same query + `options.timestamp` yields the same receipt hash. Provide `options.timestamp` for verifiable, re-derivable receipts. Custom connectors should honor `context.timestamp` (or pin their own signal `ts`) to stay reproducible.
 - V-Score math is not reimplemented here. Lattice reads `deltaFinal` from the `DeltaReceipt` returned by `@uvrn/core`.

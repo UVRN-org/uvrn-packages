@@ -71,6 +71,53 @@ These are included as working examples and are optional:
 - Default cooldown is 5 minutes
 - Subscriptions can match `DRIFTING`, `CRITICAL`, or both
 
+## Delivery retry
+
+Webhook, Slack, Discord, and custom `DeliveryTarget` deliveries are retried with exponential backoff when they throw or reject. Defaults: 3 retries after the initial attempt, starting at 250 ms and doubling per retry. After the final failure the watcher reports the exhausted delivery via its existing error path (`console.error`), so failures are never silently swallowed. The in-process `callback` target is not retried.
+
+```ts
+// Watcher-level defaults
+const watcher = new Watcher({
+  agent,
+  retryAttempts: 5,     // retries after the initial attempt (default 3)
+  retryBackoffMs: 500,  // initial backoff, doubles per retry (default 250)
+  sleep: customSleep,   // injectable await between retries (handy in tests)
+});
+
+// Per-subscription override
+watcher.subscribe('clm_sol_001', {
+  on: 'CRITICAL',
+  notify: { webhook: 'https://example.com/hook' },
+  retryAttempts: 1,
+  retryBackoffMs: 100,
+});
+```
+
+## Webhook URL validation
+
+`webhook`, `slack`, and `discord` notify targets are validated when the subscription is created. URLs that cannot be parsed by `new URL()` or whose protocol is not `http:`/`https:` are rejected with a clear error, and the subscription is not registered.
+
+## Persistence: `WatchStore`
+
+`WatchStore` is the injectable persistence seam for subscriptions. The `Watcher` writes every subscription mutation (subscribe, unsubscribe, alert bookkeeping, once-mode removal) through the store. This package ships no storage of its own — stores are injected interfaces; the default `InMemoryWatchStore` preserves the historical in-memory behavior.
+
+```ts
+interface WatchStore {
+  saveSubscription(subscription: Subscription): Promise<void>;
+  getSubscription(subscriberId: string): Promise<Subscription | null>;
+  listSubscriptions(): Promise<Subscription[]>;
+  removeSubscription(subscriberId: string): Promise<boolean>;
+}
+```
+
+Inject a durable implementation (e.g. a SQLite-backed store from a reference-store package) to persist subscriptions across restarts:
+
+```ts
+const watcher = new Watcher({ agent, store: new SqliteWatchStore(db) });
+```
+
+Store writes are queued in order; `await watcher.flush()` resolves once all pending store writes have settled. Note that `notify.callback` functions and custom `DeliveryTarget` instances are not serializable — durable stores should persist URL-based targets only.
+
 ## Public API
 
 - `Watcher`
@@ -80,9 +127,12 @@ These are included as working examples and are optional:
 - `AlertEvent`
 - `WatcherOptions`
 - `Subscription`
+- `WatchStore`
+- `InMemoryWatchStore`
 - `WebhookDelivery`
 - `SlackDelivery`
 - `DiscordDelivery`
+- `DEFAULT_RETRY_ATTEMPTS`, `DEFAULT_RETRY_BACKOFF_MS`
 
 ## Dependencies
 

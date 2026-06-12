@@ -1,7 +1,7 @@
 {
   "name": "uvrn-packages",
   "private": true,
-  "description": "UVRN protocol packages — full 23-package open protocol. Publish to npm under @uvrn scope.",
+  "description": "UVRN protocol packages — full 26-package open protocol. Publish to npm under @uvrn scope.",
   "workspaces": [
     "uvrn-core",
     "uvrn-sdk",

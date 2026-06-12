@@ -10,6 +10,9 @@ dist/
 .git/
 **/.git
 .claude/
+.codex/
+.admin/
+.codex-staging/
 
 
 # TypeScript incremental build info — do not commit (causes non-reproducible builds)

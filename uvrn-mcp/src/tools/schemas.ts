@@ -43,11 +43,10 @@ export const runEngineSchema = {
             required: ['id', 'label', 'sourceKind', 'originDocIds', 'metrics'],
           },
         },
-        thresholdPct: { 
+        thresholdPct: {
           type: 'number',
           description: 'Threshold percentage (must be > 0 and <= 1.0)',
-          minimum: 0.001,
-          exclusiveMinimum: true,
+          exclusiveMinimum: 0,
           maximum: 1,
         },
         maxRounds: { 

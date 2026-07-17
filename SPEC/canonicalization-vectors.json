@@ -1,0 +1,140 @@
+{
+  "title": "Shared canonicalization conformance vectors (WS-CANON-UNIFY Phase 0)",
+  "version": 1,
+  "generatedAt": "2026-07-16",
+  "notes": [
+    "One vector set run by uvrn-core (canonicalSerialize), uvrn-receipt (canonicalize), and uvrn-identity (canonicalize, local copy).",
+    "JSON cannot express undefined / NaN / Infinity / array holes, so inputs use $uvrn hydrate tokens: { \"$uvrn\": \"undefined\" | \"NaN\" | \"Infinity\" | \"-Infinity\" | \"sparseHole\" }. Test-side hydrate() replaces tokens with the real value; sparseHole becomes a true array hole (delete arr[i]).",
+    "expect is the strict RFC 8785 (JCS) outcome: { \"canonical\": string } or { \"error\": true }.",
+    "knownDivergence pins CURRENT behavior per implementation (Phase 0 characterization — pinned, not skipped, not fixed). A package with a knownDivergence entry asserts that pinned behavior instead of expect. Removing a pin requires a Phase B behavior change with its own golden-hash regression proof (ADR-006, ADR-010).",
+    "Decision-1 evidence (2026-07-16, run against compiled dist of all three packages): true sparse [1,<hole>,2] emits '[1,,2]' (invalid JSON) in ALL THREE implementations — Array.prototype.map preserves holes and join renders them empty — so sparse-hole is a SHARED pin. Dense [1,undefined,2] emits '[1,,2]' in core only; receipt/identity emit '[1,null,2]' — core-only pin.",
+    "Do not edit SPEC/vectors/canonical.json for divergence cases; that file is the frozen receipt-v1 contract."
+  ],
+  "vectors": [
+    {
+      "id": "object-key-sorting",
+      "description": "Keys sorted lexicographically, no whitespace",
+      "input": { "b": 2, "a": 1, "01": "x", "Z": true, "z": null },
+      "expect": { "canonical": "{\"01\":\"x\",\"Z\":true,\"a\":1,\"b\":2,\"z\":null}" }
+    },
+    {
+      "id": "nested-structures",
+      "description": "Recursive sorting through nested objects and arrays",
+      "input": { "outer": { "b": [1, 2, 3], "a": { "y": false, "x": "" } }, "list": [{ "k": "v" }, [], {}] },
+      "expect": { "canonical": "{\"list\":[{\"k\":\"v\"},[],{}],\"outer\":{\"a\":{\"x\":\"\",\"y\":false},\"b\":[1,2,3]}}" }
+    },
+    {
+      "id": "unicode-strings-and-keys",
+      "description": "Non-ASCII keys/values pass through JSON.stringify escaping; control chars escaped",
+      "input": { "é": "café", "emoji": "🎉", "控制": "a\u0000b\nc\td" },
+      "expect": { "canonical": "{\"emoji\":\"🎉\",\"é\":\"café\",\"控制\":\"a\\u0000b\\nc\\td\"}" }
+    },
+    {
+      "id": "number-forms",
+      "description": "ECMAScript number serialization: -0 → 0, 1e21 boundary, small exponent",
+      "input": { "negZero": -0, "big": 1e21, "small": 1e-7, "frac": 0.1, "int": -25, "zero": 0 },
+      "expect": { "canonical": "{\"big\":1e+21,\"frac\":0.1,\"int\":-25,\"negZero\":0,\"small\":1e-7,\"zero\":0}" }
+    },
+    {
+      "id": "string-escapes",
+      "description": "Top-level string with quote, backslash, newline, backspace escapes",
+      "input": "line\n\"quote\"\\backslash\b",
+      "expect": { "canonical": "\"line\\n\\\"quote\\\"\\\\backslash\\b\"" }
+    },
+    {
+      "id": "top-level-scalars-array",
+      "description": "Array of null/booleans/number/string",
+      "input": [null, true, false, 42, "plain"],
+      "expect": { "canonical": "[null,true,false,42,\"plain\"]" }
+    },
+    {
+      "id": "empty-containers",
+      "description": "Empty array, empty object, empty string",
+      "input": { "arr": [], "obj": {}, "str": "" },
+      "expect": { "canonical": "{\"arr\":[],\"obj\":{},\"str\":\"\"}" }
+    },
+    {
+      "id": "undefined-object-member",
+      "description": "undefined-valued property: strict impls omit the member; core emits malformed JSON",
+      "input": { "a": 1, "b": { "$uvrn": "undefined" } },
+      "expect": { "canonical": "{\"a\":1}" },
+      "knownDivergence": {
+        "core": { "canonical": "{\"a\":1,\"b\":}", "note": "Malformed JSON — dangling member value. Evidence 2026-07-16." }
+      }
+    },
+    {
+      "id": "undefined-array-element",
+      "description": "Dense array containing undefined: strict impls emit null; core drops the value between commas",
+      "input": [1, { "$uvrn": "undefined" }, 2],
+      "expect": { "canonical": "[1,null,2]" },
+      "knownDivergence": {
+        "core": { "canonical": "[1,,2]", "note": "Invalid JSON — elision. Evidence 2026-07-16." }
+      }
+    },
+    {
+      "id": "sparse-array-hole",
+      "description": "TRUE sparse array (hole, not undefined value). Decision-1 evidence: ALL THREE emit identical invalid JSON '[1,,2]' because Array.prototype.map preserves holes and join renders them empty — shared pin, not core-only",
+      "input": [1, { "$uvrn": "sparseHole" }, 2],
+      "expect": { "canonical": "[1,null,2]" },
+      "knownDivergence": {
+        "core": { "canonical": "[1,,2]", "note": "Shared divergence. Evidence 2026-07-16." },
+        "receipt": { "canonical": "[1,,2]", "note": "Shared divergence: map((item) => item === undefined ? 'null' : ...) never visits holes. Evidence 2026-07-16." },
+        "identity": { "canonical": "[1,,2]", "note": "Shared divergence: byte-identical local copy of receipt serializer. Evidence 2026-07-16." }
+      }
+    },
+    {
+      "id": "nan-top-level",
+      "description": "Top-level NaN: strict impls throw; core silently emits null",
+      "input": { "$uvrn": "NaN" },
+      "expect": { "error": true },
+      "knownDivergence": {
+        "core": { "canonical": "null", "note": "Silent NaN → null via JSON.stringify. Evidence 2026-07-16." }
+      }
+    },
+    {
+      "id": "nan-in-array",
+      "description": "NaN inside an array: strict impls throw; core emits [null]",
+      "input": [{ "$uvrn": "NaN" }],
+      "expect": { "error": true },
+      "knownDivergence": {
+        "core": { "canonical": "[null]", "note": "Evidence 2026-07-16." }
+      }
+    },
+    {
+      "id": "nan-object-member",
+      "description": "NaN-valued property: strict impls throw; core emits null member value",
+      "input": { "n": { "$uvrn": "NaN" } },
+      "expect": { "error": true },
+      "knownDivergence": {
+        "core": { "canonical": "{\"n\":null}", "note": "Evidence 2026-07-16." }
+      }
+    },
+    {
+      "id": "infinity-top-level",
+      "description": "Infinity: strict impls throw; core silently emits null",
+      "input": { "$uvrn": "Infinity" },
+      "expect": { "error": true },
+      "knownDivergence": {
+        "core": { "canonical": "null", "note": "Evidence 2026-07-16." }
+      }
+    },
+    {
+      "id": "negative-infinity-top-level",
+      "description": "-Infinity: strict impls throw; core silently emits null",
+      "input": { "$uvrn": "-Infinity" },
+      "expect": { "error": true },
+      "knownDivergence": {
+        "core": { "canonical": "null", "note": "Evidence 2026-07-16." }
+      }
+    },
+    {
+      "id": "undefined-top-level",
+      "description": "Top-level undefined: strict impls throw; core returns the empty string",
+      "input": { "$uvrn": "undefined" },
+      "expect": { "error": true },
+      "knownDivergence": {
+        "core": { "canonical": "", "note": "Empty string — hashes to sha256 of zero bytes. Evidence 2026-07-16." }
+      }
+    }
+  ]
+}

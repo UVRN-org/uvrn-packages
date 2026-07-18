@@ -1,18 +1,14 @@
 /**
  * WS-CANON-UNIFY Phase 0 — shared canonicalization conformance vectors (ADR-006).
  *
- * Runs receipt's strict JCS `canonicalize` against SPEC/canonicalization-vectors.json. Receipt is
- * expected to meet the strict outcomes except where a `knownDivergence.receipt` pin exists —
- * per Decision-1 evidence (2026-07-16) that is exactly the true-sparse-array case, where all
- * three implementations emit identical invalid JSON '[1,,2]' (Array.prototype.map preserves
- * holes; join renders them empty). Pinned, not skipped, not fixed — Phase B owns any fix.
+ * Phase B runs receipt's delegated canonical-serialize-2 path against every strict expectation.
+ * Historical pins remain in the vector file as characterization evidence, but no longer apply to
+ * this live v2 consumer.
  */
 
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { canonicalize } from '../src/canonical';
-
-const IMPL = 'receipt';
+import { canonicalize, canonicalSerializeV2 } from '../src/canonical';
 
 interface DivergencePin {
   canonical: string;
@@ -84,15 +80,7 @@ function hydrate(value: unknown): unknown {
 
 describe('SPEC/canonicalization-vectors.json — receipt canonicalize', () => {
   for (const vector of vectors) {
-    const pin = vector.knownDivergence?.[IMPL];
-
-    if (pin) {
-      it(`[KNOWN DIVERGENCE — pinned] ${vector.id}`, () => {
-        // Stale-pin guard: a pin identical to the strict expectation must be deleted.
-        expect(pin.canonical).not.toBe(vector.expect.canonical);
-        expect(canonicalize(hydrate(vector.input))).toBe(pin.canonical);
-      });
-    } else if (vector.expect.error) {
+    if (vector.expect.error) {
       it(`${vector.id} → throws`, () => {
         expect(() => canonicalize(hydrate(vector.input))).toThrow(TypeError);
       });
@@ -103,8 +91,11 @@ describe('SPEC/canonicalization-vectors.json — receipt canonicalize', () => {
     }
   }
 
-  it('enumerates the receipt divergence set (sparse hole only, per Decision-1 evidence)', () => {
-    const pinnedIds = vectors.filter((v) => v.knownDivergence?.[IMPL]).map((v) => v.id).sort();
-    expect(pinnedIds).toEqual(['sparse-array-hole']);
+  it('delegates to the shared core v2 function', () => {
+    expect(canonicalize).not.toBe(canonicalSerializeV2);
+    const sparse = [1, 2, 3];
+    delete sparse[1];
+    expect(canonicalize(sparse)).toBe('[1,null,3]');
+    expect(canonicalize(sparse)).toBe(canonicalSerializeV2(sparse));
   });
 });

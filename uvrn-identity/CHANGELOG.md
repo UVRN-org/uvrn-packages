@@ -1,5 +1,13 @@
 # Changelog
 
+## [4.1.0] - 2026-07-18 (unreleased)
+
+### Changed
+- Removed the live hand-copied canonicalizer. Identity evidence payloads now import the
+  environment-pure `@uvrn/core/canonical-serialize-2` implementation directly.
+- True sparse array holes serialize as JSON `null`; non-finite / non-JSON values reject.
+- Existing valid-JSON `uvrn-sig-1` payload bytes remain unchanged.
+
 ## [4.0.0] - 2026-06-10 (unreleased, v4 / fable-refactor-1)
 
 ### Added

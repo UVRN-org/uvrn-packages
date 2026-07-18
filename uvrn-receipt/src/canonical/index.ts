@@ -4,40 +4,21 @@
  * browser can import it directly — one canonicalization implementation in the whole ecosystem.
  */
 
+import { canonicalSerializeV2 } from '@uvrn/core/canonical-serialize-2';
 import type { NetworkReceipt } from '../types';
 
+export {
+  CANONICAL_SERIALIZATION_V2,
+  CanonicalSerializationError,
+  canonicalSerializeV2,
+} from '@uvrn/core/canonical-serialize-2';
+export type { CanonicalSerializationErrorCode } from '@uvrn/core/canonical-serialize-2';
+
 /**
- * canonicalize serializes a JSON value per RFC 8785 (JCS): sorted keys, no whitespace,
- * ECMAScript number form, undefined object members omitted, undefined array elements as null.
- * Non-finite numbers throw — they must never enter a hashed payload.
+ * Stable receipt API delegated to core's environment-pure canonical-serialize-2 implementation.
  */
 export function canonicalize(value: unknown): string {
-  if (value === undefined) {
-    throw new TypeError('canonicalize: top-level value must not be undefined');
-  }
-  return serialize(value);
-}
-
-function serialize(value: unknown): string {
-  if (value === null || typeof value !== 'object') {
-    if (typeof value === 'number' && !Number.isFinite(value)) {
-      throw new TypeError('canonicalize: non-finite numbers are not allowed in hashed payloads');
-    }
-    if (typeof value === 'function' || typeof value === 'symbol' || value === undefined) {
-      throw new TypeError(`canonicalize: cannot serialize a ${typeof value} value`);
-    }
-    return JSON.stringify(value);
-  }
-
-  if (Array.isArray(value)) {
-    return '[' + value.map((item) => (item === undefined ? 'null' : serialize(item))).join(',') + ']';
-  }
-
-  const record = value as Record<string, unknown>;
-  const keys = Object.keys(record)
-    .filter((key) => record[key] !== undefined)
-    .sort();
-  return '{' + keys.map((key) => JSON.stringify(key) + ':' + serialize(record[key])).join(',') + '}';
+  return canonicalSerializeV2(value);
 }
 
 /**

@@ -15,7 +15,7 @@ is proven against the golden vectors in `SPEC/vectors/`.
 | Module | Exports |
 |---|---|
 | `types/` | `NetworkReceipt` envelope, `Topic`, `ReceiptSignature`, `HumanView` |
-| `canonical/` | `canonicalize()` (RFC 8785 JCS), `assembleHashInput()`, `assembleLegacyHashInput()` — the **single** canonicalization implementation for the whole ecosystem (also importable as `@uvrn/receipt/canonical`, environment-pure: no Node APIs) |
+| `canonical/` | `canonicalize()` delegates to core's strict `canonical-serialize-2`; `assembleHashInput()`, `assembleLegacyHashInput()` (also importable as `@uvrn/receipt/canonical`; canonical path is environment-pure with no Node APIs) |
 | `schema/` | `NETWORK_RECEIPT_SCHEMA` (JSON Schema) + dep-free `validateNetworkReceipt()` |
 | `sign/` | `generateReceiptKeyPair()`, `signReceipt()`, `verifySignature()`, `verifyReceiptFull()`, `computeNetworkReceiptHash()` |
 | `topics/` | starter taxonomy (`markets`, `products`, `news`, `research`, `claims` + open `custom/*`), `normalizeTopic()` — normalizes, never rejects |
@@ -68,6 +68,8 @@ const view = toHumanView(signed);
 ## Design rules (enforced)
 
 - `payload` is never reshaped per surface; the protocol object travels byte-for-byte.
+- Receipt canonicalization imports the browser-safe `@uvrn/core/canonical-serialize-2` subpath;
+  sparse holes become JSON `null`, and non-finite numbers reject rather than becoming `null`.
 - The hash covers a **declared field list** (`NETWORK_RECEIPT_HASH_FIELDS`); unknown envelope
   fields never break verifiers. Hash-covered additions require a new `schemaVersion`.
 - Existing v3 receipts and `verifyReceipt()` stay byte-for-byte valid (additive-only rule).

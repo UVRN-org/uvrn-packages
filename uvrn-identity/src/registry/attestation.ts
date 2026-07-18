@@ -1,11 +1,10 @@
 /**
  * Ed25519 evidence verification for reputation events.
  *
- * The canonicalization here is a deliberate local copy of the RFC 8785 (JCS) serializer in
- * `@uvrn/receipt` (`src/canonical/index.ts`) — `@uvrn/identity` stays zero-dep, so it must not
- * import the receipt package. Keep the two implementations byte-identical.
+ * Signed payload bytes delegate to core's environment-pure canonical-serialize-2 module.
  */
 
+import { canonicalSerializeV2 } from '@uvrn/core/canonical-serialize-2';
 import { createPublicKey, verify } from 'node:crypto';
 
 import type { AttestedEvidence } from '../types';
@@ -16,39 +15,8 @@ export const SIG_VERSION = 'uvrn-sig-1';
 /** DER SPKI prefix for a raw 32-byte Ed25519 public key (RFC 8410). */
 const ED25519_SPKI_PREFIX = Buffer.from('302a300506032b6570032100', 'hex');
 
-/**
- * canonicalize serializes a JSON value per RFC 8785 (JCS): sorted keys, no whitespace,
- * ECMAScript number form, undefined object members omitted, undefined array elements as null.
- * Non-finite numbers throw — they must never enter a signed payload.
- */
-export function canonicalize(value: unknown): string {
-  if (value === undefined) {
-    throw new TypeError('canonicalize: top-level value must not be undefined');
-  }
-  return serialize(value);
-}
-
-function serialize(value: unknown): string {
-  if (value === null || typeof value !== 'object') {
-    if (typeof value === 'number' && !Number.isFinite(value)) {
-      throw new TypeError('canonicalize: non-finite numbers are not allowed in signed payloads');
-    }
-    if (typeof value === 'function' || typeof value === 'symbol' || value === undefined) {
-      throw new TypeError(`canonicalize: cannot serialize a ${typeof value} value`);
-    }
-    return JSON.stringify(value);
-  }
-
-  if (Array.isArray(value)) {
-    return '[' + value.map((item) => (item === undefined ? 'null' : serialize(item))).join(',') + ']';
-  }
-
-  const record = value as Record<string, unknown>;
-  const keys = Object.keys(record)
-    .filter((key) => record[key] !== undefined)
-    .sort();
-  return '{' + keys.map((key) => JSON.stringify(key) + ':' + serialize(record[key])).join(',') + '}';
-}
+/** Backward-compatible identity export delegated to the one live strict implementation. */
+export const canonicalize = canonicalSerializeV2;
 
 /**
  * buildEvidencePayload assembles the exact string that must have been signed for a piece of

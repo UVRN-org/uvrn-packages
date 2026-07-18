@@ -1,20 +1,14 @@
 /**
  * WS-CANON-UNIFY Phase 0 — shared canonicalization conformance vectors (ADR-006).
  *
- * Runs identity's local JCS `canonicalize` (the deliberate zero-dep hand copy of receipt's
- * serializer in src/registry/attestation.ts) against SPEC/canonicalization-vectors.json. This
- * suite is what enforces the "byte-identical by convention" promise going forward: identity must
- * meet the strict outcomes except where a `knownDivergence.identity` pin exists — per Decision-1
- * evidence (2026-07-16) that is exactly the true-sparse-array case, shared by all three
- * implementations ('[1,,2]'). Imported from the module path on purpose; the public package
- * index is NOT expanded (ADR-010).
+ * Phase B proves identity imports core's one live canonical-serialize-2 implementation and meets
+ * every strict expectation, including the shared sparse-hole → JSON null policy.
  */
 
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { canonicalSerializeV2 } from '@uvrn/core/canonical-serialize-2';
 import { canonicalize } from '../src/registry/attestation';
-
-const IMPL = 'identity';
 
 interface DivergencePin {
   canonical: string;
@@ -84,17 +78,9 @@ function hydrate(value: unknown): unknown {
   return value;
 }
 
-describe('SPEC/canonicalization-vectors.json — identity canonicalize (local copy)', () => {
+describe('SPEC/canonicalization-vectors.json — identity shared canonical-serialize-2', () => {
   for (const vector of vectors) {
-    const pin = vector.knownDivergence?.[IMPL];
-
-    if (pin) {
-      it(`[KNOWN DIVERGENCE — pinned] ${vector.id}`, () => {
-        // Stale-pin guard: a pin identical to the strict expectation must be deleted.
-        expect(pin.canonical).not.toBe(vector.expect.canonical);
-        expect(canonicalize(hydrate(vector.input))).toBe(pin.canonical);
-      });
-    } else if (vector.expect.error) {
+    if (vector.expect.error) {
       it(`${vector.id} → throws`, () => {
         expect(() => canonicalize(hydrate(vector.input))).toThrow(TypeError);
       });
@@ -105,8 +91,7 @@ describe('SPEC/canonicalization-vectors.json — identity canonicalize (local co
     }
   }
 
-  it('enumerates the identity divergence set (sparse hole only, per Decision-1 evidence)', () => {
-    const pinnedIds = vectors.filter((v) => v.knownDivergence?.[IMPL]).map((v) => v.id).sort();
-    expect(pinnedIds).toEqual(['sparse-array-hole']);
+  it('uses the shared core function directly (no live hand copy)', () => {
+    expect(canonicalize).toBe(canonicalSerializeV2);
   });
 });

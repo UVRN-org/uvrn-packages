@@ -10,7 +10,17 @@
 
 import { readFileSync } from 'fs';
 import { join } from 'path';
-import { canonicalSerialize } from '../src/core/serialization';
+import {
+  CANONICAL_SERIALIZATION_V1,
+  canonicalSerialize,
+  canonicalSerializeForVersion,
+  UnsupportedCanonicalSerializationVersionError,
+} from '../src/core/serialization';
+import {
+  CANONICAL_SERIALIZATION_V2,
+  CanonicalSerializationError,
+  canonicalSerializeV2,
+} from '../src/core/canonical-serialize-2';
 
 const IMPL = 'core';
 
@@ -116,5 +126,43 @@ describe('SPEC/canonicalization-vectors.json — core canonicalSerialize', () =>
       'undefined-object-member',
       'undefined-top-level',
     ]);
+  });
+});
+
+describe('SPEC/canonicalization-vectors.json — core canonical-serialize-2', () => {
+  for (const vector of vectors) {
+    if (vector.expect.error) {
+      it(`${vector.id} → typed strict error`, () => {
+        expect(() => canonicalSerializeV2(hydrate(vector.input))).toThrow(
+          CanonicalSerializationError
+        );
+      });
+    } else {
+      it(`${vector.id} → ${vector.expect.canonical}`, () => {
+        expect(canonicalSerializeV2(hydrate(vector.input))).toBe(vector.expect.canonical);
+      });
+    }
+  }
+
+  it('selects declared versions and rejects unknown versions without fallback', () => {
+    const sample = { b: 2, a: 1 };
+    expect(canonicalSerializeForVersion(CANONICAL_SERIALIZATION_V1, sample)).toBe(
+      canonicalSerialize(sample)
+    );
+    expect(canonicalSerializeForVersion(CANONICAL_SERIALIZATION_V2, sample)).toBe(
+      canonicalSerializeV2(sample)
+    );
+    expect(() => canonicalSerializeForVersion('canonical-serialize-999', sample)).toThrow(
+      UnsupportedCanonicalSerializationVersionError
+    );
+  });
+
+  it('rejects non-JSON object and primitive types', () => {
+    expect(() => canonicalSerializeV2(new Date('2026-07-18T00:00:00.000Z'))).toThrow(
+      CanonicalSerializationError
+    );
+    expect(() => canonicalSerializeV2(1n)).toThrow(CanonicalSerializationError);
+    expect(() => canonicalSerializeV2({ bad: () => true })).toThrow(CanonicalSerializationError);
+    expect(() => canonicalSerializeV2(Symbol('bad'))).toThrow(CanonicalSerializationError);
   });
 });

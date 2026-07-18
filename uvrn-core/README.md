@@ -2,7 +2,7 @@
 
 UVRN Delta Engine core — deterministic multi-source comparison and verification. Runs the Delta formula on bundles, produces canonical receipts with SHA-256 hashes, and validates or verifies bundles and receipts.
 
-**Package provides:** `runDeltaEngine`, `validateBundle`, `verifyReceipt`, `canonicalSerialize`, `hashReceipt`, `buildMasterReceipt`, `verifyMasterReceipt`; types (`DeltaBundle`, `DeltaReceipt`, `Measurement`, `MasterReceipt`, etc.). Pure logic — no I/O, no signer, no storage.
+**Package provides:** `runDeltaEngine`, `validateBundle`, `verifyReceipt`, frozen legacy `canonicalSerialize`, strict `canonicalSerializeV2`, `canonicalSerializeForVersion`, `hashReceipt`, `buildMasterReceipt`, `verifyMasterReceipt`; types (`DeltaBundle`, `DeltaReceipt`, `Measurement`, `MasterReceipt`, etc.). Pure logic — no I/O, no signer, no storage.
 
 **You provide:** Bundle data (claim, threshold, at least two data specs with metrics). No connectors or keys required for basic use.
 
@@ -75,6 +75,42 @@ Measurement implementations live in packages such as `@uvrn/measure` or in host 
 `buildMasterReceipt()` computes a separate `masterHash` from the envelope version, claim, `base.hash`, measurements, nodes, and timestamp. The full base receipt does not enter the master hash, and `hashReceipt()` / `verifyReceipt()` behavior for existing `DeltaReceipt` values is unchanged.
 
 `verifyMasterReceipt()` delegates base verification to `verifyReceipt(base)` and then recomputes the additive master hash.
+
+## Canonicalization versions
+
+`canonicalSerialize` is the byte-frozen `canonical-serialize-1` verifier path. It remains
+importable for historical artifacts but must not be used by new producers. Strict
+`canonical-serialize-2` is the one live implementation:
+
+```ts
+import {
+  CANONICAL_SERIALIZATION_V2,
+  canonicalSerializeV2,
+} from '@uvrn/core/canonical-serialize-2';
+
+const bytes = canonicalSerializeV2({ b: 2, a: 1 });
+// {"a":1,"b":2}
+```
+
+The browser/worker-safe subpath above has no crypto or Node imports. V2 omits undefined object
+members, converts dense undefined array elements and true sparse holes to JSON `null`, and throws
+a typed `CanonicalSerializationError` for top-level undefined, non-finite numbers, functions,
+symbols, bigint values, and non-plain objects.
+
+Artifacts that carry a discriminator can use `canonicalSerializeForVersion(version, value)`.
+Unknown versions throw `UnsupportedCanonicalSerializationVersionError`; verifiers never guess or
+fall back.
+
+### Migration table
+
+| Artifact / caller | Declared selector | Serializer | Phase B rule |
+|---|---|---|---|
+| Historical core / DeltaReceipt path | `canonical-serialize-1` (legacy contract) | frozen `canonicalSerialize` | verify only; bytes unchanged |
+| Existing canon artifacts without a discriminator | implicit historical v1 | frozen `canonicalSerialize` | verify only; do not reinterpret |
+| New or explicitly migrated canonical producers | `canonical-serialize-2` | `canonicalSerializeV2` | producer must persist the discriminator |
+| `@uvrn/receipt` canonical hash path | package contract selects v2 | shared `canonicalSerializeV2` | receipt schema/seal unchanged |
+| `@uvrn/identity` `uvrn-sig-1` evidence payload | identity package contract selects v2 | shared `canonicalSerializeV2` | valid-JSON signed bytes unchanged |
+| Unknown discriminator | any other string | none | reject |
 
 ## Links
 

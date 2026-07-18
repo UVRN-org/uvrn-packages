@@ -31,7 +31,7 @@ const rep = await registry.reputation('0xA9F1...');
 
 ## Evidence-based recording: `recordEvent()`
 
-`recordEvent()` is the v4 path: each event may carry `AttestedEvidence` — an Ed25519 signature over the canonical (RFC 8785 JCS) JSON of `{ publicKeyRef, receiptHash, schemaVersion, sigVersion: 'uvrn-sig-1', signedAt? }`, verified against the raw 32-byte public key in `evidence.publicKey` (base64).
+`recordEvent()` is the v4 path: each event may carry `AttestedEvidence` — an Ed25519 signature over the canonical JSON of `{ publicKeyRef, receiptHash, schemaVersion, sigVersion: 'uvrn-sig-1', signedAt? }`, verified against the raw 32-byte public key in `evidence.publicKey` (base64). Payload bytes use the shared environment-pure `@uvrn/core/canonical-serialize-2` module; identity contains no live serializer copy.
 
 ```ts
 const result = await registry.recordEvent({

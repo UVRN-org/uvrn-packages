@@ -1,5 +1,13 @@
 # @uvrn/receipt — Changelog
 
+## [4.1.0] - 2026-07-18 (unreleased)
+
+- `canonicalize()` now delegates to the environment-pure
+  `@uvrn/core/canonical-serialize-2` subpath and re-exports the shared strict API.
+- True sparse array holes now serialize as JSON `null` together with core and identity.
+- Valid-JSON receipt bytes and golden hashes remain unchanged; non-finite values reject.
+- Receipt schemas, declared hash fields, and seal semantics are unchanged.
+
 ## [4.0.0] - 2026-06-10 (unreleased, v4 / fable-refactor-1)
 
 Initial release. The canonical receipt object model per `SPEC/uvrn-receipt-v1.md` and

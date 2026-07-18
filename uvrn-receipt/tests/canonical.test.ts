@@ -23,12 +23,20 @@ describe('canonicalize (RFC 8785 JCS)', () => {
   it('omits undefined object members and nullifies undefined array elements', () => {
     expect(canonicalize({ a: 1, gone: undefined })).toBe('{"a":1}');
     expect(canonicalize([1, undefined, 2])).toBe('[1,null,2]');
+    const sparse = [1, 2, 3];
+    delete sparse[1];
+    expect(canonicalize(sparse)).toBe('[1,null,3]');
   });
 
   it('throws on non-finite numbers and top-level undefined', () => {
     expect(() => canonicalize({ bad: NaN })).toThrow('non-finite');
     expect(() => canonicalize({ bad: Infinity })).toThrow('non-finite');
     expect(() => canonicalize(undefined)).toThrow('top-level');
+  });
+
+  it('rejects values outside the declared JSON input contract', () => {
+    expect(() => canonicalize({ bad: () => true })).toThrow(TypeError);
+    expect(() => canonicalize(new Date('2026-07-18T00:00:00.000Z'))).toThrow(TypeError);
   });
 
   it('matches @uvrn/core canonicalSerialize for JSON-representable values', () => {

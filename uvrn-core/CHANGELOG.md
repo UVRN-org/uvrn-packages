@@ -1,5 +1,18 @@
 # Changelog
 
+## [4.1.0] - 2026-07-18 (unreleased)
+
+### Added
+- Environment-pure, browser-safe `canonical-serialize-2` implementation and public subpath.
+- Explicit version selector with frozen `canonical-serialize-1`, strict v2, and unknown-version
+  rejection; typed strict-input errors and migration table.
+
+### Compatibility
+- Legacy `canonicalSerialize` and `hashReceipt` remain byte-frozen on v1.
+- Valid-JSON canonical bytes and golden hashes are identical under v1 and v2.
+- V2 converts dense undefined array elements and true sparse holes to JSON `null`, omits
+  undefined object members, and rejects non-finite / non-JSON inputs.
+
 ## [4.0.0] - 2026-06-10 (unreleased, v4 / fable-refactor-1)
 
 - Master-receipt ordering rule (SPEC/uvrn-receipt-v1.md §2.2): `buildMasterReceipt` sorts

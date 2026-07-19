@@ -16,6 +16,8 @@ import {
   toHumanView,
   core,
   receipt as receiptNs,
+  normalize as normalizeNs,
+  algox,
 } from '../src';
 
 describe('@uvrn/protocol quickstart', () => {
@@ -65,5 +67,38 @@ describe('@uvrn/protocol quickstart', () => {
   it('exposes the namespaced packages', () => {
     expect(core.VSCORE_WEIGHTS.completeness).toBe(0.35);
     expect(typeof receiptNs.canonicalize).toBe('function');
+  });
+
+  it('normalizes and ranks research inputs through the umbrella', async () => {
+    const normalized = normalizeNs.normalize(
+      [
+        {
+          url: 'https://example.com/primary',
+          title: 'Primary report',
+          snippet: 'Independent evidence scored 82.',
+          publishedAt: '2026-07-19T12:00:00.000Z',
+          evidenceScore: 82,
+        },
+        {
+          url: 'https://example.net/secondary',
+          title: 'Secondary report',
+          snippet: 'Independent evidence scored 74.',
+          publishedAt: '2026-07-19T12:05:00.000Z',
+          evidenceScore: 74,
+        },
+      ],
+      'general'
+    );
+    const ranked = await algox.rankSignals(
+      normalized.sources.map((source) => ({
+        label: source.name,
+        source: new URL((source.rawData as { url: string }).url).hostname,
+        prominence: typeof source.value === 'number' ? source.value : 0,
+      })),
+      { topK: 2, maxAgeDays: null }
+    );
+
+    expect(normalized.sources.map((source) => source.value)).toEqual([82, 74]);
+    expect(ranked.ranked.map((candidate) => candidate.prominence)).toEqual([82, 74]);
   });
 });

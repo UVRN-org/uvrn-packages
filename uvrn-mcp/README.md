@@ -76,6 +76,9 @@ npm install @uvrn/mcp
 - Node.js >= 18.0.0
 - npm >= 9.0.0
 
+The published CLI bundles its `@uvrn/*` runtime. `npx -y @uvrn/mcp` therefore needs no separate
+UVRN package installation; npm installs only the MCP SDK dependency.
+
 ## Quick Start
 
 ### Any stdio MCP client
@@ -99,7 +102,8 @@ Then point any stdio MCP client at the built server:
 }
 ```
 
-`@uvrn/core` and the peer packages used by enabled tools must resolve in the runtime environment.
+The source build uses workspace peers, while the published `dist/index.js` embeds the same
+`@uvrn/*` runtime for zero-config use.
 
 ### Plugin manifest
 
@@ -109,8 +113,7 @@ Then point any stdio MCP client at the built server:
 
 Add to your `claude_desktop_config.json`:
 
-**macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`  
-**Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
+Open Claude Desktop's MCP settings file for your operating system and merge this block:
 
 ```json
 {
@@ -650,10 +653,7 @@ LOG_LEVEL=debug MAX_BUNDLE_SIZE=20971520 npx @uvrn/mcp
 3. Restart Claude Desktop completely
 4. Check Claude Desktop logs for errors
 
-**macOS Logs:**
-```bash
-tail -f ~/Library/Logs/Claude/mcp*.log
-```
+Open Claude Desktop's diagnostics panel or operating-system log location and inspect the MCP logs.
 
 ### Tool execution fails
 
@@ -728,7 +728,7 @@ npm test
 
 ## Architecture
 
-For detailed architecture information, see [MCP_INTEGRATION.md](../docs/MCP_INTEGRATION.md).
+The server follows the client-neutral architecture described in [CONNECT.md](./CONNECT.md).
 
 ```mermaid
 graph LR
@@ -740,10 +740,8 @@ graph LR
 
 ## Related Documentation
 
-- [MCP Integration Guide](../../docs/MCP_INTEGRATION.md) - Detailed integration patterns
 - [ENVIRONMENT.md](./ENVIRONMENT.md) - Configuration reference
 - [CONNECT.md](./CONNECT.md) - Connect any MCP client (Claude Desktop, Claude Code, Hermes, Odysseus)
-- [Phase A.3 Task List](../../admin/docs/build-plans/phase_a3_task_list.md) - Implementation details
 
 ## License
 

@@ -1,7 +1,7 @@
 {
   "name": "@uvrn/protocol",
   "version": "4.0.0",
-  "description": "Single-install UVRN convenience package: re-exports the common protocol path (core + receipt + measure + consensus + score + signal)",
+  "description": "Single-install UVRN convenience package: re-exports the production research path (core + receipt + measure + consensus + normalize + score + algox + signal)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -16,12 +16,14 @@
     "test:coverage": "jest --coverage"
   },
   "dependencies": {
-    "@uvrn/consensus": "workspace:^",
-    "@uvrn/core": "workspace:^",
-    "@uvrn/measure": "workspace:^",
-    "@uvrn/receipt": "workspace:^",
-    "@uvrn/score": "workspace:^",
-    "@uvrn/signal": "workspace:^"
+    "@uvrn/algox": "^4.0.0",
+    "@uvrn/consensus": "^4.0.0",
+    "@uvrn/core": "^4.0.0",
+    "@uvrn/measure": "^4.0.0",
+    "@uvrn/normalize": "^4.0.0",
+    "@uvrn/receipt": "^4.0.0",
+    "@uvrn/score": "^4.0.0",
+    "@uvrn/signal": "^4.0.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.0",

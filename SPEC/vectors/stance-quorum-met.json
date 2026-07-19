@@ -1,0 +1,192 @@
+{
+  "id": "stance-quorum-met",
+  "spec": "uvrn-stance-v1",
+  "status": "authored-red-until-bp-02",
+  "claim": "Grid storage deployment will grow in 2026",
+  "description": "Four grounded supporting stances meet quorum; agree/disagree use stanceValue; conflict finds no opposing categorical assertions.",
+  "input": {
+    "sources": [
+      {
+        "id": "src-alpha",
+        "label": "Alpha Research",
+        "status": "on",
+        "stanceValue": 0.92,
+        "stanceLabel": "supports",
+        "stanceConfidence": 0.91,
+        "stanceEvidence": "Alpha cites multi-year storage pipeline growth."
+      },
+      {
+        "id": "src-beta",
+        "label": "Beta Energy Desk",
+        "status": "on",
+        "stanceValue": 0.9,
+        "stanceLabel": "supports",
+        "stanceConfidence": 0.88,
+        "stanceEvidence": "Beta reports rising interconnection requests."
+      },
+      {
+        "id": "src-gamma",
+        "label": "Gamma Grid Watch",
+        "status": "on",
+        "stanceValue": 0.91,
+        "stanceLabel": "supports",
+        "stanceConfidence": 0.86,
+        "stanceEvidence": "Gamma tracks capacity additions above plan."
+      },
+      {
+        "id": "src-delta",
+        "label": "Delta Markets",
+        "status": "on",
+        "stanceValue": 0.93,
+        "stanceLabel": "supports",
+        "stanceConfidence": 0.9,
+        "stanceEvidence": "Delta finds storage CAPEX guidance raised."
+      }
+    ]
+  },
+  "expected": {
+    "stanceMode": {
+      "evidenceAxis": "stance",
+      "sourceCount": 4,
+      "groundedCount": 4,
+      "requiredSources": 4,
+      "requiredGrounded": 3,
+      "confidenceFloor": 0.6,
+      "quorumMet": true
+    },
+    "projection": {
+      "numeric": [
+        {
+          "id": "src-alpha",
+          "kind": "numeric",
+          "value": 0.92,
+          "label": "Alpha Research",
+          "status": "on",
+          "attributes": {
+            "field": "claim-stance",
+            "stanceLabel": "supports"
+          }
+        },
+        {
+          "id": "src-beta",
+          "kind": "numeric",
+          "value": 0.9,
+          "label": "Beta Energy Desk",
+          "status": "on",
+          "attributes": {
+            "field": "claim-stance",
+            "stanceLabel": "supports"
+          }
+        },
+        {
+          "id": "src-gamma",
+          "kind": "numeric",
+          "value": 0.91,
+          "label": "Gamma Grid Watch",
+          "status": "on",
+          "attributes": {
+            "field": "claim-stance",
+            "stanceLabel": "supports"
+          }
+        },
+        {
+          "id": "src-delta",
+          "kind": "numeric",
+          "value": 0.93,
+          "label": "Delta Markets",
+          "status": "on",
+          "attributes": {
+            "field": "claim-stance",
+            "stanceLabel": "supports"
+          }
+        }
+      ],
+      "categorical": [
+        {
+          "id": "src-alpha",
+          "kind": "categorical",
+          "assertion": "supports",
+          "label": "Alpha Research",
+          "status": "on",
+          "attributes": {
+            "field": "claim-stance"
+          }
+        },
+        {
+          "id": "src-beta",
+          "kind": "categorical",
+          "assertion": "supports",
+          "label": "Beta Energy Desk",
+          "status": "on",
+          "attributes": {
+            "field": "claim-stance"
+          }
+        },
+        {
+          "id": "src-gamma",
+          "kind": "categorical",
+          "assertion": "supports",
+          "label": "Gamma Grid Watch",
+          "status": "on",
+          "attributes": {
+            "field": "claim-stance"
+          }
+        },
+        {
+          "id": "src-delta",
+          "kind": "categorical",
+          "assertion": "supports",
+          "label": "Delta Markets",
+          "status": "on",
+          "attributes": {
+            "field": "claim-stance"
+          }
+        }
+      ]
+    },
+    "measurements": {
+      "agree": {
+        "type": "agree",
+        "verdict": "agree",
+        "confidence": 0.9672131147540983,
+        "explanation": "Sources converge with agreement score 0.967 at threshold 0.9.",
+        "evidenceRefs": [
+          "src-alpha",
+          "src-beta",
+          "src-gamma",
+          "src-delta"
+        ]
+      },
+      "disagree": {
+        "type": "disagree",
+        "verdict": "none",
+        "confidence": 0.9672131147540983,
+        "explanation": "Numeric spread 0.033 does not exceed disagreement threshold 0.1.",
+        "evidenceRefs": [
+          "src-alpha",
+          "src-beta",
+          "src-gamma",
+          "src-delta"
+        ]
+      },
+      "conflict": {
+        "type": "conflict",
+        "verdict": "none",
+        "confidence": 0,
+        "explanation": "No mutually exclusive categorical, boolean, or disjoint-range assertions were found.",
+        "evidenceRefs": [
+          "src-alpha",
+          "src-beta",
+          "src-gamma",
+          "src-delta"
+        ]
+      }
+    },
+    "vocabulary": {
+      "primaryMeasurementVerdict": "agree",
+      "engineOutcome": "consensus",
+      "dashHuman": "align",
+      "descriptors": []
+    }
+  }
+}

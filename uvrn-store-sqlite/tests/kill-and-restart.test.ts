@@ -38,7 +38,10 @@ describe.each(drivers)('kill-and-restart persistence (%s)', (driver) => {
   });
 
   function open(): UvrnDatabase {
-    return openUvrnDatabase(dbPath, { driver });
+    // Omission is intentionally exercised for better-sqlite3 to lock the legacy default.
+    return driver === 'better-sqlite3'
+      ? openUvrnDatabase(dbPath)
+      : openUvrnDatabase(dbPath, { driver });
   }
 
   function restart(): void {

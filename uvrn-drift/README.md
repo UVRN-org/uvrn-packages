@@ -36,6 +36,13 @@ console.log(result.drift.status);        // 'DRIFTING'
 console.log(result.drift.delta);         // -27
 ```
 
+`computeDrift` accepts either the legacy snake_case input names or additive camelCase aliases:
+`receipt_id`/`receiptId`, `v_score`/`vScore`, and `claim_id`/`claimId`. Results always carry both
+naming styles with equal values, including `decayed_score`/`decayedScore`,
+`age_hours`/`ageHours`, `scored_at`/`scoredAt`, and
+`decayed_freshness`/`decayedFreshness`. Supplying conflicting aliases rejects the input; there is
+one normalized computation path (ADR-010).
+
 ## Decay curves
 
 | Curve | Behaviour | Good for |

@@ -18,28 +18,63 @@ export interface VScoreComponents {
   freshness: number;
 }
 
-export interface DriftInputReceipt {
+interface DriftInputReceiptBase {
+  issuer: string;
+  timestamp: string;
+  components: VScoreComponents;
+  tags?: string[];
+  /** Optional claim identity aliases when used in canon/agent pipelines. */
+  claim_id?: string;
+  claimId?: string;
+}
+
+/** Existing snake_case input contract, preserved for current callers. */
+export interface DriftInputReceipt extends DriftInputReceiptBase {
   receipt_id: string;
+  receiptId?: string;
+  v_score: number;
+  vScore?: number;
+}
+
+/** Additive camelCase input contract. */
+export interface CamelCaseDriftInputReceipt extends DriftInputReceiptBase {
+  receiptId: string;
+  receipt_id?: string;
+  vScore: number;
+  v_score?: number;
+}
+
+/** Either public naming style; both map to one internal representation. */
+export type DriftReceiptInput = DriftInputReceipt | CamelCaseDriftInputReceipt;
+
+export interface DriftValues {
+  decayed_score: number;
+  decayedScore: number;
+  delta: number;
+  age_hours: number;
+  ageHours: number;
+  curve: DecayCurve;
+  profile: string;
+  scored_at: string;
+  scoredAt: string;
+  status: DriftStatus;
+  decayed_freshness: number;
+  decayedFreshness: number;
+}
+
+/** Output always carries both naming styles with equal values (ADR-010). */
+export interface DriftReceipt {
+  receipt_id: string;
+  receiptId: string;
   issuer: string;
   timestamp: string;
   v_score: number;
+  vScore: number;
   components: VScoreComponents;
   tags?: string[];
-  /** Optional claim id when receipt is used in canon/agent pipeline. */
   claim_id?: string;
-}
-
-export interface DriftReceipt extends DriftInputReceipt {
-  drift: {
-    decayed_score: number;
-    delta: number;
-    age_hours: number;
-    curve: DecayCurve;
-    profile: string;
-    scored_at: string;
-    status: DriftStatus;
-    decayed_freshness: number;
-  };
+  claimId?: string;
+  drift: DriftValues;
 }
 
 export type DriftStatus = 'STABLE' | 'DRIFTING' | 'CRITICAL';
@@ -107,16 +142,24 @@ export interface DriftResult {
 /** Flat receipt shape produced by computeDriftFromInput for @uvrn/agent. */
 export interface AgentDriftReceipt {
   receipt_id: string;
+  receiptId: string;
   claim_id: string;
+  claimId: string;
   agent: string;
   drift_module: string;
+  driftModule: string;
   v_score: number;
+  vScore: number;
   drift_delta: number;
+  driftDelta: number;
   decay_curve: string;
+  decayCurve: string;
   age_hours: number;
+  ageHours: number;
   status: DriftStatus;
   components: VScoreComponents;
   thresholds: { drifting: number; critical: number };
   scored_at: string;
+  scoredAt: string;
   tags: string[];
 }

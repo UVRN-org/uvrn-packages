@@ -1,7 +1,7 @@
 {
   "name": "uvrn-mcp",
   "displayName": "UVRN MCP",
-  "version": "1.2.0",
+  "version": "4.0.1",
   "description": "Client-neutral MCP access to UVRN verification, drift, compare, canon-read, and live score-claim tools.",
   "transport": {
     "type": "stdio",

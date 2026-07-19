@@ -1,0 +1,191 @@
+{
+  "id": "stance-opposing-conflict",
+  "spec": "uvrn-stance-v1",
+  "status": "authored-red-until-bp-02",
+  "claim": "Grid storage deployment will grow in 2026",
+  "description": "Quorum is met with opposing grounded supports/opposes labels. Locked §3.3 categorical exclusion fires conflict; numeric spread independently yields disagree.",
+  "input": {
+    "sources": [
+      {
+        "id": "src-alpha",
+        "label": "Alpha Research",
+        "status": "on",
+        "stanceValue": 0.9,
+        "stanceLabel": "supports",
+        "stanceConfidence": 0.92,
+        "stanceEvidence": "Alpha expects capacity additions."
+      },
+      {
+        "id": "src-beta",
+        "label": "Beta Energy Desk",
+        "status": "on",
+        "stanceValue": -0.85,
+        "stanceLabel": "opposes",
+        "stanceConfidence": 0.9,
+        "stanceEvidence": "Beta expects cancellations and delays."
+      },
+      {
+        "id": "src-gamma",
+        "label": "Gamma Grid Watch",
+        "status": "on",
+        "stanceValue": 0.7,
+        "stanceLabel": "supports",
+        "stanceConfidence": 0.87,
+        "stanceEvidence": "Gamma sees interconnection approvals accelerating."
+      },
+      {
+        "id": "src-delta",
+        "label": "Delta Markets",
+        "status": "on",
+        "stanceValue": -0.6,
+        "stanceLabel": "opposes",
+        "stanceConfidence": 0.84,
+        "stanceEvidence": "Delta cites financing pullbacks."
+      }
+    ]
+  },
+  "expected": {
+    "stanceMode": {
+      "evidenceAxis": "stance",
+      "sourceCount": 4,
+      "groundedCount": 4,
+      "requiredSources": 4,
+      "requiredGrounded": 3,
+      "confidenceFloor": 0.6,
+      "quorumMet": true
+    },
+    "projection": {
+      "numeric": [
+        {
+          "id": "src-alpha",
+          "kind": "numeric",
+          "value": 0.9,
+          "label": "Alpha Research",
+          "status": "on",
+          "attributes": {
+            "field": "claim-stance",
+            "stanceLabel": "supports"
+          }
+        },
+        {
+          "id": "src-beta",
+          "kind": "numeric",
+          "value": -0.85,
+          "label": "Beta Energy Desk",
+          "status": "on",
+          "attributes": {
+            "field": "claim-stance",
+            "stanceLabel": "opposes"
+          }
+        },
+        {
+          "id": "src-gamma",
+          "kind": "numeric",
+          "value": 0.7,
+          "label": "Gamma Grid Watch",
+          "status": "on",
+          "attributes": {
+            "field": "claim-stance",
+            "stanceLabel": "supports"
+          }
+        },
+        {
+          "id": "src-delta",
+          "kind": "numeric",
+          "value": -0.6,
+          "label": "Delta Markets",
+          "status": "on",
+          "attributes": {
+            "field": "claim-stance",
+            "stanceLabel": "opposes"
+          }
+        }
+      ],
+      "categorical": [
+        {
+          "id": "src-alpha",
+          "kind": "categorical",
+          "assertion": "supports",
+          "label": "Alpha Research",
+          "status": "on",
+          "attributes": {
+            "field": "claim-stance"
+          }
+        },
+        {
+          "id": "src-beta",
+          "kind": "categorical",
+          "assertion": "opposes",
+          "label": "Beta Energy Desk",
+          "status": "on",
+          "attributes": {
+            "field": "claim-stance"
+          }
+        },
+        {
+          "id": "src-gamma",
+          "kind": "categorical",
+          "assertion": "supports",
+          "label": "Gamma Grid Watch",
+          "status": "on",
+          "attributes": {
+            "field": "claim-stance"
+          }
+        },
+        {
+          "id": "src-delta",
+          "kind": "categorical",
+          "assertion": "opposes",
+          "label": "Delta Markets",
+          "status": "on",
+          "attributes": {
+            "field": "claim-stance"
+          }
+        }
+      ]
+    },
+    "measurements": {
+      "agree": {
+        "type": "agree",
+        "verdict": "no-agreement",
+        "confidence": 0,
+        "explanation": "Sources do not reach agreement: score 0.000 is below threshold 0.9.",
+        "evidenceRefs": [
+          "src-alpha",
+          "src-beta",
+          "src-gamma",
+          "src-delta"
+        ]
+      },
+      "disagree": {
+        "type": "disagree",
+        "verdict": "disagree",
+        "confidence": 1,
+        "explanation": "Numeric sources diverge by 2.000, above threshold 0.1.",
+        "evidenceRefs": [
+          "src-alpha",
+          "src-beta",
+          "src-gamma",
+          "src-delta"
+        ]
+      },
+      "conflict": {
+        "type": "conflict",
+        "verdict": "conflict",
+        "confidence": 1,
+        "explanation": "Conflict: Alpha Research and Beta Energy Desk assert mutually exclusive assertions \"supports\" and \"opposes\".",
+        "evidenceRefs": [
+          "src-alpha",
+          "src-beta"
+        ]
+      }
+    },
+    "vocabulary": {
+      "primaryMeasurementVerdict": "conflict",
+      "engineOutcome": "indeterminate",
+      "dashHuman": "contradict",
+      "note": "Presentation precedence selects conflict over disagree. indeterminate alone must never render as divergence.",
+      "descriptors": []
+    }
+  }
+}

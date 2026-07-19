@@ -1,6 +1,6 @@
 # Changelog
 
-## [4.0.0] - 2026-06-10 (unreleased, v4 / fable-refactor-1)
+## [4.0.0] - 2026-06-10 (published to npm 2026-06-12, v4 / fable-refactor-1)
 
 ### Added
 - `MockDomainConnector` now emits a loud one-time `console.warn` when constructed outside test

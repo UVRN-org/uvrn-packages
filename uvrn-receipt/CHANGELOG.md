@@ -8,7 +8,7 @@
 - Valid-JSON receipt bytes and golden hashes remain unchanged; non-finite values reject.
 - Receipt schemas, declared hash fields, and seal semantics are unchanged.
 
-## [4.0.0] - 2026-06-10 (unreleased, v4 / fable-refactor-1)
+## [4.0.0] - 2026-06-10 (published to npm 2026-06-12, v4 / fable-refactor-1)
 
 Initial release. The canonical receipt object model per `SPEC/uvrn-receipt-v1.md` and
 `SPEC/uvrn-signing-v1.md`:

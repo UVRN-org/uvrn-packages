@@ -1,6 +1,6 @@
 # @uvrn/store-sqlite — Changelog
 
-## [4.0.0] - 2026-06-10 (unreleased, v4 / fable-refactor-1)
+## [4.0.0] - 2026-06-10 (published to npm 2026-06-12, v4 / fable-refactor-1)
 
 Initial release (plan A3). One local SQLite file implements every UVRN store interface:
 

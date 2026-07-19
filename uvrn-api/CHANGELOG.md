@@ -1,6 +1,6 @@
 # Changelog
 
-## [4.0.0] - 2026-06-10 (unreleased)
+## [4.0.0] - 2026-06-10 (published to npm 2026-06-12)
 
 ### Added
 - **Optional API-key auth** for the delta routes (`/api/v1/delta/*`), same client convention as the UVRN worker: `Authorization: Bearer <key>` or `X-UVRN-API-Key: <key>`. Configured via `ServerConfig.apiKey` / `ServerConfig.apiKeys` (env: `UVRN_API_KEY` / comma-separated `UVRN_API_KEYS`). When no key is configured the API stays fully open — identical to previous behavior. `/api/v1/health` and `/api/v1/version` are always open. Key comparison is constant-time (`crypto.timingSafeEqual` on equal-length buffers). Unauthorized requests receive `401 UNAUTHORIZED`.

@@ -1,6 +1,6 @@
 # Changelog
 
-## [4.0.0] - 2026-06-10 (unreleased, v4 / fable-refactor-1)
+## [4.0.0] - 2026-06-10 (published to npm 2026-06-12, v4 / fable-refactor-1)
 
 ### Added
 - `DedupConfig { relativeTolerance, timeWindowMs, mode }`: the previously hardcoded `areNearIdentical()` thresholds (±1% relative, 1-day window) are now configurable via `ConsensusEngineOptions.dedup`. Modes: `'relative'` (default, current behavior), `'absolute'` (tolerance read as an absolute delta), `'off'` (no deduplication).

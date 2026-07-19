@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+- Accept additive camelCase receipt aliases alongside the legacy snake_case drift inputs and emit
+  both naming styles from one normalized computation path. Existing snake_case values and decay
+  behavior remain unchanged (ADR-010).
+
 ## [4.0.0] - 2026-06-10 (unreleased, v4 / fable-refactor-1)
 
 - Version aligned to the v4 generation; internal `@uvrn/*` peer ranges moved to `^4.0.0`.

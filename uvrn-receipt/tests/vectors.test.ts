@@ -9,8 +9,11 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { verifyMasterReceipt } from '@uvrn/core';
 import {
+  canonicalClaimId,
   canonicalize,
   computeNetworkReceiptHash,
+  normalizeClaimDomain,
+  normalizeClaimText,
   toHumanView,
   verifyReceiptFull,
   type NetworkReceipt,
@@ -29,6 +32,29 @@ describe('SPEC/vectors/canonical.json', () => {
       expect(createHash('sha256').update(canonical, 'utf8').digest('hex')).toBe(vector.sha256Hex);
     }
     expect(cases.length).toBeGreaterThanOrEqual(6);
+  });
+});
+
+describe('SPEC/vectors/claim-identity.json', () => {
+  const { cases } = load('claim-identity.json');
+
+  it('reproduces normalized text, domain, and canonicalClaimId', () => {
+    for (const vector of cases) {
+      expect(normalizeClaimText(vector.claimText)).toBe(vector.normalizedClaimText);
+      expect(normalizeClaimDomain(vector.domain)).toBe(vector.normalizedDomain);
+      expect(canonicalClaimId(vector.claimText, vector.domain)).toBe(vector.canonicalClaimId);
+    }
+  });
+
+  it('keeps equivalent variants together and distinct claims or domains apart', () => {
+    expect(cases[0].canonicalClaimId).toBe(cases[1].canonicalClaimId);
+    expect(cases[2].canonicalClaimId).toBe(cases[3].canonicalClaimId);
+    expect(cases[0].canonicalClaimId).not.toBe(cases[4].canonicalClaimId);
+    expect(cases[0].canonicalClaimId).not.toBe(cases[5].canonicalClaimId);
+  });
+
+  it('rejects an identity with no normalized claim text', () => {
+    expect(() => canonicalClaimId('?! …')).toThrow(TypeError);
   });
 });
 

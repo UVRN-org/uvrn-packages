@@ -8,6 +8,7 @@ import { applyDecay } from './curves/index';
 import { DRIFT_PROFILES, DEFAULT } from './profiles/index';
 import type {
   DriftInputReceipt,
+  DriftReceiptInput,
   DriftReceipt,
   DriftProfile,
   DriftStatus,
@@ -18,6 +19,49 @@ import type {
 // ── Threshold boundaries ──────────────────────────────────────────────────
 const THRESHOLD_STABLE   = 80;
 const THRESHOLD_DRIFTING = 60;
+
+interface NormalizedDriftInputReceipt {
+  receiptId: string;
+  issuer: string;
+  timestamp: string;
+  vScore: number;
+  components: DriftInputReceipt['components'];
+  tags?: string[];
+  claimId?: string;
+}
+
+function resolveAlias<T>(
+  snakeValue: T | undefined,
+  camelValue: T | undefined,
+  snakeName: string,
+  camelName: string
+): T {
+  if (snakeValue !== undefined && camelValue !== undefined && !Object.is(snakeValue, camelValue)) {
+    throw new TypeError(`${snakeName} and ${camelName} must match when both are supplied`);
+  }
+  const value = snakeValue ?? camelValue;
+  if (value === undefined) {
+    throw new TypeError(`one of ${snakeName} or ${camelName} is required`);
+  }
+  return value;
+}
+
+function normalizeDriftInput(receipt: DriftReceiptInput): NormalizedDriftInputReceipt {
+  const claimId =
+    receipt.claim_id === undefined && receipt.claimId === undefined
+      ? undefined
+      : resolveAlias(receipt.claim_id, receipt.claimId, 'claim_id', 'claimId');
+
+  return {
+    receiptId: resolveAlias(receipt.receipt_id, receipt.receiptId, 'receipt_id', 'receiptId'),
+    issuer: receipt.issuer,
+    timestamp: receipt.timestamp,
+    vScore: resolveAlias(receipt.v_score, receipt.vScore, 'v_score', 'vScore'),
+    components: receipt.components,
+    tags: receipt.tags,
+    claimId,
+  };
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // computeDrift()
@@ -31,11 +75,12 @@ const THRESHOLD_DRIFTING = 60;
 //   const result = computeDrift(receipt, DRIFT_PROFILES.fast);
 // ─────────────────────────────────────────────────────────────────────────────
 export function computeDrift(
-  receipt: DriftInputReceipt,
+  receipt: DriftReceiptInput,
   profile: DriftProfile,
   asOf: Date = new Date()
 ): DriftReceipt {
-  const issuedAt  = new Date(receipt.timestamp);
+  const normalized = normalizeDriftInput(receipt);
+  const issuedAt  = new Date(normalized.timestamp);
   const ageMs     = asOf.getTime() - issuedAt.getTime();
   const ageHours  = ageMs / (1000 * 60 * 60);
 
@@ -44,7 +89,7 @@ export function computeDrift(
   // decay with time, they decay with new evidence (handled by @uvrn/agent).
   const decayedFreshness = applyDecay(
     profile.curve,
-    receipt.components.freshness,
+    normalized.components.freshness,
     ageHours,
     profile.rate
   );
@@ -52,25 +97,44 @@ export function computeDrift(
   // Recompute V-Score with decayed freshness
   const decayedScore = Math.max(
     profile.scoreFloor ?? 0,
-    receipt.components.completeness * WEIGHTS.completeness +
-    receipt.components.parity       * WEIGHTS.parity       +
+    normalized.components.completeness * WEIGHTS.completeness +
+    normalized.components.parity       * WEIGHTS.parity       +
     decayedFreshness                * WEIGHTS.freshness
   );
 
-  const delta  = decayedScore - receipt.v_score;
+  const delta  = decayedScore - normalized.vScore;
   const status = scoreToStatus(decayedScore);
+  const roundedDecayedScore = Math.round(decayedScore * 100) / 100;
+  const roundedAgeHours = Math.round(ageHours * 100) / 100;
+  const roundedDecayedFreshness = Math.round(decayedFreshness * 100) / 100;
+  const scoredAt = asOf.toISOString();
 
   return {
     ...receipt,
+    receipt_id: normalized.receiptId,
+    receiptId: normalized.receiptId,
+    issuer: normalized.issuer,
+    timestamp: normalized.timestamp,
+    v_score: normalized.vScore,
+    vScore: normalized.vScore,
+    components: normalized.components,
+    ...(normalized.tags === undefined ? {} : { tags: normalized.tags }),
+    ...(normalized.claimId === undefined
+      ? {}
+      : { claim_id: normalized.claimId, claimId: normalized.claimId }),
     drift: {
-      decayed_score:     Math.round(decayedScore * 100) / 100,
+      decayed_score:     roundedDecayedScore,
+      decayedScore:      roundedDecayedScore,
       delta:             Math.round(delta * 100) / 100,
-      age_hours:         Math.round(ageHours * 100) / 100,
+      age_hours:         roundedAgeHours,
+      ageHours:          roundedAgeHours,
       curve:             profile.curve,
       profile:           profile.name,
-      scored_at:         asOf.toISOString(),
+      scored_at:         scoredAt,
+      scoredAt,
       status,
-      decayed_freshness: Math.round(decayedFreshness * 100) / 100,
+      decayed_freshness: roundedDecayedFreshness,
+      decayedFreshness:  roundedDecayedFreshness,
     },
   };
 }
@@ -99,7 +163,7 @@ export function scoreToStatus(score: number): DriftStatus {
 // ─────────────────────────────────────────────────────────────────────────────
 export class DriftMonitor {
   private config:   DriftMonitorConfig;
-  private watched:  Map<string, { receipt: DriftInputReceipt; profile: DriftProfile }>;
+  private watched:  Map<string, { receipt: DriftReceiptInput; profile: DriftProfile }>;
   private statuses: Map<string, DriftStatus>;
   private timer:    ReturnType<typeof setInterval> | null = null;
 
@@ -110,10 +174,11 @@ export class DriftMonitor {
   }
 
   /** Register a receipt for continuous monitoring. */
-  watch(receipt: DriftInputReceipt, profile: DriftProfile): void {
-    this.watched.set(receipt.receipt_id, { receipt, profile });
+  watch(receipt: DriftReceiptInput, profile: DriftProfile): void {
+    const normalized = normalizeDriftInput(receipt);
+    this.watched.set(normalized.receiptId, { receipt, profile });
     // Seed initial status so first tick can detect transitions
-    this.statuses.set(receipt.receipt_id, scoreToStatus(receipt.v_score));
+    this.statuses.set(normalized.receiptId, scoreToStatus(normalized.vScore));
   }
 
   /** Remove a receipt from monitoring. */
@@ -151,6 +216,7 @@ export class DriftMonitor {
       if (prevStatus !== nextStatus && this.config.onThreshold) {
         const event: DriftThresholdEvent = {
           receipt_id: id,
+          receiptId:   id,
           from:       prevStatus,
           to:         nextStatus,
           score:      result.drift.decayed_score,
@@ -194,7 +260,10 @@ export type {
   DecayCurve,
   DriftProfile,
   DriftInputReceipt,
+  CamelCaseDriftInputReceipt,
+  DriftReceiptInput,
   DriftReceipt,
+  DriftValues,
   DriftStatus,
   DriftThresholdEvent,
   DriftMonitorConfig,

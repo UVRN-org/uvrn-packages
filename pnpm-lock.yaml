@@ -501,6 +501,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^1.6.1
         version: 1.6.1(vitest@1.6.1(@types/node@20.19.37)(jsdom@20.0.3))
+      esbuild:
+        specifier: ^0.20.2
+        version: 0.20.2
       eslint:
         specifier: ^8.0.0
         version: 8.57.1

@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/UVRN-org/uvrn-packages#readme",
   "scripts": {
-    "build": "tsc",
+    "build": "pnpm run clean && tsc --emitDeclarationOnly && node esbuild.config.mjs",
     "dev": "tsc --watch",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
@@ -45,6 +45,41 @@
     "@uvrn/receipt": "^4.0.0",
     "@uvrn/score": "^4.0.0"
   },
+  "peerDependenciesMeta": {
+    "@uvrn/agent": {
+      "optional": true
+    },
+    "@uvrn/canon": {
+      "optional": true
+    },
+    "@uvrn/compare": {
+      "optional": true
+    },
+    "@uvrn/consensus": {
+      "optional": true
+    },
+    "@uvrn/core": {
+      "optional": true
+    },
+    "@uvrn/drift": {
+      "optional": true
+    },
+    "@uvrn/identity": {
+      "optional": true
+    },
+    "@uvrn/measure": {
+      "optional": true
+    },
+    "@uvrn/normalize": {
+      "optional": true
+    },
+    "@uvrn/receipt": {
+      "optional": true
+    },
+    "@uvrn/score": {
+      "optional": true
+    }
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0"
   },
@@ -64,6 +99,7 @@
     "@uvrn/receipt": "workspace:*",
     "@uvrn/score": "workspace:*",
     "@vitest/coverage-v8": "^1.6.1",
+    "esbuild": "^0.20.2",
     "eslint": "^8.0.0",
     "prettier": "^3.0.0",
     "tsx": "^4.0.0",
@@ -77,6 +113,7 @@
     "dist",
     "README.md",
     "CONNECT.md",
+    "DISTRIBUTION.md",
     "LICENSE",
     "plugin-manifest.json",
     "connectors"

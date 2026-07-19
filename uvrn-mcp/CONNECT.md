@@ -20,7 +20,7 @@ Every connector below uses one of these. Prefer **npx** — it has no machine-sp
 
 | Form | Command | When |
 |---|---|---|
-| **Online (recommended)** | `npx -y @uvrn/mcp` | Pulls the published package; nothing to clone or build. |
+| **Online (recommended)** | `npx -y @uvrn/mcp` | Pulls the published package; nothing to clone, build, or peer-install. |
 | **Local build** | `node <ABSOLUTE_PATH_TO_REPO>/uvrn-mcp/dist/index.js` | You cloned the repo and built `dist/` (below). |
 
 > Replace `<ABSOLUTE_PATH_TO_REPO>` with the absolute path to your checkout. Never commit a real
@@ -37,10 +37,9 @@ pnpm install
 pnpm --filter "@uvrn/mcp..." --config.verify-deps-before-run=false run build
 ```
 
-The `@uvrn/mcp...` filter builds the server **and its workspace dependencies** (all TypeScript, no
-native steps). The `--config.verify-deps-before-run=false` flag sidesteps a pnpm v9+ gate that
-otherwise fails on the optional `esbuild` build script used elsewhere in the monorepo. Entry point:
-`uvrn-mcp/dist/index.js`. Run it in place — peers resolve via workspace symlinks.
+The `@uvrn/mcp...` filter builds the server and its workspace dependencies, then bundles the
+`@uvrn/*` runtime into `uvrn-mcp/dist/index.js`. The MCP SDK remains a normal npm dependency.
+The packed tarball is tested in a clean directory with no separately installed `@uvrn/*` peers.
 
 ---
 
@@ -49,15 +48,9 @@ otherwise fails on the optional `esbuild` build script used elsewhere in the mon
 Ready-to-copy profiles live in [`connectors/`](connectors/). The server key is `uvrn` throughout.
 
 ### Claude Desktop
-Config file: `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS) ·
-`%APPDATA%\Claude\claude_desktop_config.json` (Windows) · `~/.config/Claude/claude_desktop_config.json` (Linux).
-Merge the `mcpServers` block from [`connectors/claude-desktop.json`](connectors/claude-desktop.json),
-then fully quit and relaunch the app.
-
-> **Pre-publish note:** `connectors/claude-desktop.json` uses `npx`, which fetches the published
-> package. To test this branch locally, replace `"command": "npx"` with `"command": "node"` and set
-> `"args"` to the absolute path of `uvrn-mcp/dist/index.js` (after building `dist/`). Keep this local
-> only — never commit machine-specific paths.
+Open Claude Desktop's MCP settings file, merge the `mcpServers` block from
+[`connectors/claude-desktop.json`](connectors/claude-desktop.json), then fully quit and relaunch the
+app. To test an unpublished checkout, use the local-build launch form above in local config only.
 
 ### Claude Code (local agents)
 A project-scoped [`.mcp.json`](../.mcp.json) at the repo root already registers `uvrn` with the
@@ -96,7 +89,7 @@ Ask the connected agent: **"What UVRN tools are available?"** — expect the 9 `
 
 To verify the server directly (no client), pipe an MCP handshake over stdin.
 
-**Online (post-publish):**
+**Online (published package):**
 
 ```bash
 printf '%s\n' \

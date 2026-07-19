@@ -28,3 +28,42 @@ jobs:
 
       - name: Test all packages
         run: pnpm -r test
+
+  mcp-distribution:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build MCP runtime closure
+        run: pnpm --filter "@uvrn/mcp..." build
+
+      - name: Run receipt canonicalization vectors
+        run: pnpm --filter @uvrn/receipt test -- canonicalization-vectors
+
+      - name: Validate connector profiles
+        run: pnpm test:mcp-connectors
+
+      - name: Test packed zero-config handshake
+        run: pnpm test:mcp-tarball
+
+      - name: Prove handshake smoke fails red
+        run: |
+          if MCP_EXPECT_TOOL_COUNT=10 pnpm test:mcp-tarball; then
+            echo "MCP smoke unexpectedly accepted the wrong tool count"
+            exit 1
+          fi
+
+      - name: Check published-artifact purity
+        run: pnpm check:published-purity

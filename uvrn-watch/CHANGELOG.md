@@ -2,7 +2,7 @@
 
 ## [4.0.0] - 2026-06-10
 
-Unreleased.
+Published to npm 2026-06-12.
 
 ### Added
 - `WatchStore` interface — injectable persistence seam for subscriptions. The `Watcher` writes every subscription mutation (subscribe, unsubscribe, alert bookkeeping, once-mode removal) through the store; `WatcherOptions.store` accepts a durable implementation. No storage ships in this package.

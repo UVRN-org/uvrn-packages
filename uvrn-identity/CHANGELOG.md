@@ -8,7 +8,7 @@
 - True sparse array holes serialize as JSON `null`; non-finite / non-JSON values reject.
 - Existing valid-JSON `uvrn-sig-1` payload bytes remain unchanged.
 
-## [4.0.0] - 2026-06-10 (unreleased, v4 / fable-refactor-1)
+## [4.0.0] - 2026-06-10 (published to npm 2026-06-12, v4 / fable-refactor-1)
 
 ### Added
 - `IdentityRegistry.recordEvent(args)`: evidence-based reputation recording. Events may carry `AttestedEvidence` (Ed25519 signature over the JCS-canonical `{ publicKeyRef, receiptHash, schemaVersion, sigVersion: 'uvrn-sig-1', signedAt? }` payload); verified events count fully and are keyed by the public key, unverified/evidence-free events are still accepted but flagged `attested: false` and weighted at `unattestedWeight` (default `0.25`).

@@ -3,7 +3,20 @@
 > Historical references to `admin/` and `.admin/` below point to the maintainers' internal
 > ops archive (plans, audits, findings), which is not part of this public repository.
 
-## [Unreleased — 4.0.0] — v4 / fable-refactor-1 generation
+## [Unreleased]
+
+- `@uvrn/core`, `@uvrn/identity`, `@uvrn/receipt` **4.1.0** — pending npm publish (npm latest: 4.0.0).
+  Shared strict canonicalization v2 (WS-CANON-UNIFY: vectors #8, strict v2 #9); legacy byte
+  surface frozen — golden hashes identical under v1 and v2.
+- `SPEC/uvrn-outcome-v1.md` — the outcome spine (WS-LAUNCH-001, #7).
+
+## [4.0.1] - 2026-06-13 — @uvrn/mcp patch
+
+- fix(mcp): `exclusiveMinimum` corrected to JSON Schema draft 2020-12; `@uvrn/mcp` → 4.0.1 (#6).
+
+## [4.0.0] - 2026-06-12 — v4 / fable-refactor-1 generation
+
+All 26 `@uvrn/*` packages published to npm 2026-06-12.
 
 Refactor of the v3 LIVE generation per `admin/plans/00-MASTER-PLAN.md`. Decisions resolved 2026-06-10: version line 4.0.0 (D-1), copy-then-refactor (D-2), `@uvrn/protocol` umbrella yes (D-3), controlled starter topic taxonomy + free tags (D-4).
 
@@ -15,7 +28,7 @@ Refactor of the v3 LIVE generation per `admin/plans/00-MASTER-PLAN.md`. Decision
 - Fixes from review: coverage/ untracked + gitignored (F7-1), root workspaces array completed
   (F7-2), SPEC §4 response-shape amended to reality (F7-3), better-sqlite3 marked optional
   peer (F7-4).
-- `admin/reports/refactor-v1-completion.md` written. Remaining gate: @uvrn/* 4.0.0 npm publish
+- `admin/reports/refactor-v1-completion.md` written. Remaining gate (cleared: published 2026-06-12): @uvrn/* 4.0.0 npm publish
   → un-draft uvrn-worker#1 + uvrn-home#44 → activation (Shawn's call).
 
 ### Phase 6 — Portal dark build (2026-06-10, repo: uvrn-home)

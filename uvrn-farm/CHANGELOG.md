@@ -1,6 +1,6 @@
 # Changelog
 
-## [4.0.0] - 2026-06-10 (unreleased)
+## [4.0.0] - 2026-06-10 (published to npm 2026-06-12)
 
 ### Added
 - **Rate limiting enforced.** The previously declared-but-unenforced `ConnectorConfig.rateLimitPerMinute` is now enforced in `BaseConnector` via a sliding 60-second window. Requests that would exceed the limit reject with the new `RateLimitError` (extends `FarmConnectorError`, carries `limit` and `retryAfterMs`) before any network I/O. Unset by default — no limit unless configured.

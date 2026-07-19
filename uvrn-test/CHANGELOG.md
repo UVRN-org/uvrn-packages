@@ -1,6 +1,6 @@
 # Changelog
 
-## [4.0.0] - 2026-06-10 (unreleased, v4 / fable-refactor-1)
+## [4.0.0] - 2026-06-10 (published to npm 2026-06-12, v4 / fable-refactor-1)
 
 - Version aligned to the v4 generation; internal `@uvrn/*` peer ranges moved to `^4.0.0`.
   No behavioral changes in this package beyond the generation-wide hardening documented in

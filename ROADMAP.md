@@ -1,9 +1,9 @@
 # UVRN Package Roadmap — Open Protocol Specs
 
 **Status:** Active — updated as packages ship
-**Last updated:** 2026-06-09
+**Last updated:** 2026-07-18
 
-> **UVRN Packages v3 (canonical).** All 23 packages are aligned to `3.0.0` with `^3.0.0` internal peer ranges. This generation is the source of truth and supersedes prior npm/official versions. See `CHANGELOG.md`.
+> **UVRN Packages v4 (canonical).** All 26 packages are aligned to the `4.x` line (published to npm since 2026-06-12; `@uvrn/mcp` 4.0.1; core/identity/receipt 4.1.0 pending publish). This generation is the source of truth and supersedes v3. See `CHANGELOG.md`.
 
 > This document contains the full technical specifications for every upcoming UVRN package. Each spec includes the package intent, public API sketch, dependency requirements, interface contracts, and authoring notes — enough detail to serve as a seed for building a compatible implementation against the UVRN protocol.
 >

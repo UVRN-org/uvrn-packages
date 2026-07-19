@@ -13,7 +13,7 @@
 - V2 converts dense undefined array elements and true sparse holes to JSON `null`, omits
   undefined object members, and rejects non-finite / non-JSON inputs.
 
-## [4.0.0] - 2026-06-10 (unreleased, v4 / fable-refactor-1)
+## [4.0.0] - 2026-06-10 (published to npm 2026-06-12, v4 / fable-refactor-1)
 
 - Master-receipt ordering rule (SPEC/uvrn-receipt-v1.md §2.2): `buildMasterReceipt` sorts
   `measurements` by (type, first evidence ref, insertion index) and `nodes` by id before

@@ -1,6 +1,6 @@
 # Changelog
 
-## [4.0.0] - 2026-06-10 (unreleased)
+## [4.0.0] - 2026-06-10 (published to npm 2026-06-12)
 
 ### Changed
 - Test suite deepened to meet the 60% coverage gate (A7).

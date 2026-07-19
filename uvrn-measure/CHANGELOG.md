@@ -1,6 +1,6 @@
 # Changelog
 
-## [4.0.0] - 2026-06-10 (unreleased, v4 / fable-refactor-1)
+## [4.0.0] - 2026-06-10 (published to npm 2026-06-12, v4 / fable-refactor-1)
 
 ### Added
 - **`insufficient-data` verdict** per `SPEC/uvrn-measurement-v1.md` §4. All four starter measurements now emit `insufficient-data` (confidence 0 unless specified) when they cannot measure: too few usable sources for their evidence type, thin history, or a sub-floor potential signal. v3 emitted `no-agreement` (agree) or `none` (disagree/conflict/potential) for these thin-evidence cases; explanations now state what was missing.

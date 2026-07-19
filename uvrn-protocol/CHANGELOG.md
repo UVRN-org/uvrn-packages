@@ -1,6 +1,6 @@
 # @uvrn/protocol — Changelog
 
-## [4.0.0] - 2026-06-10 (unreleased, v4 / fable-refactor-1)
+## [4.0.0] - 2026-06-10 (published to npm 2026-06-12, v4 / fable-refactor-1)
 
 Initial release (decision D-3). Single-install convenience re-exporting the common protocol
 path: core + receipt + measure + consensus + score + signal. Flat exports for the 10-line

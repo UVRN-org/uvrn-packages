@@ -85,7 +85,8 @@ export class SqliteReceiptStore {
    * pushToNetwork submits unsynced receipts oldest-first. 2xx marks the row synced; a 5xx
    * stops the run (server trouble — retry later, order preserved); a 4xx records the failure
    * and continues (that receipt is the problem, not the network) — surfaced in the report,
-   * never mutated-and-retried.
+   * never mutated-and-retried. This is one immediate pass; callers own retry scheduling and
+   * backoff. Both SQLite drivers execute this same store code.
    */
   async pushToNetwork(client: WorkerClient): Promise<PushReport> {
     const failed: PushReport['failed'] = [];

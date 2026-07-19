@@ -11,13 +11,18 @@ import { IdentityRegistry } from '@uvrn/identity';
 import {
   openUvrnDatabase,
   SqliteAgentStateStore,
+  SqliteCanonStore,
   SqliteIdentityStore,
   SqliteReceiptStore,
+  SqliteTimelineStore,
   SqliteWatchStore,
+  type SqliteDriverName,
   type UvrnDatabase,
 } from '../src';
 
-describe('kill-and-restart persistence', () => {
+const drivers: SqliteDriverName[] = ['better-sqlite3', 'node:sqlite'];
+
+describe.each(drivers)('kill-and-restart persistence (%s)', (driver) => {
   let dir: string;
   let dbPath: string;
   let db: UvrnDatabase;
@@ -28,16 +33,24 @@ describe('kill-and-restart persistence', () => {
   });
 
   afterAll(() => {
+    db?.close();
     rmSync(dir, { recursive: true, force: true });
   });
 
+  function open(): UvrnDatabase {
+    // Omission is intentionally exercised for better-sqlite3 to lock the legacy default.
+    return driver === 'better-sqlite3'
+      ? openUvrnDatabase(dbPath)
+      : openUvrnDatabase(dbPath, { driver });
+  }
+
   function restart(): void {
     db.close();
-    db = openUvrnDatabase(dbPath);
+    db = open();
   }
 
   it('identity scores survive restart through the real IdentityRegistry', async () => {
-    db = openUvrnDatabase(dbPath);
+    db = open();
     const registry = new IdentityRegistry({ store: new SqliteIdentityStore(db) });
     await registry.record({
       signerAddress: 'signer-1',
@@ -98,6 +111,37 @@ describe('kill-and-restart persistence', () => {
     const reborn = new SqliteAgentStateStore(db);
     expect(await reborn.loadState('agent-1')).toEqual(state);
     expect(await reborn.loadState('missing')).toBeNull();
+  });
+
+  it('canon receipts and timeline history survive restart', async () => {
+    const canon = new SqliteCanonStore(db);
+    const receipt = {
+      canon_id: 'canon-1',
+      claim_id: 'claim-history',
+      canonized_at: '2026-06-10T12:00:00.000Z',
+    } as never;
+    await canon.write(receipt);
+
+    const timeline = new SqliteTimelineStore(db);
+    const snapshot = {
+      claimId: 'claim-history',
+      scoredAt: '2026-06-10T11:00:00.000Z',
+      vScore: 77,
+    } as never;
+    timeline.addSnapshot(snapshot);
+    timeline.addCanonEvent(receipt);
+
+    restart();
+
+    const rebornCanon = new SqliteCanonStore(db);
+    expect(await rebornCanon.exists('canon-1')).toBe(true);
+    expect(await rebornCanon.read('canon-1')).toEqual(receipt);
+
+    const rebornTimeline = new SqliteTimelineStore(db);
+    const from = Date.parse('2026-06-10T00:00:00.000Z');
+    const to = Date.parse('2026-06-11T00:00:00.000Z');
+    expect(await rebornTimeline.getSnapshots('claim-history', from, to)).toEqual([snapshot]);
+    expect(await rebornTimeline.getCanonEvents('claim-history', from, to)).toEqual([receipt]);
   });
 
   it('receipt outbox survives restart and pushToNetwork syncs oldest-first', async () => {

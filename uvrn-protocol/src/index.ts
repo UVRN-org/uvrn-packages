@@ -1,7 +1,8 @@
 /**
- * @uvrn/protocol — the single-install UVRN common path (decision D-3).
- * Re-exports core + receipt + measure + consensus + score + signal so the 10-line
- * claim → signed MasterReceipt flow needs exactly one dependency.
+ * @uvrn/protocol — the single-install UVRN production research path.
+ * Re-exports core + receipt + measure + consensus + normalize + score + algox +
+ * signal so normalization, ranking, and the claim → signed MasterReceipt flow
+ * need exactly one dependency.
  *
  * Namespaced re-exports avoid symbol collisions between packages; the most-used
  * top-level names are also re-exported flat for the quickstart path.
@@ -11,7 +12,9 @@ export * as core from '@uvrn/core';
 export * as receipt from '@uvrn/receipt';
 export * as measure from '@uvrn/measure';
 export * as consensus from '@uvrn/consensus';
+export * as normalize from '@uvrn/normalize';
 export * as score from '@uvrn/score';
+export * as algox from '@uvrn/algox';
 export * as signal from '@uvrn/signal';
 
 // The quickstart path, flat:

@@ -1,6 +1,9 @@
 # Changelog
 
-## [Unreleased]
+## [4.1.0] - 2026-07-19
+
+### Closing release
+- Program closing npm release 4.1.0 — ships MCP distro + stance score-claim surface.
 
 ### Added
 - Optional validated stance fields on `delta_score_claim` host sources (D1, ADR-011).

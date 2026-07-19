@@ -1,6 +1,9 @@
 # Changelog
 
-## [4.1.0] - 2026-07-18 (unreleased)
+## [4.1.0] - 2026-07-19
+
+### Closing release
+- Program closing npm release: first npm publish of parked 4.1.0 identity (shared canon-serialize-2).
 
 ### Changed
 - Removed the live hand-copied canonicalizer. Identity evidence payloads now import the

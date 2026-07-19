@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/farm",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "Standardized data source connectors for the UVRN protocol",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

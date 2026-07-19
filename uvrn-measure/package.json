@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/measure",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "description": "Pluggable relationship measurements for UVRN evidence",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

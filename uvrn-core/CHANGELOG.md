@@ -1,6 +1,9 @@
 # Changelog
 
-## [4.1.0] - 2026-07-18 (unreleased)
+## [4.1.0] - 2026-07-19
+
+### Closing release
+- Program closing npm release: first npm publish of parked 4.1.0 canon (canonical-serialize-2).
 
 ### Added
 - Environment-pure, browser-safe `canonical-serialize-2` implementation and public subpath.

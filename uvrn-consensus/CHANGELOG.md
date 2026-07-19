@@ -1,6 +1,9 @@
 # Changelog
 
-## [Unreleased]
+## [4.1.0] - 2026-07-19
+
+### Closing release
+- Program closing npm release 4.1.0 — ships dual-axis stance consensus seam (STANCE).
 
 ### Added
 - Additive dual-axis consensus seam and `stanceMode()` provenance (D1/D6, ADR-011). Grounded stance drives bundle delta metrics only when quorum is met; prominence remains the weighting, parity, and completeness input.

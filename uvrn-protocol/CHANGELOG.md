@@ -1,6 +1,9 @@
 # @uvrn/protocol — Changelog
 
-## [Unreleased]
+## [4.1.0] - 2026-07-19
+
+### Closing release
+- Program closing npm release 4.1.0 — ships widened umbrella (normalize + algox); deps remain ^4.0.0.
 
 - Widened the existing umbrella with `@uvrn/normalize` and `@uvrn/algox` instead of creating a
   second research umbrella. One package now covers the production research chain without leaving

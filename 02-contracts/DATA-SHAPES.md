@@ -1,7 +1,7 @@
 # Data shapes — stance evidence seam
 
-**Status:** Proposed contract for BP-02  
-**Normative source:** `SPEC/uvrn-stance-v1.md`  
+**Status:** Proposed contract for BP-02
+**Normative source:** `SPEC/uvrn-stance-v1.md`
 **Decision:** `SPEC/ADR-011-stance-evidence.md` (proposed; applies ADR-005/006/010)
 
 This file names the package seam before implementation. The declarations are contract notation,

@@ -1,8 +1,8 @@
 # ADR-011 — Explicit stance evidence and dual-axis consensus
 
-**Status:** Proposed  
-**Date:** 2026-07-19  
-**Scope:** `uvrn-stance-v1` and its future package implementation  
+**Status:** Proposed
+**Date:** 2026-07-19
+**Scope:** `uvrn-stance-v1` and its future package implementation
 **Governing doctrine:** ADR-005, ADR-006, ADR-010
 
 ## Context

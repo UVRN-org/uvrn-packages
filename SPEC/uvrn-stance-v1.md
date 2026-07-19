@@ -1,7 +1,7 @@
 # UVRN Stance Evidence Specification v1 (`uvrn-stance-v1`)
 
-**Status:** Proposed normative contract · **Date:** 2026-07-19 · **Generation:** v4 additive extension  
-**Companion specs:** `uvrn-measurement-v1.md` · `uvrn-receipt-v1.md`  
+**Status:** Proposed normative contract · **Date:** 2026-07-19 · **Generation:** v4 additive extension
+**Companion specs:** `uvrn-measurement-v1.md` · `uvrn-receipt-v1.md`
 **Decision record:** `ADR-011-stance-evidence.md`
 
 This specification defines explicit stance evidence, the quorum that permits it to drive

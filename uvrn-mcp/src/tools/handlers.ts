@@ -587,11 +587,14 @@ async function handleScoreClaim(
       measurements,
       nodes,
     });
-    const receiptPayload =
-      stanceMode.evidenceAxis === 'stance'
+    // Host NetworkReceipt envelope owns additive stanceMode provenance (SPEC §3 /
+    // ADR-011). Attach on every stance-capable run — including prominence fallback —
+    // without mutating the returned masterReceipt / frozen delta surfaces (D2 hard wall 4).
+    const receiptPayload = {
+      ...masterReceipt,
+      stanceMode,
+      ...(stanceMode.evidenceAxis === 'stance'
         ? {
-            ...masterReceipt,
-            stanceMode,
             stanceSummary: {
               support: stanceProjection.categorical.filter(
                 (source) => source.assertion === 'supports'
@@ -601,7 +604,8 @@ async function handleScoreClaim(
               ).length,
             },
           }
-        : masterReceipt;
+        : {}),
+    };
 
     const networkReceipt = signReceipt(
       wrapMasterReceipt(receiptPayload, {

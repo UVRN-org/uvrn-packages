@@ -435,6 +435,60 @@ describe('delta_score_claim', () => {
     expect(result.humanView.stanceSummary).toEqual({ support: 3, oppose: 1 });
   });
 
+  it('attaches stanceMode on prominence fallback without mutating masterReceipt', async () => {
+    vi.doUnmock('@uvrn/core');
+    vi.resetModules();
+    const { handleScoreClaim } = await loadHandlers();
+    // Below source quorum (2 < 4) → prominence fallback with host provenance (SPEC §3).
+    const result = await handleScoreClaim({
+      claim: 'Prominence fallback still records stanceMode',
+      sources: [
+        {
+          url: 'https://example.com/a',
+          title: 'A',
+          snippet: 'Evidence A',
+          evidenceScore: 80,
+          stanceValue: 0.9,
+          stanceLabel: 'supports' as const,
+          stanceConfidence: 0.9,
+          stanceEvidence: 'A supports the claim.',
+        },
+        {
+          url: 'https://example.com/b',
+          title: 'B',
+          snippet: 'Evidence B',
+          evidenceScore: 70,
+          stanceValue: -0.8,
+          stanceLabel: 'opposes' as const,
+          stanceConfidence: 0.9,
+          stanceEvidence: 'B opposes the claim.',
+        },
+      ],
+    });
+    const payload = result.networkReceipt.payload as {
+      stanceMode?: {
+        evidenceAxis?: string;
+        quorumMet?: boolean;
+        fallbackReason?: string;
+        sourceCount?: number;
+        groundedCount?: number;
+      };
+      stanceSummary?: { support: number; oppose: number };
+    };
+
+    expect(payload.stanceMode).toMatchObject({
+      evidenceAxis: 'prominence',
+      quorumMet: false,
+      fallbackReason: 'source-quorum-missed',
+      sourceCount: 2,
+      groundedCount: 2,
+    });
+    expect(payload.stanceSummary).toBeUndefined();
+    expect(
+      (result.masterReceipt as { stanceMode?: unknown }).stanceMode
+    ).toBeUndefined();
+  });
+
   it('should score host sources by evidenceScore even when titles contain numbers', async () => {
     vi.doUnmock('@uvrn/core');
     vi.resetModules();

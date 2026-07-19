@@ -1,0 +1,53 @@
+{
+  "spec": "uvrn-claim-id-v1",
+  "cases": [
+    {
+      "name": "baseline-with-domain",
+      "claimText": "Heat pumps win",
+      "domain": "energy",
+      "normalizedClaimText": "heat pumps win",
+      "normalizedDomain": "energy",
+      "canonicalClaimId": "claim:c62f195b2063"
+    },
+    {
+      "name": "case-whitespace-and-punctuation-equivalence",
+      "claimText": "  HEAT\t pumps win?!  ",
+      "domain": " Energy ",
+      "normalizedClaimText": "heat pumps win",
+      "normalizedDomain": "energy",
+      "canonicalClaimId": "claim:c62f195b2063"
+    },
+    {
+      "name": "unicode-nfkc-composed",
+      "claimText": "Café prices rose.",
+      "domain": null,
+      "normalizedClaimText": "café prices rose",
+      "normalizedDomain": "",
+      "canonicalClaimId": "claim:74b4c0d45bcb"
+    },
+    {
+      "name": "unicode-nfkc-decomposed",
+      "claimText": "Café prices rose!",
+      "domain": null,
+      "normalizedClaimText": "café prices rose",
+      "normalizedDomain": "",
+      "canonicalClaimId": "claim:74b4c0d45bcb"
+    },
+    {
+      "name": "different-claim",
+      "claimText": "Heat pumps lose",
+      "domain": "energy",
+      "normalizedClaimText": "heat pumps lose",
+      "normalizedDomain": "energy",
+      "canonicalClaimId": "claim:c2d937ed0b61"
+    },
+    {
+      "name": "different-domain",
+      "claimText": "Heat pumps win",
+      "domain": "policy",
+      "normalizedClaimText": "heat pumps win",
+      "normalizedDomain": "policy",
+      "canonicalClaimId": "claim:4dac4167b1d5"
+    }
+  ]
+}

@@ -99,19 +99,30 @@ function buildReceipt(
   snapshot: DriftSnapshot,
   config: DriftConfig
 ): AgentDriftReceipt {
+  const receiptId = `${input.receiptId}_drift_${Date.now()}`;
+  const driftDelta = snapshot.driftDelta ?? 0;
+  const age = snapshot.ageHours ?? 0;
   return {
-    receipt_id:   `${input.receiptId}_drift_${Date.now()}`,
+    receipt_id:   receiptId,
+    receiptId,
     claim_id:     input.claimId,
+    claimId:      input.claimId,
     agent:        '@uvrn/agent@0.1.0',
     drift_module: DRIFT_MODULE,
+    driftModule:  DRIFT_MODULE,
     v_score:      snapshot.vScore,
-    drift_delta:  snapshot.driftDelta ?? 0,
+    vScore:       snapshot.vScore,
+    drift_delta:  driftDelta,
+    driftDelta,
     decay_curve:  config.curve,
-    age_hours:    snapshot.ageHours ?? 0,
+    decayCurve:   config.curve,
+    age_hours:    age,
+    ageHours:     age,
     status:       snapshot.status,
     components:   snapshot.components,
     thresholds:   config.thresholds,
     scored_at:    snapshot.scoredAt,
+    scoredAt:     snapshot.scoredAt,
     tags:         ['#uvrn', '#drvc3', '#drift', `#${snapshot.status}`],
   };
 }

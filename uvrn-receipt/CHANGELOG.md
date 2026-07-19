@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Add `canonicalClaimId()` and its locked Unicode-aware normalizers for the D9 cross-run identity,
+  exported from the package root and `@uvrn/receipt/identity`. The helper uses the shared
+  canonicalizer (ADR-006) and changes no frozen hash field list (ADR-010).
 - Export the closed D8 Tier-0 cross-layer verdict map and stateless Tier-1 `validateDescriptor()` registration validator (ADR-011).
 - `toHumanView()` renders stance-axis support/oppose counts and valid-parent Tier-1 descriptors alongside the unchanged Tier-0 verdict. No declared hash field list or canonicalizer changed (ADR-006/ADR-010).
 

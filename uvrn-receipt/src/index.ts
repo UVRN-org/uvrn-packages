@@ -8,6 +8,7 @@ export * from './types';
 export * from './canonical';
 export * from './schema';
 export * from './topics';
+export * from './identity';
 export * from './vocabulary';
 export * from './sign';
 export * from './envelope';

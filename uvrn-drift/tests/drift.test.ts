@@ -15,7 +15,12 @@ import {
   sigmoidDecay,
   exponentialDecay,
 } from '../src/index';
-import type { DriftInput, DriftInputReceipt, DriftThresholdEvent } from '../src/types/index';
+import type {
+  DriftInput,
+  DriftInputReceipt,
+  DriftReceiptInput,
+  DriftThresholdEvent,
+} from '../src/types/index';
 
 function makeReceipt(overrides: Partial<DriftInputReceipt> = {}): DriftInputReceipt {
   return {
@@ -120,6 +125,54 @@ describe('computeDrift()', () => {
 
     expect(result.drift.decayed_score).toBe(Math.round(expectedScore * 100) / 100);
   });
+
+  it('maps snake_case and camelCase aliases through one identical result path', () => {
+    const asOf = new Date('2026-04-02T00:00:00.000Z');
+    const common = {
+      issuer: 'test.uvrn.org',
+      timestamp: '2026-04-01T00:00:00.000Z',
+      components: { completeness: 92, parity: 85, freshness: 88 },
+    };
+    const snake: DriftInputReceipt = {
+      ...common,
+      receipt_id: 'test_r1',
+      claim_id: 'claim:abc123def456',
+      v_score: 88,
+    };
+    const camel: DriftReceiptInput = {
+      ...common,
+      receiptId: 'test_r1',
+      claimId: 'claim:abc123def456',
+      vScore: 88,
+    };
+
+    const snakeResult = computeDrift(snake, DRIFT_PROFILES.moderate, asOf);
+    const camelResult = computeDrift(camel, DRIFT_PROFILES.moderate, asOf);
+
+    expect(camelResult).toEqual(snakeResult);
+    expect(camelResult).toMatchObject({
+      receipt_id: 'test_r1',
+      receiptId: 'test_r1',
+      claim_id: 'claim:abc123def456',
+      claimId: 'claim:abc123def456',
+      v_score: 88,
+      vScore: 88,
+      drift: {
+        decayed_score: camelResult.drift.decayedScore,
+        age_hours: camelResult.drift.ageHours,
+        scored_at: camelResult.drift.scoredAt,
+        decayed_freshness: camelResult.drift.decayedFreshness,
+      },
+    });
+  });
+
+  it('rejects conflicting aliases instead of selecting a second code path', () => {
+    const conflicting = {
+      ...makeReceipt(),
+      receiptId: 'different',
+    };
+    expect(() => computeDrift(conflicting, DRIFT_PROFILES.slow)).toThrow(TypeError);
+  });
 });
 
 describe('computeDriftFromInput()', () => {
@@ -128,6 +181,20 @@ describe('computeDriftFromInput()', () => {
     const { components } = result.snapshot;
 
     expect(result.snapshot.vScore).toBe(expectedVScore(components));
+  });
+
+  it('returns camelCase aliases beside legacy snake_case receipt fields', () => {
+    const result = computeDriftFromInput(makeDriftInput());
+    expect(result.receipt).toMatchObject({
+      receiptId: result.receipt.receipt_id,
+      claimId: result.receipt.claim_id,
+      driftModule: result.receipt.drift_module,
+      vScore: result.receipt.v_score,
+      driftDelta: result.receipt.drift_delta,
+      decayCurve: result.receipt.decay_curve,
+      ageHours: result.receipt.age_hours,
+      scoredAt: result.receipt.scored_at,
+    });
   });
 });
 

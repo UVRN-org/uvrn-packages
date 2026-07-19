@@ -2,7 +2,7 @@
 
 ## [4.0.0] - 2026-06-10
 
-Unreleased.
+Published to npm 2026-06-12.
 
 ### Added
 - `AgentStateStore` interface — injectable persistence seam for durable agent state (`loadState(agentId)` / `saveState(agentId, state)` over a `PersistedAgentState` snapshot: tracked claim registrations, last drift snapshots, receipt sequences, consecutive-failure counts, and `totalRuns`). `AgentConfig.stateStore` accepts a durable implementation. No storage ships in this package — the agent still emits unsigned `AgentDriftReceipt`s only.

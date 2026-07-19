@@ -171,7 +171,7 @@ The measurement function has several front doors. They are access layers onto th
 | `@uvrn/embed` | 4 | ✅ Built + audited | Embeddable React badge + UMD script |
 | `@uvrn/receipt` | 2 | 🆕 v4 | **The canonical receipt object model** — NetworkReceipt envelope, JCS canonicalization (single ecosystem implementation), Ed25519 signing, topics, Layer D vocabulary, `toHumanView()` |
 | `@uvrn/store-sqlite` | 3 | 🆕 v4 | Every store interface against one local SQLite file + `pushToNetwork()` — durable AND zero-signup |
-| `@uvrn/protocol` | — | 🆕 v4 | Single-install umbrella: core + receipt + measure + consensus + score + signal |
+| `@uvrn/protocol` | — | 🆕 v4 | Single-install production umbrella: core + receipt + measure + consensus + normalize + score + algox + signal |
 
 ---
 
@@ -247,20 +247,21 @@ uvrn-packages/
 
 ## Publish order
 
-The six `@uvrn/protocol` dependencies publish first, then the remaining packages, then the
+The eight `@uvrn/protocol` dependencies publish first, then the remaining packages, then the
 `@uvrn/protocol` umbrella last (so its dependents already resolve on the registry):
 
 ```
-Protocol deps (1–6):
+Protocol deps (1–8):
  1. @uvrn/core   →  2. @uvrn/receipt → 3. @uvrn/measure
- 4. @uvrn/consensus → 5. @uvrn/score → 6. @uvrn/signal
+ 4. @uvrn/consensus → 5. @uvrn/normalize → 6. @uvrn/score
+ 7. @uvrn/algox  →  8. @uvrn/signal
 
-Remaining packages (7–25):
- 7. @uvrn/sdk    →  8. @uvrn/adapter → 9. @uvrn/farm    → 10. @uvrn/normalize
-11. @uvrn/lattice → 12. @uvrn/compare → 13. @uvrn/identity → 14. @uvrn/test
-15. @uvrn/drift  → 16. @uvrn/agent  → 17. @uvrn/canon   → 18. @uvrn/timeline
-19. @uvrn/algox  → 20. @uvrn/mcp    → 21. @uvrn/api     → 22. @uvrn/cli
-23. @uvrn/embed  → 24. @uvrn/watch  → 25. @uvrn/store-sqlite
+Remaining packages (9–25):
+ 9. @uvrn/sdk    → 10. @uvrn/adapter → 11. @uvrn/farm   → 12. @uvrn/lattice
+13. @uvrn/compare → 14. @uvrn/identity → 15. @uvrn/test → 16. @uvrn/drift
+17. @uvrn/agent  → 18. @uvrn/canon   → 19. @uvrn/timeline → 20. @uvrn/mcp
+21. @uvrn/api    → 22. @uvrn/cli     → 23. @uvrn/embed  → 24. @uvrn/watch
+25. @uvrn/store-sqlite
 
 Umbrella (last):
 26. @uvrn/protocol

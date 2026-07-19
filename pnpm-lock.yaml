@@ -573,6 +573,9 @@ importers:
 
   uvrn-protocol:
     dependencies:
+      '@uvrn/algox':
+        specifier: workspace:^
+        version: link:../uvrn-algox
       '@uvrn/consensus':
         specifier: workspace:^
         version: link:../uvrn-consensus
@@ -582,6 +585,9 @@ importers:
       '@uvrn/measure':
         specifier: workspace:^
         version: link:../uvrn-measure
+      '@uvrn/normalize':
+        specifier: workspace:^
+        version: link:../uvrn-normalize
       '@uvrn/receipt':
         specifier: workspace:^
         version: link:../uvrn-receipt

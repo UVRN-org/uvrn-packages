@@ -1,8 +1,9 @@
 # @uvrn/protocol
 
-The single-install UVRN common path. One dependency gives you the whole
-claim → measurement → master receipt → signed network receipt flow:
-`@uvrn/core` + `@uvrn/receipt` + `@uvrn/measure` + `@uvrn/consensus` + `@uvrn/score` +
+The single-install UVRN production research path. One dependency gives you
+normalization + ranking and the whole claim → measurement → master receipt →
+signed network receipt flow: `@uvrn/core` + `@uvrn/receipt` + `@uvrn/measure` +
+`@uvrn/consensus` + `@uvrn/normalize` + `@uvrn/score` + `@uvrn/algox` +
 `@uvrn/signal`, re-exported.
 
 Install the individual packages instead when you want a smaller surface — everything here is
@@ -31,8 +32,12 @@ This exact flow runs in `tests/quickstart.test.ts`.
 - **Flat exports** — the quickstart names above plus `toHumanView`, `verifyReceipt`,
   `verifyMasterReceipt`, `VSCORE_WEIGHTS`, `ConsensusEngine`, the four starter measurements,
   and the common types.
-- **Namespaced exports** — `core`, `receipt`, `measure`, `consensus`, `score`, `signal` for
-  everything else (`import { receipt } from '@uvrn/protocol'; receipt.canonicalize(...)`).
+- **Namespaced exports** — `core`, `receipt`, `measure`, `consensus`, `normalize`, `score`,
+  `algox`, and `signal` for everything else
+  (`import { normalize, algox } from '@uvrn/protocol'; normalize.normalize(...); algox.rankSignals(...)`).
+
+The executed quickstart suite also normalizes research sources and ranks the resulting signals
+through these umbrella namespaces.
 
 ## Honest vocabulary
 

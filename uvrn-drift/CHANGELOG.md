@@ -1,6 +1,9 @@
 # Changelog
 
-## [Unreleased]
+## [4.1.0] - 2026-07-19
+
+### Closing release
+- Program closing npm release 4.1.0 — ships camelCase receipt aliases (REF).
 
 - Accept additive camelCase receipt aliases alongside the legacy snake_case drift inputs and emit
   both naming styles from one normalized computation path. Existing snake_case values and decay

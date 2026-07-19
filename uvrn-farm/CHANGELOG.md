@@ -1,6 +1,9 @@
 # Changelog
 
-## [Unreleased]
+## [4.1.0] - 2026-07-19
+
+### Closing release
+- Program closing npm release 4.1.0 — ships optional stance fields on farm sources (STANCE).
 
 ### Added
 - Optional first-class `stanceValue`, `stanceLabel`, `stanceConfidence`, and `stanceEvidence` fields on the exported farm source shape (D1, ADR-011). Existing connector results remain source-compatible when the fields are absent.

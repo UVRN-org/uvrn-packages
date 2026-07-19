@@ -1,6 +1,9 @@
 # @uvrn/store-sqlite — Changelog
 
-## [Unreleased]
+## [4.1.0] - 2026-07-19
+
+### Closing release
+- Program closing npm release 4.1.0 — ships node:sqlite driver + outbox readiness.
 
 - Add explicit `{ driver: 'node:sqlite' }` selection backed by Node's synchronous
   `DatabaseSync` API (Node >= 23.4), with no native dependency.

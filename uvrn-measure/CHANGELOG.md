@@ -1,6 +1,9 @@
 # Changelog
 
-## [Unreleased]
+## [4.1.0] - 2026-07-19
+
+### Closing release
+- Program closing npm release 4.1.0 — ships stanceToMeasurementSources seam (STANCE).
 
 ### Added
 - Pure `stanceToMeasurementSources()` named seam (ADR-005/ADR-011), mapping grounded numeric positions and supports/opposes assertions into the unchanged starter measurements. Inputs are not mutated and absent stance has no effect.

@@ -16,14 +16,14 @@
     "test:coverage": "jest --coverage"
   },
   "dependencies": {
-    "@uvrn/algox": "workspace:^",
-    "@uvrn/consensus": "workspace:^",
-    "@uvrn/core": "workspace:^",
-    "@uvrn/measure": "workspace:^",
-    "@uvrn/normalize": "workspace:^",
-    "@uvrn/receipt": "workspace:^",
-    "@uvrn/score": "workspace:^",
-    "@uvrn/signal": "workspace:^"
+    "@uvrn/algox": "^4.0.0",
+    "@uvrn/consensus": "^4.0.0",
+    "@uvrn/core": "^4.0.0",
+    "@uvrn/measure": "^4.0.0",
+    "@uvrn/normalize": "^4.0.0",
+    "@uvrn/receipt": "^4.0.0",
+    "@uvrn/score": "^4.0.0",
+    "@uvrn/signal": "^4.0.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.0",

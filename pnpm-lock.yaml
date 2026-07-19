@@ -574,29 +574,29 @@ importers:
   uvrn-protocol:
     dependencies:
       '@uvrn/algox':
-        specifier: workspace:^
-        version: link:../uvrn-algox
+        specifier: ^4.0.0
+        version: 4.0.0
       '@uvrn/consensus':
-        specifier: workspace:^
-        version: link:../uvrn-consensus
+        specifier: ^4.0.0
+        version: 4.0.0(@uvrn/agent@4.0.0(@uvrn/drift@4.0.0(@uvrn/core@4.0.0)(@uvrn/score@4.0.0(@uvrn/core@4.0.0))))(@uvrn/core@4.0.0)(@uvrn/farm@4.0.0(@uvrn/agent@4.0.0(@uvrn/drift@4.0.0(@uvrn/core@4.0.0)(@uvrn/score@4.0.0(@uvrn/core@4.0.0))))(@uvrn/core@4.0.0))
       '@uvrn/core':
-        specifier: workspace:^
-        version: link:../uvrn-core
+        specifier: ^4.0.0
+        version: 4.0.0
       '@uvrn/measure':
-        specifier: workspace:^
-        version: link:../uvrn-measure
+        specifier: ^4.0.0
+        version: 4.0.0(@uvrn/core@4.0.0)
       '@uvrn/normalize':
-        specifier: workspace:^
-        version: link:../uvrn-normalize
+        specifier: ^4.0.0
+        version: 4.0.0(@uvrn/agent@4.0.0(@uvrn/drift@4.0.0(@uvrn/core@4.0.0)(@uvrn/score@4.0.0(@uvrn/core@4.0.0))))(@uvrn/core@4.0.0)(@uvrn/farm@4.0.0(@uvrn/agent@4.0.0(@uvrn/drift@4.0.0(@uvrn/core@4.0.0)(@uvrn/score@4.0.0(@uvrn/core@4.0.0))))(@uvrn/core@4.0.0))
       '@uvrn/receipt':
-        specifier: workspace:^
-        version: link:../uvrn-receipt
+        specifier: ^4.0.0
+        version: 4.0.0(@uvrn/core@4.0.0)
       '@uvrn/score':
-        specifier: workspace:^
-        version: link:../uvrn-score
+        specifier: ^4.0.0
+        version: 4.0.0(@uvrn/core@4.0.0)
       '@uvrn/signal':
-        specifier: workspace:^
-        version: link:../uvrn-signal
+        specifier: ^4.0.0
+        version: 4.0.0
     devDependencies:
       '@types/jest':
         specifier: ^29.5.0
@@ -1912,6 +1912,78 @@ packages:
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
     deprecated: Potential CWE-502 - Update to 1.3.1 or higher
+
+  '@uvrn/agent@4.0.0':
+    resolution: {integrity: sha512-qZUhonWnTkOGNHWQK5afJ3lzLcOfk/Em52hQpy5+XGn6uJGUO699qjvD/7bRs0G6tNKRXeicyix0TqspjNBP5g==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      '@uvrn/drift': ^4.0.0
+
+  '@uvrn/algox@4.0.0':
+    resolution: {integrity: sha512-ZQAcXrJQIiMgGhqquvmkMvMx/iD8LwgIVDCOwe3VFPzk2bZeTC0MNMcozhxHsfFkIJFp7qiWEJkjRjbEcBdiHg==}
+    engines: {node: '>=18.0.0'}
+
+  '@uvrn/consensus@4.0.0':
+    resolution: {integrity: sha512-O60Q9cbglTbiZd8pCFrdqtuOpt9oxKEqP0u1TotYudc7mjBoZ7hJR/MuHdIEskyrH4Y3ZkDePlRAHAr0w6dsWw==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      '@uvrn/agent': ^4.0.0
+      '@uvrn/core': ^4.0.0
+      '@uvrn/farm': '*'
+    peerDependenciesMeta:
+      '@uvrn/farm':
+        optional: true
+
+  '@uvrn/core@4.0.0':
+    resolution: {integrity: sha512-qpXF5XNsmNlNRMy0URCy9q5wkYse1Y/qiWFCaudQWxpkSs6G9HNHzvUbTx3enFtv/+VbpKk06jGc85Pgg2Td2g==}
+    engines: {node: '>=18.0.0'}
+
+  '@uvrn/drift@4.0.0':
+    resolution: {integrity: sha512-Xc6Ma7mKWM9LSFwhOckeDxQVCX1zLUp5SbGG0/Aln9aVTQQx3J+9pkNBjw+f7Gc8IQfrauOeonb/b1M7XrCVOQ==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      '@uvrn/core': ^4.0.0
+      '@uvrn/score': ^4.0.0
+
+  '@uvrn/farm@4.0.0':
+    resolution: {integrity: sha512-cgsMSyyE8pkpTEwLcC4QSZE7wqucxg2Dh3ktleJG6f8o+zp47URtjlY/5sVH9Dh4dUXNGhmCY1d5pMiTyVx1mQ==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      '@uvrn/agent': ^4.0.0
+      '@uvrn/core': ^4.0.0
+
+  '@uvrn/measure@4.0.0':
+    resolution: {integrity: sha512-8f1OlRxWrUUxWPAO8213/MzL0PJ/MNgSRt3rs5omesvPH+I7AZzvX16neinNJTDs+OZqZCRld8tMhArQixmB7g==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      '@uvrn/core': ^4.0.0
+
+  '@uvrn/normalize@4.0.0':
+    resolution: {integrity: sha512-6GIvCsvZ49jrvDUdlcZluQ5HRdyKuNTgyH+ZhpQAsvQqmHFTZwXT4m3pvL53Bq3RJQvPaj89rfq102yqXhwoMw==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      '@uvrn/agent': ^4.0.0
+      '@uvrn/core': ^4.0.0
+      '@uvrn/farm': ^4.0.0
+    peerDependenciesMeta:
+      '@uvrn/farm':
+        optional: true
+
+  '@uvrn/receipt@4.0.0':
+    resolution: {integrity: sha512-i46oHLRytdlgNL18ZPedFAh4RVMJE05JACvVqFWNI0ZAxaYX0s+ZgV0bCXoSIb5dASUBbmjFVj+l6t3S0aIZrA==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      '@uvrn/core': ^4.0.0
+
+  '@uvrn/score@4.0.0':
+    resolution: {integrity: sha512-Lxdog9wXLsSvx9KPb1+Hvh2CFAUz/J8ni8ntmtXDjmg91KefPf63tfAxqYwM7GcOtJhL2k5DBWS6sqVCsW2+Yw==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      '@uvrn/core': ^4.0.0
+
+  '@uvrn/signal@4.0.0':
+    resolution: {integrity: sha512-A5oXNjmzdp6vpbZDC07SFz8bgBMDjcS9fe6U1RPNeJfFrDmdFypUCEGf3UyU3NvVcOUrHSO2OShBOvY5G/ze6Q==}
+    engines: {node: '>=18.0.0'}
 
   '@vitest/coverage-v8@1.6.1':
     resolution: {integrity: sha512-6YeRZwuO4oTGKxD3bijok756oktHSIm3eczVVzNe3scqzuhLwltIF3S9ZL/vwOVIpURmU6SnZhziXXAfw8/Qlw==}
@@ -5059,6 +5131,53 @@ snapshots:
       eslint-visitor-keys: 3.4.3
 
   '@ungap/structured-clone@1.3.0': {}
+
+  '@uvrn/agent@4.0.0(@uvrn/drift@4.0.0(@uvrn/core@4.0.0)(@uvrn/score@4.0.0(@uvrn/core@4.0.0)))':
+    dependencies:
+      '@uvrn/drift': 4.0.0(@uvrn/core@4.0.0)(@uvrn/score@4.0.0(@uvrn/core@4.0.0))
+
+  '@uvrn/algox@4.0.0': {}
+
+  '@uvrn/consensus@4.0.0(@uvrn/agent@4.0.0(@uvrn/drift@4.0.0(@uvrn/core@4.0.0)(@uvrn/score@4.0.0(@uvrn/core@4.0.0))))(@uvrn/core@4.0.0)(@uvrn/farm@4.0.0(@uvrn/agent@4.0.0(@uvrn/drift@4.0.0(@uvrn/core@4.0.0)(@uvrn/score@4.0.0(@uvrn/core@4.0.0))))(@uvrn/core@4.0.0))':
+    dependencies:
+      '@uvrn/agent': 4.0.0(@uvrn/drift@4.0.0(@uvrn/core@4.0.0)(@uvrn/score@4.0.0(@uvrn/core@4.0.0)))
+      '@uvrn/core': 4.0.0
+    optionalDependencies:
+      '@uvrn/farm': 4.0.0(@uvrn/agent@4.0.0(@uvrn/drift@4.0.0(@uvrn/core@4.0.0)(@uvrn/score@4.0.0(@uvrn/core@4.0.0))))(@uvrn/core@4.0.0)
+
+  '@uvrn/core@4.0.0': {}
+
+  '@uvrn/drift@4.0.0(@uvrn/core@4.0.0)(@uvrn/score@4.0.0(@uvrn/core@4.0.0))':
+    dependencies:
+      '@uvrn/core': 4.0.0
+      '@uvrn/score': 4.0.0(@uvrn/core@4.0.0)
+
+  '@uvrn/farm@4.0.0(@uvrn/agent@4.0.0(@uvrn/drift@4.0.0(@uvrn/core@4.0.0)(@uvrn/score@4.0.0(@uvrn/core@4.0.0))))(@uvrn/core@4.0.0)':
+    dependencies:
+      '@uvrn/agent': 4.0.0(@uvrn/drift@4.0.0(@uvrn/core@4.0.0)(@uvrn/score@4.0.0(@uvrn/core@4.0.0)))
+      '@uvrn/core': 4.0.0
+    optional: true
+
+  '@uvrn/measure@4.0.0(@uvrn/core@4.0.0)':
+    dependencies:
+      '@uvrn/core': 4.0.0
+
+  '@uvrn/normalize@4.0.0(@uvrn/agent@4.0.0(@uvrn/drift@4.0.0(@uvrn/core@4.0.0)(@uvrn/score@4.0.0(@uvrn/core@4.0.0))))(@uvrn/core@4.0.0)(@uvrn/farm@4.0.0(@uvrn/agent@4.0.0(@uvrn/drift@4.0.0(@uvrn/core@4.0.0)(@uvrn/score@4.0.0(@uvrn/core@4.0.0))))(@uvrn/core@4.0.0))':
+    dependencies:
+      '@uvrn/agent': 4.0.0(@uvrn/drift@4.0.0(@uvrn/core@4.0.0)(@uvrn/score@4.0.0(@uvrn/core@4.0.0)))
+      '@uvrn/core': 4.0.0
+    optionalDependencies:
+      '@uvrn/farm': 4.0.0(@uvrn/agent@4.0.0(@uvrn/drift@4.0.0(@uvrn/core@4.0.0)(@uvrn/score@4.0.0(@uvrn/core@4.0.0))))(@uvrn/core@4.0.0)
+
+  '@uvrn/receipt@4.0.0(@uvrn/core@4.0.0)':
+    dependencies:
+      '@uvrn/core': 4.0.0
+
+  '@uvrn/score@4.0.0(@uvrn/core@4.0.0)':
+    dependencies:
+      '@uvrn/core': 4.0.0
+
+  '@uvrn/signal@4.0.0': {}
 
   '@vitest/coverage-v8@1.6.1(vitest@1.6.1(@types/node@20.19.37)(jsdom@20.0.3))':
     dependencies:

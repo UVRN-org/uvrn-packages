@@ -1,5 +1,17 @@
 # @uvrn/store-sqlite — Changelog
 
+## [Unreleased]
+
+- Add explicit `{ driver: 'node:sqlite' }` selection backed by Node's synchronous
+  `DatabaseSync` API (Node >= 23.4), with no native dependency.
+- Keep `better-sqlite3` as the unchanged default and preserve compatible database injection.
+- Run the full kill-and-restart and outbox suite against both drivers, including honest
+  retry behavior: `pushToNetwork()` stops on transport/5xx failures but leaves retry timing
+  and backoff to its caller.
+- Document the driver matrix and transaction/pragma behavior. The internal port follows the
+  ports-and-adapters boundaries in ADR-004/ADR-005; this unit remains publish-ready but
+  unpublished under D3.
+
 ## [4.0.0] - 2026-06-10 (unreleased, v4 / fable-refactor-1)
 
 Initial release (plan A3). One local SQLite file implements every UVRN store interface:

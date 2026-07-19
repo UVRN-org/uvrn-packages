@@ -1,6 +1,7 @@
 import type { DeltaBundle } from '@uvrn/core';
 
 import { buildBundleId, calculateAgreementScore, extractRankedSources } from './aggregation';
+import { evaluateStanceMode } from './stance';
 import { resolveWeights } from './weighting';
 import type {
   ConsensusEngineOptions,
@@ -9,6 +10,7 @@ import type {
   DedupConfig,
   RankedSource,
   SourceWeights,
+  StanceMode,
 } from '../types';
 import { ConsensusError } from '../types';
 
@@ -27,7 +29,8 @@ export class ConsensusEngine {
 
   buildBundle(claim?: string): DeltaBundle {
     const resolvedClaim = claim ?? this.#claim ?? this.#sources.claimId;
-    const rankedSources = this.#rankedSources();
+    const evidenceAxis = this.stanceMode().evidenceAxis;
+    const rankedSources = this.#rankedSources(evidenceAxis);
 
     if (rankedSources.length < 2) {
       throw new ConsensusError(
@@ -47,16 +50,21 @@ export class ConsensusEngine {
   }
 
   stats(): ConsensusStats {
-    const rankedSources = this.#rankedSources();
+    const mode = this.stanceMode();
+    const rankedSources = this.#rankedSources(mode.evidenceAxis);
+    const qualitySources =
+      mode.evidenceAxis === 'stance'
+        ? this.#rankedSources('prominence')
+        : rankedSources;
     const sourceCount = rankedSources.length;
     const agreementScore = calculateAgreementScore(rankedSources);
-    const coverageScore = sourceCount === 0 ? 0 : rankedSources[0].coverageScore;
-    const recencyScore = sourceCount === 0
+    const coverageScore = qualitySources.length === 0 ? 0 : qualitySources[0].coverageScore;
+    const recencyScore = qualitySources.length === 0
       ? 0
-      : rankedSources.reduce((sum, source) => sum + source.recencyScore, 0) / sourceCount;
-    const weightedConsensusScore = sourceCount === 0
+      : qualitySources.reduce((sum, source) => sum + source.recencyScore, 0) / qualitySources.length;
+    const weightedConsensusScore = qualitySources.length === 0
       ? 0
-      : rankedSources.reduce((sum, source) => sum + source.weightScore, 0) / sourceCount;
+      : qualitySources.reduce((sum, source) => sum + source.weightScore, 0) / qualitySources.length;
 
     return {
       sourceCount,
@@ -64,6 +72,7 @@ export class ConsensusEngine {
       coverageScore,
       recencyScore,
       weightedConsensusScore,
+      ...(mode.evidenceAxis === 'stance' ? { evidenceAxis: 'stance' as const } : {}),
       summary: this.#summary(
         sourceCount,
         agreementScore,
@@ -87,20 +96,31 @@ export class ConsensusEngine {
   buildConsensusResult(claim?: string): ConsensusResult {
     const bundle = this.buildBundle(claim);
     const stats = this.stats();
+    const prominenceParity = calculateAgreementScore(this.#rankedSources('prominence'));
 
     return {
       bundle,
       components: {
         completeness: stats.coverageScore,
-        parity: stats.agreementScore,
+        parity: prominenceParity,
         freshness: stats.recencyScore,
       },
       stats,
     };
   }
 
-  #rankedSources(): RankedSource[] {
-    return extractRankedSources(this.#sources, this.#weights, this.#dedup);
+  /** Activation provenance is exposed separately so fallback results stay frozen. */
+  stanceMode(): StanceMode {
+    return evaluateStanceMode(this.#sources.sources);
+  }
+
+  #rankedSources(evidenceAxis: 'stance' | 'prominence'): RankedSource[] {
+    return extractRankedSources(
+      this.#sources,
+      this.#weights,
+      this.#dedup,
+      evidenceAxis
+    );
   }
 
   #summary(

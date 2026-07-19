@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- Pure `stanceToMeasurementSources()` named seam (ADR-005/ADR-011), mapping grounded numeric positions and supports/opposes assertions into the unchanged starter measurements. Inputs are not mutated and absent stance has no effect.
+
 ## [4.0.0] - 2026-06-10 (unreleased, v4 / fable-refactor-1)
 
 ### Added

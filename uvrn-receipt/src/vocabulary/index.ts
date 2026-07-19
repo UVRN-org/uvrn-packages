@@ -8,6 +8,111 @@
 
 import type { VerdictTone } from '../types';
 
+export type Tier0DashTerm =
+  | 'align'
+  | 'split'
+  | 'contradict'
+  | 'early'
+  | 'insufficient';
+
+export interface Tier0VerdictMapping {
+  measurement: 'agree' | 'disagree' | 'conflict' | 'potential' | 'insufficient-data';
+  outcome: 'consensus' | 'indeterminate';
+  dash: Tier0DashTerm;
+}
+
+/** Closed D8/ADR-011 Tier-0 cross-layer map. */
+export const TIER_0_VERDICT_MAP: readonly Tier0VerdictMapping[] = [
+  { measurement: 'agree', outcome: 'consensus', dash: 'align' },
+  { measurement: 'disagree', outcome: 'indeterminate', dash: 'split' },
+  { measurement: 'conflict', outcome: 'indeterminate', dash: 'contradict' },
+  { measurement: 'potential', outcome: 'indeterminate', dash: 'early' },
+  { measurement: 'insufficient-data', outcome: 'indeterminate', dash: 'insufficient' },
+] as const;
+
+export interface VerdictDescriptor {
+  term: string;
+  parent: Tier0DashTerm;
+  definition: string;
+}
+
+export interface DescriptorValidationResult {
+  valid: boolean;
+  errors: string[];
+}
+
+const TIER_0_TERMS: readonly Tier0DashTerm[] = [
+  'align',
+  'split',
+  'contradict',
+  'early',
+  'insufficient',
+];
+
+const RESERVED_DESCRIPTOR_TERMS = new Set([
+  'agree', 'agreement', 'aligned', 'alignment', 'consensus',
+  'disagree', 'disagreement', 'diverge', 'divergence', 'split',
+  'conflict', 'contradict', 'contradiction', 'potential', 'early-signal',
+  'indeterminate', 'insufficient', 'insufficient-data', 'unknown',
+]);
+
+const GENERAL_OVERSTATEMENT =
+  /\b(prov(?:e|es|ed|en)|verif(?:y|ies|ied)|certain(?:ly)?|definitive(?:ly)?|true|false)\b/i;
+
+/**
+ * Validate a Tier-1 registration against uvrn-stance-v1 §7.1.
+ * Existing registrations are supplied explicitly; no mutable global registry is used.
+ */
+export function validateDescriptor(
+  descriptor: VerdictDescriptor,
+  registry: readonly VerdictDescriptor[] = []
+): DescriptorValidationResult {
+  const errors: string[] = [];
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(descriptor.term)) {
+    errors.push('term must be lowercase kebab-case');
+  }
+  if (registry.some((entry) => entry.term === descriptor.term)) {
+    errors.push('term must be unique in the registry');
+  }
+  if (!TIER_0_TERMS.includes(descriptor.parent)) {
+    errors.push('parent must be a Tier-0 dash term');
+  }
+  if (descriptor.definition.trim().length === 0) {
+    errors.push('definition must be non-empty');
+  }
+  if (
+    TIER_0_TERMS.includes(descriptor.term as Tier0DashTerm) ||
+    RESERVED_DESCRIPTOR_TERMS.has(descriptor.term)
+  ) {
+    errors.push('term must not equal or synonym-shadow a Tier-0 term');
+  }
+
+  const definition = descriptor.definition;
+  if (GENERAL_OVERSTATEMENT.test(definition)) {
+    errors.push('definition must not claim proof, verification, or truth');
+  }
+  if (
+    descriptor.parent === 'insufficient' &&
+    /\b(agree(?:ment|s|d)?|align(?:ment|s|ed)?|consensus|disagree(?:ment|s|d)?|diverg(?:e|es|ed|ence)|split)\b/i.test(definition)
+  ) {
+    errors.push('an insufficient descriptor must not claim agreement or disagreement');
+  }
+  if (
+    descriptor.parent === 'split' &&
+    /\b(direct(?:ly)?\s+contradict|mutually\s+exclusive|contradiction|conflict)\b/i.test(definition)
+  ) {
+    errors.push('a split descriptor must not claim direct contradiction');
+  }
+  if (
+    descriptor.parent === 'early' &&
+    /\b(settled|confirmed|consensus|conclusive|aligned)\b/i.test(definition)
+  ) {
+    errors.push('an early descriptor must not claim settled consensus');
+  }
+
+  return { valid: errors.length === 0, errors };
+}
+
 /**
  * VerdictHuman is the human rendering of one protocol verdict.
  */

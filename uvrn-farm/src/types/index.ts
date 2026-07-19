@@ -1,9 +1,32 @@
-export type {
-  ClaimRegistration,
-  FarmConnector,
-  FarmResult,
-  FarmSource,
+import type {
+  FarmResult as AgentFarmResult,
+  FarmSource as AgentFarmSource,
 } from '@uvrn/agent';
+
+export type { ClaimRegistration, FarmConnector } from '@uvrn/agent';
+
+/** Explicit source position supplied by a producer (D1, ADR-011). */
+export type StanceLabel =
+  | 'supports'
+  | 'opposes'
+  | 'mixed'
+  | 'neutral'
+  | 'insufficient';
+
+/**
+ * Additive farm source shape. Stance is first-class input and is never inferred
+ * from title or snippet text (ADR-011).
+ */
+export interface FarmSource extends AgentFarmSource {
+  stanceValue?: number;
+  stanceLabel?: StanceLabel;
+  stanceConfidence?: number;
+  stanceEvidence?: string;
+}
+
+export interface FarmResult extends Omit<AgentFarmResult, 'sources'> {
+  sources: FarmSource[];
+}
 
 export interface ConnectorConfig {
   apiKey?: string;

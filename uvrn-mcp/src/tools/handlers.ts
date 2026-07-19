@@ -16,12 +16,15 @@ import {
 } from '@uvrn/core';
 import { computeDrift, profileFor } from '@uvrn/drift';
 import { CompareEngine } from '@uvrn/compare';
-import { ConsensusEngine } from '@uvrn/consensus';
+import {
+  ConsensusEngine,
+  type FarmResult as ConsensusFarmResult,
+} from '@uvrn/consensus';
 import { normalize } from '@uvrn/normalize';
-import { defaultRegistry } from '@uvrn/measure';
+import { defaultRegistry, stanceToMeasurementSources } from '@uvrn/measure';
 import { ScoreBreakdown, SCORE_PROFILES } from '@uvrn/score';
 import type { Canon, CanonStore } from '@uvrn/canon';
-import type { ClaimRegistration, FarmConnector, FarmResult } from '@uvrn/agent';
+import type { ClaimRegistration, FarmConnector } from '@uvrn/agent';
 import type { IdentityRegistry } from '@uvrn/identity';
 import {
   enrichMeasurements,
@@ -449,7 +452,7 @@ async function handleScoreClaim(
 
     const registration = claimRegistrationFromInput(input);
     const nodes: NodeStatusRecord[] = [];
-    const farmResults: FarmResult[] = [];
+    const farmResults: ConsensusFarmResult[] = [];
     let evidenceMode: 'host_sources' | 'connector' | 'mock';
 
     // Host-evidence precedence: any non-empty `sources` array means the caller
@@ -468,6 +471,12 @@ async function handleScoreClaim(
       for (const s of input.sources) {
         assertFiniteRange(s.credibility, 'credibility', 0, 1);
         assertFiniteRange(s.evidenceScore, 'evidenceScore', 0, 100);
+        assertFiniteRange(s.stanceValue, 'stanceValue', -1, 1);
+        assertFiniteRange(s.stanceConfidence, 'stanceConfidence', 0, 1);
+        assertStanceLabel(s.stanceLabel);
+        if (s.stanceEvidence !== undefined && typeof s.stanceEvidence !== 'string') {
+          throw new ValidationError('stanceEvidence must be a string when provided');
+        }
       }
       const observedAt = new Date().toISOString();
       farmResults.push({
@@ -481,6 +490,10 @@ async function handleScoreClaim(
           publishedAt: s.publishedAt,
           credibility: s.credibility,
           evidenceScore: s.evidenceScore,
+          stanceValue: s.stanceValue,
+          stanceLabel: s.stanceLabel,
+          stanceConfidence: s.stanceConfidence,
+          stanceEvidence: s.stanceEvidence,
         })),
       });
       nodes.push({
@@ -524,25 +537,42 @@ async function handleScoreClaim(
     }
 
     const normalized = normalize(merged.sources, 'general');
-    const consensus = new ConsensusEngine({ sources: merged, claim: input.claim }).buildConsensusResult(input.claim);
+    const consensusEngine = new ConsensusEngine({ sources: merged, claim: input.claim });
+    const stanceMode = consensusEngine.stanceMode();
+    const consensus = consensusEngine.buildConsensusResult(input.claim);
     const base = runDeltaEngine(consensus.bundle);
     const breakdown = new ScoreBreakdown(consensus.components, SCORE_PROFILES.general);
+    const stanceProjection = stanceToMeasurementSources(
+      merged.sources.map((source) => ({
+        id: source.url,
+        label: source.title,
+        ts: source.publishedAt,
+        status: 'on',
+        stanceValue: source.stanceValue,
+        stanceLabel: source.stanceLabel,
+        stanceConfidence: source.stanceConfidence,
+        stanceEvidence: source.stanceEvidence,
+      }))
+    );
     const measurementResults = defaultRegistry().runAll({
       claim: input.claim,
-      sources: normalized.sources.map((source, index): MeasurementSource => ({
-        id: `${source.name}-${index}`,
-        kind: typeof source.value === 'number' ? 'numeric' : 'categorical',
-        value: typeof source.value === 'number' ? source.value : undefined,
-        assertion: typeof source.value === 'string' ? source.value : undefined,
-        label: source.name,
-        ts: toIsoTimestamp(source.timestamp, merged.fetchedAt),
-        attributes: {
-          unit: source.unit,
-          credibility: source.credibility,
-          normalizer: source.normalizer,
-        },
-        status: 'on',
-      })),
+      sources:
+        stanceMode.evidenceAxis === 'stance'
+          ? [...stanceProjection.numeric, ...stanceProjection.categorical]
+          : normalized.sources.map((source, index): MeasurementSource => ({
+              id: `${source.name}-${index}`,
+              kind: typeof source.value === 'number' ? 'numeric' : 'categorical',
+              value: typeof source.value === 'number' ? source.value : undefined,
+              assertion: typeof source.value === 'string' ? source.value : undefined,
+              label: source.name,
+              ts: toIsoTimestamp(source.timestamp, merged.fetchedAt),
+              attributes: {
+                unit: source.unit,
+                credibility: source.credibility,
+                normalizer: source.normalizer,
+              },
+              status: 'on',
+            })),
       context: {
         components: consensus.components,
       },
@@ -557,9 +587,24 @@ async function handleScoreClaim(
       measurements,
       nodes,
     });
+    const receiptPayload =
+      stanceMode.evidenceAxis === 'stance'
+        ? {
+            ...masterReceipt,
+            stanceMode,
+            stanceSummary: {
+              support: stanceProjection.categorical.filter(
+                (source) => source.assertion === 'supports'
+              ).length,
+              oppose: stanceProjection.categorical.filter(
+                (source) => source.assertion === 'opposes'
+              ).length,
+            },
+          }
+        : masterReceipt;
 
     const networkReceipt = signReceipt(
-      wrapMasterReceipt(masterReceipt, {
+      wrapMasterReceipt(receiptPayload, {
         claim: { id: registration.id, text: input.claim },
         source: 'uvrn-mcp',
         action: 'delta_score_claim',
@@ -636,6 +681,19 @@ function assertFiniteRange(value: unknown, field: string, min: number, max: numb
   }
 }
 
+function assertStanceLabel(value: unknown): void {
+  if (
+    value !== undefined &&
+    !['supports', 'opposes', 'mixed', 'neutral', 'insufficient'].includes(
+      value as string
+    )
+  ) {
+    throw new ValidationError(
+      'stanceLabel must be one of supports, opposes, mixed, neutral, or insufficient'
+    );
+  }
+}
+
 function claimRegistrationFromInput(input: ScoreClaimInput): ClaimRegistration {
   // When no explicit claimId is supplied, derive a human-readable slug and append a
   // deterministic short hash of the original claim so distinct claims that slug to the
@@ -661,7 +719,10 @@ function claimRegistrationFromInput(input: ScoreClaimInput): ClaimRegistration {
   };
 }
 
-function mergeFarmResults(registration: ClaimRegistration, results: FarmResult[]): FarmResult {
+function mergeFarmResults(
+  registration: ClaimRegistration,
+  results: ConsensusFarmResult[]
+): ConsensusFarmResult {
   const sources = results.flatMap((result) => result.sources);
   return {
     claimId: registration.id,
@@ -676,7 +737,7 @@ function mergeFarmResults(registration: ClaimRegistration, results: FarmResult[]
  * It is intentionally local to MCP and is not a provider-specific service default.
  */
 class DefaultMockConnector implements FarmConnector {
-  async fetch(claim: ClaimRegistration): Promise<FarmResult> {
+  async fetch(claim: ClaimRegistration): Promise<ConsensusFarmResult> {
     const now = new Date('2026-06-05T00:00:00.000Z').toISOString();
     return {
       claimId: claim.id,

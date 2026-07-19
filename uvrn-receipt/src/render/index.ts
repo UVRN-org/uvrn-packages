@@ -16,7 +16,9 @@ import {
   framingFor,
   SCORE_PLAIN_MEANING,
   SOURCE_STATUS_NOTES,
+  TIER_0_VERDICT_MAP,
   verdictHuman,
+  type VerdictDescriptor,
 } from '../vocabulary';
 
 interface MeasurementLike {
@@ -66,10 +68,16 @@ export function toHumanView(receipt: NetworkReceipt, options: HumanViewOptions =
     verdictHuman(measurements.length > 0 ? 'insufficient-data' : receipt.kind);
 
   const responding = sources.filter((s) => s.status === 'on').length;
-  const headline =
+  const stanceSummary = readStanceSummary(receipt);
+  const descriptor = readDescriptor(receipt, primary.verdict);
+  const baseHeadline =
+    stanceSummary !== undefined
+      ? `${stanceSummary.support} support / ${stanceSummary.oppose} oppose — ${primary.label.toLowerCase()}`
+      :
     sources.length > 0
       ? `${responding} of ${sources.length} sources weighed in — ${primary.label.toLowerCase()}`
       : receipt.narrative ?? primary.label;
+  const headline = descriptor ? `${baseHeadline} · ${descriptor.term}` : baseHeadline;
 
   const gaps = sources
     .filter((s) => s.status !== 'on')
@@ -87,6 +95,8 @@ export function toHumanView(receipt: NetworkReceipt, options: HumanViewOptions =
     sources,
     measurements,
     gaps,
+    ...(stanceSummary !== undefined ? { stanceSummary } : {}),
+    ...(descriptor !== undefined ? { verdictDescriptor: descriptor } : {}),
     provenance: {
       hash: receipt.receiptHash,
       signed: receipt.signature !== undefined,
@@ -96,6 +106,46 @@ export function toHumanView(receipt: NetworkReceipt, options: HumanViewOptions =
     },
     howToVerify: howToVerify(receipt),
   };
+}
+
+function readStanceSummary(
+  receipt: NetworkReceipt
+): { support: number; oppose: number } | undefined {
+  const payload = receipt.payload as {
+    stanceMode?: { evidenceAxis?: unknown };
+    stanceSummary?: { support?: unknown; oppose?: unknown };
+  };
+  if (
+    payload.stanceMode?.evidenceAxis !== 'stance' ||
+    typeof payload.stanceSummary?.support !== 'number' ||
+    typeof payload.stanceSummary?.oppose !== 'number'
+  ) {
+    return undefined;
+  }
+  return {
+    support: payload.stanceSummary.support,
+    oppose: payload.stanceSummary.oppose,
+  };
+}
+
+function readDescriptor(
+  receipt: NetworkReceipt,
+  primaryMeasurementVerdict: string
+): VerdictDescriptor | undefined {
+  const raw = (receipt.payload as { verdictDescriptor?: unknown }).verdictDescriptor;
+  if (typeof raw !== 'object' || raw === null) return undefined;
+  const descriptor = raw as Partial<VerdictDescriptor>;
+  const expectedParent = TIER_0_VERDICT_MAP.find(
+    (entry) => entry.measurement === primaryMeasurementVerdict
+  )?.dash;
+  if (
+    typeof descriptor.term !== 'string' ||
+    typeof descriptor.definition !== 'string' ||
+    descriptor.parent !== expectedParent
+  ) {
+    return undefined;
+  }
+  return descriptor as VerdictDescriptor;
 }
 
 function scoreCard(options: HumanViewOptions): HumanScoreCard {

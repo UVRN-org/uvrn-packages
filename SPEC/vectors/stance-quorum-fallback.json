@@ -1,0 +1,189 @@
+{
+  "id": "stance-quorum-fallback",
+  "spec": "uvrn-stance-v1",
+  "status": "executable-green-bp-02",
+  "claim": "Grid storage deployment will grow in 2026",
+  "description": "Four sources are present but only two are grounded, so stance quorum is missed. The prominence path runs and provenance records the grounded-quorum miss.",
+  "input": {
+    "farmResult": {
+      "claimId": "claim-grid-storage-2026",
+      "fetchedAt": "2026-07-18T12:00:00.000Z",
+      "durationMs": 42,
+      "sources": [
+        {
+          "url": "https://example.test/alpha",
+          "title": "Alpha outlook",
+          "snippet": "Grid storage outlook.",
+          "publishedAt": "2026-07-18T10:00:00.000Z",
+          "credibility": 0.9,
+          "evidenceScore": 82,
+          "stanceValue": 0.9,
+          "stanceLabel": "supports",
+          "stanceConfidence": 0.91,
+          "stanceEvidence": "Grounded support from Alpha."
+        },
+        {
+          "url": "https://example.test/beta",
+          "title": "Beta outlook",
+          "snippet": "Grid storage outlook.",
+          "publishedAt": "2026-07-16T10:00:00.000Z",
+          "credibility": 0.8,
+          "evidenceScore": 79,
+          "stanceValue": -0.7,
+          "stanceLabel": "opposes",
+          "stanceConfidence": 0.88,
+          "stanceEvidence": "Grounded opposition from Beta."
+        },
+        {
+          "url": "https://example.test/gamma",
+          "title": "Gamma outlook",
+          "snippet": "Grid storage outlook.",
+          "publishedAt": "2026-07-14T10:00:00.000Z",
+          "credibility": 0.85,
+          "evidenceScore": 75,
+          "stanceValue": 0.2,
+          "stanceLabel": "insufficient",
+          "stanceConfidence": 0.4,
+          "stanceEvidence": ""
+        },
+        {
+          "url": "https://example.test/delta",
+          "title": "Delta outlook",
+          "snippet": "Grid storage outlook.",
+          "publishedAt": "2026-07-12T10:00:00.000Z",
+          "credibility": 0.75,
+          "evidenceScore": 80,
+          "stanceLabel": "supports",
+          "stanceConfidence": 0.5,
+          "stanceEvidence": "Low-confidence support without quorum weight."
+        }
+      ]
+    }
+  },
+  "expected": {
+    "stanceMode": {
+      "evidenceAxis": "prominence",
+      "sourceCount": 4,
+      "groundedCount": 2,
+      "requiredSources": 4,
+      "requiredGrounded": 3,
+      "confidenceFloor": 0.6,
+      "quorumMet": false,
+      "fallbackReason": "grounded-quorum-missed"
+    },
+    "note": "Stance fields are ignored for the agreement axis. Expected legacy artifacts below were produced by unmodified ConsensusEngine + runDeltaEngine.",
+    "consensusResult": {
+      "bundle": {
+        "bundleId": "consensus-e255dc2d",
+        "claim": "Grid storage deployment will grow in 2026",
+        "dataSpecs": [
+          {
+            "id": "source-1-5928a1b4",
+            "label": "Alpha outlook",
+            "sourceKind": "metric",
+            "originDocIds": [
+              "https://example.test/alpha"
+            ],
+            "metrics": [
+              {
+                "key": "consensus_value",
+                "value": 82,
+                "ts": "2026-07-18T10:00:00.000Z"
+              }
+            ]
+          },
+          {
+            "id": "source-2-1364c2da",
+            "label": "Beta outlook",
+            "sourceKind": "metric",
+            "originDocIds": [
+              "https://example.test/beta"
+            ],
+            "metrics": [
+              {
+                "key": "consensus_value",
+                "value": 79,
+                "ts": "2026-07-16T10:00:00.000Z"
+              }
+            ]
+          },
+          {
+            "id": "source-3-597823fd",
+            "label": "Gamma outlook",
+            "sourceKind": "metric",
+            "originDocIds": [
+              "https://example.test/gamma"
+            ],
+            "metrics": [
+              {
+                "key": "consensus_value",
+                "value": 75,
+                "ts": "2026-07-14T10:00:00.000Z"
+              }
+            ]
+          },
+          {
+            "id": "source-4-594fac0e",
+            "label": "Delta outlook",
+            "sourceKind": "metric",
+            "originDocIds": [
+              "https://example.test/delta"
+            ],
+            "metrics": [
+              {
+                "key": "consensus_value",
+                "value": 80,
+                "ts": "2026-07-12T10:00:00.000Z"
+              }
+            ]
+          }
+        ],
+        "thresholdPct": 0.1,
+        "maxRounds": 5
+      },
+      "components": {
+        "completeness": 100,
+        "parity": 25,
+        "freshness": 89.72222222222221
+      },
+      "stats": {
+        "sourceCount": 4,
+        "agreementScore": 25,
+        "coverageScore": 100,
+        "recencyScore": 89.72222222222221,
+        "weightedConsensusScore": 89.91666666666667,
+        "summary": "Consensus derived from 4 usable sources with agreement 25.0, coverage 100.0, recency 89.7, and weighted consensus 89.9."
+      }
+    },
+    "deltaReceipt": {
+      "bundleId": "consensus-e255dc2d",
+      "deltaFinal": 0.08917197,
+      "sources": [
+        "Alpha outlook",
+        "Beta outlook",
+        "Gamma outlook",
+        "Delta outlook"
+      ],
+      "rounds": [
+        {
+          "round": 1,
+          "deltasByMetric": {
+            "consensus_value": 0.08917197
+          },
+          "withinThreshold": true,
+          "witnessRequired": false
+        }
+      ],
+      "suggestedFixes": [],
+      "outcome": "consensus",
+      "ts": "2026-07-18T12:00:00.000Z",
+      "hash": "f7e9b0ece5c1bfff531c281cc5ff88c6a95cc907b0e0e903f42f66a29a49ac6d"
+    },
+    "vocabulary": {
+      "primaryMeasurementVerdict": null,
+      "engineOutcome": "consensus",
+      "dashHuman": null,
+      "note": "No stance-axis measurement ran; presentation must not invent a stance human verdict from engine outcome alone."
+    }
+  }
+}

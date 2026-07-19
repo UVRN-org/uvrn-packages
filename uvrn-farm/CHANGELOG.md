@@ -1,5 +1,10 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- Optional first-class `stanceValue`, `stanceLabel`, `stanceConfidence`, and `stanceEvidence` fields on the exported farm source shape (D1, ADR-011). Existing connector results remain source-compatible when the fields are absent.
+
 ## [4.0.0] - 2026-06-10 (unreleased)
 
 ### Added

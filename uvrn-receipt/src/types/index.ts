@@ -194,6 +194,17 @@ export interface HumanView {
   sources: HumanSource[];
   measurements: HumanMeasurement[];
   gaps: HumanGap[];
+  /** Present only when the payload records a stance-axis run. */
+  stanceSummary?: {
+    support: number;
+    oppose: number;
+  };
+  /** Tier-1 detail shown alongside, never instead of, the Tier-0 verdict. */
+  verdictDescriptor?: {
+    term: string;
+    parent: 'align' | 'split' | 'contradict' | 'early' | 'insufficient';
+    definition: string;
+  };
   provenance: HumanProvenance;
   howToVerify: string;
 }

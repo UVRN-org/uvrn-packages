@@ -58,7 +58,7 @@ LOG_LEVEL=debug
 
 **Example:**
 ```bash
-STORAGE_PATH=/var/data/delta-engine/receipts
+STORAGE_PATH=./data/receipts
 ```
 
 **Usage:**
@@ -313,7 +313,3 @@ LOG_LEVEL=debug
 - [README.md](./README.md) - Package overview
 - [CONNECT.md](./CONNECT.md) - Connect any MCP client
 - [.env.example](./.env.example) - Example configuration
-
----
-
-**Loosechain** - _Receipts are truth. Interfaces are untrusted. Verification comes first._

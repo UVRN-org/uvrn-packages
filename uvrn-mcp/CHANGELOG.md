@@ -1,5 +1,18 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+- **D1 — bundle the `@uvrn/*` runtime for zero-config npx use.** The published entry now uses
+  esbuild to embed workspace runtime packages while retaining them as optional peers for
+  source-level type compatibility. The MCP SDK remains a normal dependency. This keeps the
+  peer-hygiene rule without depending on npm's peer auto-install behavior.
+- Added clean-tarball CI that installs only `@uvrn/mcp`, asserts the exact nine-tool handshake,
+  proves the smoke turns red for an incorrect count, and verifies a fixture-generated signed
+  NetworkReceipt against the canonical `@uvrn/receipt` implementation (ADR-006).
+- Added connector-profile linting and a published-artifact purity gate. No package was published;
+  release remains Admin-run at program close (D3).
+
 ## [4.0.1] - 2026-06-13
 
 ### Fixed

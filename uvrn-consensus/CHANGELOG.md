@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- Additive dual-axis consensus seam and `stanceMode()` provenance (D1/D6, ADR-011). Grounded stance drives bundle delta metrics only when quorum is met; prominence remains the weighting, parity, and completeness input.
+- `ConsensusStats.evidenceAxis: 'stance'` on activated runs. Fallback and absent-stance results omit the field so legacy serialized output remains byte-identical (D2 hard wall 4).
+- Consensus CI locks `stance-opposing-conflict` (vector c) axis activation + stanceValue metrics alongside quorum-met / fallback / frozen (D6, ADR-011).
+
 ## [4.0.0] - 2026-06-10 (unreleased, v4 / fable-refactor-1)
 
 ### Added

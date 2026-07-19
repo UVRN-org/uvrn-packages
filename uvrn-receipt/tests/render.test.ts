@@ -58,6 +58,41 @@ describe('toHumanView', () => {
     expect(view.verdictLabel).toBe('Sources contradict');
   });
 
+  it('renders stance counts and a Tier-1 descriptor alongside Tier-0', () => {
+    const stanceMaster = {
+      ...master,
+      stanceMode: {
+        evidenceAxis: 'stance',
+        sourceCount: 4,
+        groundedCount: 4,
+        requiredSources: 4,
+        requiredGrounded: 3,
+        confidenceFloor: 0.6,
+        quorumMet: true,
+      },
+      stanceSummary: { support: 3, oppose: 1 },
+      verdictDescriptor: {
+        term: 'broad-institutional-support',
+        parent: 'align' as const,
+        definition: 'Support appears across several institution types.',
+      },
+    };
+    const view = toHumanView(
+      wrapMasterReceipt(stanceMaster, {
+        claim: master.claim,
+        source: 'uvrn-sdk',
+        action: 'master.measured',
+      })
+    );
+
+    expect(view.headline).toBe(
+      '3 support / 1 oppose — sources align · broad-institutional-support'
+    );
+    expect(view.stanceSummary).toEqual({ support: 3, oppose: 1 });
+    expect(view.verdictLabel).toBe('Sources align');
+    expect(view.verdictDescriptor).toEqual(stanceMaster.verdictDescriptor);
+  });
+
   it('renders a delta receipt with source labels and signature provenance', () => {
     const delta = makeDeltaReceipt();
     const view = toHumanView(

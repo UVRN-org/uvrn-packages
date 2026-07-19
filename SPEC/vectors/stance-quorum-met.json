@@ -1,7 +1,7 @@
 {
   "id": "stance-quorum-met",
   "spec": "uvrn-stance-v1",
-  "status": "authored-red-until-bp-02",
+  "status": "executable-green-bp-02",
   "claim": "Grid storage deployment will grow in 2026",
   "description": "Four grounded supporting stances meet quorum; agree/disagree use stanceValue; conflict finds no opposing categorical assertions.",
   "input": {

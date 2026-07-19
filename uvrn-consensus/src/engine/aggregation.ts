@@ -1,12 +1,18 @@
 import type { DataSpec } from '@uvrn/core';
-import type { FarmResult, FarmSource } from '@uvrn/agent';
 
-import type { DedupConfig, RankedSource, SourceWeights } from '../types';
+import type {
+  DedupConfig,
+  FarmResult,
+  FarmSource,
+  RankedSource,
+  SourceWeights,
+} from '../types';
 import {
   calculateRecencyScore,
   calculateWeightedScore,
   normalizeCredibilityScore,
 } from './weighting';
+import { isGroundedStanceSource } from './stance';
 
 interface ParsedMetricSource {
   source: FarmSource;
@@ -54,7 +60,7 @@ function inferUnit(text: string): string | undefined {
   return undefined;
 }
 
-function extractMetricValue(source: FarmSource): number | null {
+function extractProminenceValue(source: FarmSource): number | null {
   // Prefer an explicit host-supplied evidence score. This avoids the title/snippet
   // first-number trap where a number in the title (a year, "Top 10") would win.
   if (typeof source.evidenceScore === 'number' && Number.isFinite(source.evidenceScore)) {
@@ -70,6 +76,19 @@ function extractMetricValue(source: FarmSource): number | null {
 
   const parsed = Number.parseFloat(match[0]);
   return Number.isFinite(parsed) ? parsed : null;
+}
+
+function extractStanceValue(source: FarmSource): number | null {
+  if (
+    isGroundedStanceSource(source) &&
+    typeof source.stanceValue === 'number' &&
+    Number.isFinite(source.stanceValue) &&
+    source.stanceValue >= -1 &&
+    source.stanceValue <= 1
+  ) {
+    return source.stanceValue;
+  }
+  return null;
 }
 
 function stableHash(input: string): string {
@@ -140,12 +159,19 @@ function areNearIdentical(
 export function extractRankedSources(
   farmResult: FarmResult,
   weights: SourceWeights,
-  dedup?: DedupConfig
+  dedup?: DedupConfig,
+  evidenceAxis: 'stance' | 'prominence' = 'prominence'
 ): RankedSource[] {
   const fetchedAtMs = parseIsoDate(farmResult.fetchedAt, Date.now());
   const usable: ParsedMetricSource[] = [];
+  const prominenceUsableCount = farmResult.sources.filter(
+    (source) => extractProminenceValue(source) != null
+  ).length;
   for (const source of farmResult.sources) {
-    const metricValue = extractMetricValue(source);
+    const metricValue =
+      evidenceAxis === 'stance'
+        ? extractStanceValue(source)
+        : extractProminenceValue(source);
     if (metricValue == null) {
       continue;
     }
@@ -157,7 +183,10 @@ export function extractRankedSources(
     usable.push({
       source,
       metricValue,
-      unit: inferUnit(`${source.title} ${source.snippet}`),
+      unit:
+        evidenceAxis === 'stance'
+          ? undefined
+          : inferUnit(`${source.title} ${source.snippet}`),
       publishedAtMs,
       publishedAt: new Date(publishedAtMs).toISOString(),
       credibilityScore,
@@ -167,9 +196,11 @@ export function extractRankedSources(
     });
   }
 
+  // Coverage remains evidence-quality provenance; stance only replaces the
+  // agreement/delta metric (uvrn-stance-v1 §1 dual-axis rule).
   const coverageScore = farmResult.sources.length === 0
     ? 0
-    : (usable.length / farmResult.sources.length) * 100;
+    : (prominenceUsableCount / farmResult.sources.length) * 100;
 
   const ranked = usable
     .map((parsed) => {

@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+### Added
+- Optional validated stance fields on `delta_score_claim` host sources (D1, ADR-011).
+- Quorum-qualified runs use stance projections for measurements and carry `stanceMode` plus support/oppose summary inside the signed receipt payload. Omitted fields retain the legacy prominence path.
+- Prominence-fallback score-claim runs also attach additive `stanceMode` on the NetworkReceipt host envelope (SPEC §3 / ADR-011); `masterReceipt` and frozen delta bytes stay untouched (D2 hard wall 4).
+
 ### Changed
 - **D1 — bundle the `@uvrn/*` runtime for zero-config npx use.** The published entry now uses
   esbuild to embed workspace runtime packages while retaining them as optional peers for

@@ -1,7 +1,7 @@
 {
   "id": "stance-quorum-fallback",
   "spec": "uvrn-stance-v1",
-  "status": "authored-red-until-bp-02",
+  "status": "executable-green-bp-02",
   "claim": "Grid storage deployment will grow in 2026",
   "description": "Four sources are present but only two are grounded, so stance quorum is missed. The prominence path runs and provenance records the grounded-quorum miss.",
   "input": {

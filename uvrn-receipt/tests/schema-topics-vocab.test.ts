@@ -8,7 +8,9 @@ import {
   formatTopic,
   SCORE_PLAIN_MEANING,
   STARTER_DOMAINS,
+  TIER_0_VERDICT_MAP,
   validateNetworkReceipt,
+  validateDescriptor,
   VERDICT_VOCABULARY,
   verdictHuman,
   WHY_DIVERGENCE_WINS,
@@ -94,6 +96,41 @@ describe('vocabulary (Layer D)', () => {
     expect(verdictHuman('insufficient-data').tone).toBe('insufficient');
     expect(verdictHuman('disagree').label).toBe('Sources split — gap detected');
     expect(Object.keys(VERDICT_VOCABULARY)).toHaveLength(5);
+    expect(TIER_0_VERDICT_MAP).toEqual([
+      { measurement: 'agree', outcome: 'consensus', dash: 'align' },
+      { measurement: 'disagree', outcome: 'indeterminate', dash: 'split' },
+      { measurement: 'conflict', outcome: 'indeterminate', dash: 'contradict' },
+      { measurement: 'potential', outcome: 'indeterminate', dash: 'early' },
+      { measurement: 'insufficient-data', outcome: 'indeterminate', dash: 'insufficient' },
+    ]);
+  });
+
+  it('validates Tier-1 descriptors, uniqueness, and overstatement rules', () => {
+    const descriptor = {
+      term: 'regional-polarization',
+      parent: 'split' as const,
+      definition: 'Sources separate into regional positions.',
+    };
+    expect(validateDescriptor(descriptor)).toEqual({ valid: true, errors: [] });
+    expect(validateDescriptor(descriptor, [descriptor]).errors).toContain(
+      'term must be unique in the registry'
+    );
+    expect(
+      validateDescriptor({
+        term: 'settled-momentum',
+        parent: 'early',
+        definition: 'Confirmed settled consensus is present.',
+      }).errors
+    ).toContain('an early descriptor must not claim settled consensus');
+    expect(
+      validateDescriptor({
+        term: 'hidden-answer',
+        parent: 'insufficient',
+        definition: 'The sources disagree.',
+      }).errors
+    ).toContain(
+      'an insufficient descriptor must not claim agreement or disagreement'
+    );
   });
 
   it('maps legacy v3 non-firing verdicts without throwing', () => {

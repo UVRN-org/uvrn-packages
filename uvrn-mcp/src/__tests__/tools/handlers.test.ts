@@ -406,6 +406,89 @@ describe('delta_score_claim', () => {
     expect(result.masterReceipt.masterHash).toBeDefined();
   });
 
+  it('runs the stance axis and carries stance provenance inside the receipt payload', async () => {
+    vi.doUnmock('@uvrn/core');
+    vi.resetModules();
+    const { handleScoreClaim } = await loadHandlers();
+    const sources = [
+      { url: 'https://example.com/a', title: 'A', snippet: 'Evidence A', evidenceScore: 80, stanceValue: 0.9, stanceLabel: 'supports' as const, stanceConfidence: 0.9, stanceEvidence: 'A supports the claim.' },
+      { url: 'https://example.com/b', title: 'B', snippet: 'Evidence B', evidenceScore: 70, stanceValue: -0.8, stanceLabel: 'opposes' as const, stanceConfidence: 0.9, stanceEvidence: 'B opposes the claim.' },
+      { url: 'https://example.com/c', title: 'C', snippet: 'Evidence C', evidenceScore: 60, stanceValue: 0.7, stanceLabel: 'supports' as const, stanceConfidence: 0.8, stanceEvidence: 'C supports the claim.' },
+      { url: 'https://example.com/d', title: 'D', snippet: 'Evidence D', evidenceScore: 50, stanceValue: 0.6, stanceLabel: 'supports' as const, stanceConfidence: 0.8, stanceEvidence: 'D supports the claim.' },
+    ];
+
+    const result = await handleScoreClaim({
+      claim: 'Explicit stance claim',
+      sources,
+    });
+    const payload = result.networkReceipt.payload as {
+      stanceMode?: { evidenceAxis?: string; quorumMet?: boolean };
+      stanceSummary?: { support: number; oppose: number };
+    };
+
+    expect(payload.stanceMode).toMatchObject({
+      evidenceAxis: 'stance',
+      quorumMet: true,
+    });
+    expect(payload.stanceSummary).toEqual({ support: 3, oppose: 1 });
+    expect(result.humanView.headline).toContain('3 support / 1 oppose');
+    expect(result.humanView.stanceSummary).toEqual({ support: 3, oppose: 1 });
+  });
+
+  it('attaches stanceMode on prominence fallback without mutating masterReceipt', async () => {
+    vi.doUnmock('@uvrn/core');
+    vi.resetModules();
+    const { handleScoreClaim } = await loadHandlers();
+    // Below source quorum (2 < 4) → prominence fallback with host provenance (SPEC §3).
+    const result = await handleScoreClaim({
+      claim: 'Prominence fallback still records stanceMode',
+      sources: [
+        {
+          url: 'https://example.com/a',
+          title: 'A',
+          snippet: 'Evidence A',
+          evidenceScore: 80,
+          stanceValue: 0.9,
+          stanceLabel: 'supports' as const,
+          stanceConfidence: 0.9,
+          stanceEvidence: 'A supports the claim.',
+        },
+        {
+          url: 'https://example.com/b',
+          title: 'B',
+          snippet: 'Evidence B',
+          evidenceScore: 70,
+          stanceValue: -0.8,
+          stanceLabel: 'opposes' as const,
+          stanceConfidence: 0.9,
+          stanceEvidence: 'B opposes the claim.',
+        },
+      ],
+    });
+    const payload = result.networkReceipt.payload as {
+      stanceMode?: {
+        evidenceAxis?: string;
+        quorumMet?: boolean;
+        fallbackReason?: string;
+        sourceCount?: number;
+        groundedCount?: number;
+      };
+      stanceSummary?: { support: number; oppose: number };
+    };
+
+    expect(payload.stanceMode).toMatchObject({
+      evidenceAxis: 'prominence',
+      quorumMet: false,
+      fallbackReason: 'source-quorum-missed',
+      sourceCount: 2,
+      groundedCount: 2,
+    });
+    expect(payload.stanceSummary).toBeUndefined();
+    expect(
+      (result.masterReceipt as { stanceMode?: unknown }).stanceMode
+    ).toBeUndefined();
+  });
+
   it('should score host sources by evidenceScore even when titles contain numbers', async () => {
     vi.doUnmock('@uvrn/core');
     vi.resetModules();
@@ -532,6 +615,26 @@ describe('delta_score_claim', () => {
         sources: [{ url: 'https://example.com/a', title: 'A', snippet: 'demand', evidenceScore: 80, credibility: 2 }, base],
       })
     ).rejects.toThrow('credibility must be a finite number between 0 and 1');
+
+    await expect(
+      handleScoreClaim({
+        claim: 'stance out of range',
+        sources: [
+          { url: 'https://example.com/a', title: 'A', snippet: 'demand', evidenceScore: 80, stanceValue: 2 },
+          base,
+        ],
+      })
+    ).rejects.toThrow('stanceValue must be a finite number between -1 and 1');
+
+    await expect(
+      handleScoreClaim({
+        claim: 'stance label invalid',
+        sources: [
+          { ...base, url: 'https://example.com/a', stanceLabel: 'maybe' as never },
+          base,
+        ],
+      })
+    ).rejects.toThrow('stanceLabel must be one of');
   });
 
   it('derives a collision-resistant claimId from claim text when none is supplied', async () => {

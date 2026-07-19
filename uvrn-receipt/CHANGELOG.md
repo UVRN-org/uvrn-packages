@@ -1,5 +1,11 @@
 # @uvrn/receipt — Changelog
 
+## [Unreleased]
+
+- Add `canonicalClaimId()` and its locked Unicode-aware normalizers for the D9 cross-run identity,
+  exported from the package root and `@uvrn/receipt/identity`. The helper uses the shared
+  canonicalizer (ADR-006) and changes no frozen hash field list (ADR-010).
+
 ## [4.1.0] - 2026-07-18 (unreleased)
 
 - `canonicalize()` now delegates to the environment-pure

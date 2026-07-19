@@ -19,6 +19,7 @@ is proven against the golden vectors in `SPEC/vectors/`.
 | `schema/` | `NETWORK_RECEIPT_SCHEMA` (JSON Schema) + dep-free `validateNetworkReceipt()` |
 | `sign/` | `generateReceiptKeyPair()`, `signReceipt()`, `verifySignature()`, `verifyReceiptFull()`, `computeNetworkReceiptHash()` |
 | `topics/` | starter taxonomy (`markets`, `products`, `news`, `research`, `claims` + open `custom/*`), `normalizeTopic()` — normalizes, never rejects |
+| `identity/` | `canonicalClaimId()`, `normalizeClaimText()`, `normalizeClaimDomain()` — additive cross-run identity per D9 (also importable as `@uvrn/receipt/identity`) |
 | `vocabulary/` | the Layer D human language: verdict map, framing profiles, `WHY_DIVERGENCE_WINS`, score plain-meanings, `buildMasterNarrative()` (also `@uvrn/receipt/vocabulary`) |
 | `envelope/` | `wrapDeltaReceipt()`, `wrapMasterReceipt()`, `claimIdFromText()` |
 | `render/` | `toHumanView()` — structured, UI-agnostic human representation |

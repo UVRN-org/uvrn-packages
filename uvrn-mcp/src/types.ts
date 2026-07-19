@@ -174,6 +174,10 @@ export interface HostSource {
   publishedAt?: string;
   credibility?: number; // 0–1 source reliability
   evidenceScore?: number; // 0–100 host-derived trend-support score
+  stanceValue?: number; // finite -1..1 explicit claim position
+  stanceLabel?: 'supports' | 'opposes' | 'mixed' | 'neutral' | 'insufficient';
+  stanceConfidence?: number; // finite 0..1
+  stanceEvidence?: string;
 }
 
 /**

@@ -15,6 +15,12 @@ export { agreeMeasurement } from './measurements/agree';
 export { disagreeMeasurement } from './measurements/disagree';
 export { conflictMeasurement } from './measurements/conflict';
 export { potentialMeasurement } from './measurements/potential';
+export { stanceToMeasurementSources } from './stance';
+export type {
+  StanceLabel,
+  StanceMeasurementProjection,
+  StanceSource,
+} from './stance';
 export { MeasurementRegistry, defaultRegistry } from './registry';
 export type {
   AgreeVerdict,

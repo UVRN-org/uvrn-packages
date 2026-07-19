@@ -1,7 +1,7 @@
 {
   "id": "stance-opposing-conflict",
   "spec": "uvrn-stance-v1",
-  "status": "authored-red-until-bp-02",
+  "status": "executable-green-bp-02",
   "claim": "Grid storage deployment will grow in 2026",
   "description": "Quorum is met with opposing grounded supports/opposes labels. Locked §3.3 categorical exclusion fires conflict; numeric spread independently yields disagree.",
   "input": {

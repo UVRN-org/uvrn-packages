@@ -1,5 +1,10 @@
 # @uvrn/receipt — Changelog
 
+## [Unreleased]
+
+- Export the closed D8 Tier-0 cross-layer verdict map and stateless Tier-1 `validateDescriptor()` registration validator (ADR-011).
+- `toHumanView()` renders stance-axis support/oppose counts and valid-parent Tier-1 descriptors alongside the unchanged Tier-0 verdict. No declared hash field list or canonicalizer changed (ADR-006/ADR-010).
+
 ## [4.1.0] - 2026-07-18 (unreleased)
 
 - `canonicalize()` now delegates to the environment-pure

@@ -1,5 +1,42 @@
-export type { FarmResult, FarmSource } from '@uvrn/agent';
+import type {
+  FarmResult as AgentFarmResult,
+  FarmSource as AgentFarmSource,
+} from '@uvrn/agent';
+
 export type { DeltaBundle, DataSpec, MetricPoint } from '@uvrn/core';
+
+export type StanceLabel =
+  | 'supports'
+  | 'opposes'
+  | 'mixed'
+  | 'neutral'
+  | 'insufficient';
+
+export interface FarmSource extends AgentFarmSource {
+  stanceValue?: number;
+  stanceLabel?: StanceLabel;
+  stanceConfidence?: number;
+  stanceEvidence?: string;
+}
+
+export interface FarmResult extends Omit<AgentFarmResult, 'sources'> {
+  sources: FarmSource[];
+}
+
+export type StanceFallbackReason =
+  | 'source-quorum-missed'
+  | 'grounded-quorum-missed';
+
+export interface StanceMode {
+  evidenceAxis: 'stance' | 'prominence';
+  sourceCount: number;
+  groundedCount: number;
+  requiredSources: 4;
+  requiredGrounded: 3;
+  confidenceFloor: 0.6;
+  quorumMet: boolean;
+  fallbackReason?: StanceFallbackReason;
+}
 
 export interface SourceWeights {
   credibility: number;
@@ -36,7 +73,7 @@ export interface DedupConfig {
 }
 
 export interface ConsensusEngineOptions {
-  sources: import('@uvrn/agent').FarmResult;
+  sources: FarmResult;
   weights?: Partial<SourceWeights>;
   claim?: string;
   /**
@@ -53,6 +90,11 @@ export interface ConsensusStats {
   recencyScore: number;
   weightedConsensusScore: number;
   summary: string;
+  /**
+   * Present only when stance quorum activates. Omitting it on fallback keeps
+   * the frozen prominence result byte-identical (D2 hard wall 4).
+   */
+  evidenceAxis?: 'stance';
 }
 
 /**
@@ -90,7 +132,7 @@ export interface RankedSource {
   metricValue: number;
   publishedAt: string;
   unit?: string;
-  originalSource: import('@uvrn/agent').FarmSource;
+  originalSource: FarmSource;
 }
 
 export class ConsensusError extends Error {

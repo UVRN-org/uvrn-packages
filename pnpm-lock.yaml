@@ -153,10 +153,6 @@ importers:
         version: 5.9.3
 
   uvrn-canon:
-    dependencies:
-      '@suttlemedia/checker':
-        specifier: ^5.0.0
-        version: 5.0.0
     devDependencies:
       '@types/jest':
         specifier: ^29.5.0
@@ -446,10 +442,6 @@ importers:
         version: 5.9.3
 
   uvrn-identity:
-    dependencies:
-      '@suttlemedia/checker':
-        specifier: ^5.0.0
-        version: 5.0.0
     devDependencies:
       '@types/jest':
         specifier: ^29.5.0
@@ -536,9 +528,6 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: ^1.0.0
         version: 1.30.0(zod@4.5.4)
-      '@suttlemedia/arcanum':
-        specifier: ^0.1.0
-        version: 0.1.0(@uvrn/agent@uvrn-agent)(@uvrn/canon@uvrn-canon)(@uvrn/identity@uvrn-identity)(@uvrn/score@uvrn-score)(@uvrn/timeline@5.0.0(@uvrn/canon@uvrn-canon)(@uvrn/core@uvrn-core)(@uvrn/drift@uvrn-drift))(better-sqlite3@11.10.0)
     devDependencies:
       '@types/node':
         specifier: ^20.0.0
@@ -1991,50 +1980,6 @@ packages:
   '@sinonjs/fake-timers@10.3.0':
     resolution: {integrity: sha512-V4BG07kuYSUkTCSBHG8G8TNhM+F19jXFWnQtzj+we8DrkpSBCee9Z3Ms8yiGer/dlmhe35/Xdgyo3/0rQKg7YA==}
 
-  '@suttlemedia/arcanum@0.1.0':
-    resolution: {integrity: sha512-QuZDwXrbEFJn5ZMmdh6TfU2y2fqIX9RUARU6MBzg0K4/xJdmMQPw5qnON3U8qL6SVOmNJcEvzlMrrZUDRqfNag==}
-    engines: {node: '>=23.4.0'}
-
-  '@suttlemedia/checker@5.0.0':
-    resolution: {integrity: sha512-yksoiB92e03Fu4et7JvGeQt8fCTZxe7GNOBNTu5IdiSpoC1m8luAZuF/9eJMBznRkEjhXE5SahYF+674hE9Gvg==}
-
-  '@suttlemedia/store-d1-client@5.0.0':
-    resolution: {integrity: sha512-VQrvBoueJtnQKey3BFN5lALtRBodRikByt2SDqT17Pzy7XSqaJf7xDVIbvAJy+Nv9UdFqAg/U+oFbMrcwdxXVg==}
-    engines: {node: '>=18.0.0'}
-    peerDependencies:
-      '@suttlemedia/track-record': ^5.0.0
-      '@uvrn/agent': ^5.0.0
-      '@uvrn/canon': ^5.0.0
-      '@uvrn/core': ^5.0.0
-      '@uvrn/drift': ^5.0.0
-      '@uvrn/identity': ^5.0.0
-      '@uvrn/receipt': ^5.0.0
-      '@uvrn/timeline': ^5.0.0
-      '@uvrn/watch': ^5.0.0
-    peerDependenciesMeta:
-      '@suttlemedia/track-record':
-        optional: true
-      '@uvrn/agent':
-        optional: true
-      '@uvrn/canon':
-        optional: true
-      '@uvrn/drift':
-        optional: true
-      '@uvrn/identity':
-        optional: true
-      '@uvrn/timeline':
-        optional: true
-      '@uvrn/watch':
-        optional: true
-
-  '@suttlemedia/visual@5.0.0':
-    resolution: {integrity: sha512-YBcApqq2jRHIp9eW1Y0AELUvUHwhvBGbdM88beJbp1HsKqu+PGy1LCUQlXxGjYL2jkfXakdTnvuLAnbAxHj4DQ==}
-    peerDependencies:
-      '@uvrn/receipt': ^5.0.0
-    peerDependenciesMeta:
-      '@uvrn/receipt':
-        optional: true
-
   '@tootallnate/once@2.0.1':
     resolution: {integrity: sha512-HqmEUIGRJ5fSXchkVgR5F7qn48bDBzv0kWj/Kfu5e6uci4UlEeng4331LnBkWffb++Ei3FOVLxo8JJWMFBDMeQ==}
     engines: {node: '>= 10'}
@@ -2170,70 +2115,6 @@ packages:
 
   '@ungap/structured-clone@1.4.0':
     resolution: {integrity: sha512-1mEZtMKPM09vDmQt5y7YvmN2+DFTP7Tg0EWXdic8/C6VRnpb33e4ghisCIE3WZjsE2N8mf+QV1Zqh7ZFYLWInQ==}
-
-  '@uvrn/core@5.0.0':
-    resolution: {integrity: sha512-VG/Z8Grmr64KhViModhW/iiVfpR0TBdkV6R+LBKg9hIKPZhnBDIYVZij/Q1zEaafJ3J20eHmF2VjzNC0FIWfpw==}
-    engines: {node: '>=18.0.0'}
-
-  '@uvrn/drift@5.0.0':
-    resolution: {integrity: sha512-iSeZCEzijY0AbToh/YoG6r+TXqLhHpGrqc89AkSFxHhLMlEDgHqGCHJF0lnqVY+LfgZPmA//hAnFKVmkagDzEw==}
-    engines: {node: '>=18.0.0'}
-    peerDependencies:
-      '@uvrn/core': ^5.0.0
-      '@uvrn/score': ^5.0.0
-
-  '@uvrn/receipt@5.0.0':
-    resolution: {integrity: sha512-tOHW54jzzRllDsUUFPoclIlnjbUJbPK0EfQY94zqcYSEUxStddynZkYAzooahVdws7YN7qJ+sNks4C8kCuUOhQ==}
-    engines: {node: '>=18.0.0'}
-    peerDependencies:
-      '@uvrn/core': ^5.0.0
-
-  '@uvrn/store-sqlite@5.0.1':
-    resolution: {integrity: sha512-/LeOKjWBxaxD/B0TGHnqfMVpMBqgBzfYoM7W9jLZ4Hkr13Wmi+DlfXCzUOq8q2yWAdYkQMvMTN6csx5nHVdOHA==}
-    engines: {node: '>=18.0.0'}
-    peerDependencies:
-      '@suttlemedia/track-record': ^5.0.0
-      '@uvrn/agent': ^5.0.0
-      '@uvrn/canon': ^5.0.0
-      '@uvrn/core': ^5.0.0
-      '@uvrn/drift': ^5.0.0
-      '@uvrn/identity': ^5.0.0
-      '@uvrn/receipt': ^5.0.0
-      '@uvrn/timeline': ^5.0.0
-      '@uvrn/watch': ^5.0.0
-      better-sqlite3: ^11.0.0
-    peerDependenciesMeta:
-      '@suttlemedia/track-record':
-        optional: true
-      '@uvrn/agent':
-        optional: true
-      '@uvrn/canon':
-        optional: true
-      '@uvrn/drift':
-        optional: true
-      '@uvrn/identity':
-        optional: true
-      '@uvrn/timeline':
-        optional: true
-      '@uvrn/watch':
-        optional: true
-      better-sqlite3:
-        optional: true
-
-  '@uvrn/timeline@5.0.0':
-    resolution: {integrity: sha512-L+gE6SFfhd/Lwhgz11PFgDdBTBW4oghaRavDE6xuvGUNCGAkVHCDSHfi1NHEaPchqyL10YGnKZYfo6re+ec54w==}
-    engines: {node: '>=18.0.0'}
-    peerDependencies:
-      '@uvrn/canon': ^5.0.0
-      '@uvrn/core': ^5.0.0
-      '@uvrn/drift': ^5.0.0
-
-  '@uvrn/watch@5.0.0':
-    resolution: {integrity: sha512-5+UMFPHlLd264kBaT99rqQSV42QIymXssmF0Z1mxlRtLRCTx2dWy/McvutioBJvhOvGJh1NhSvkXrQ5z5WCIZQ==}
-    engines: {node: '>=18.0.0'}
-    peerDependencies:
-      '@uvrn/agent': ^5.0.0
-      '@uvrn/drift': ^5.0.0
 
   '@vitest/coverage-v8@1.6.1':
     resolution: {integrity: sha512-6YeRZwuO4oTGKxD3bijok756oktHSIm3eczVVzNe3scqzuhLwltIF3S9ZL/vwOVIpURmU6SnZhziXXAfw8/Qlw==}
@@ -5256,42 +5137,6 @@ snapshots:
     dependencies:
       '@sinonjs/commons': 3.0.1
 
-  '@suttlemedia/arcanum@0.1.0(@uvrn/agent@uvrn-agent)(@uvrn/canon@uvrn-canon)(@uvrn/identity@uvrn-identity)(@uvrn/score@uvrn-score)(@uvrn/timeline@5.0.0(@uvrn/canon@uvrn-canon)(@uvrn/core@uvrn-core)(@uvrn/drift@uvrn-drift))(better-sqlite3@11.10.0)':
-    dependencies:
-      '@suttlemedia/store-d1-client': 5.0.0(@uvrn/agent@uvrn-agent)(@uvrn/canon@uvrn-canon)(@uvrn/core@5.0.0)(@uvrn/drift@5.0.0(@uvrn/core@5.0.0)(@uvrn/score@uvrn-score))(@uvrn/identity@uvrn-identity)(@uvrn/receipt@5.0.0(@uvrn/core@5.0.0))(@uvrn/timeline@5.0.0(@uvrn/canon@uvrn-canon)(@uvrn/core@uvrn-core)(@uvrn/drift@uvrn-drift))(@uvrn/watch@5.0.0(@uvrn/agent@uvrn-agent)(@uvrn/drift@5.0.0(@uvrn/core@5.0.0)(@uvrn/score@uvrn-score)))
-      '@suttlemedia/visual': 5.0.0(@uvrn/receipt@5.0.0(@uvrn/core@5.0.0))
-      '@uvrn/core': 5.0.0
-      '@uvrn/drift': 5.0.0(@uvrn/core@5.0.0)(@uvrn/score@uvrn-score)
-      '@uvrn/receipt': 5.0.0(@uvrn/core@5.0.0)
-      '@uvrn/store-sqlite': 5.0.1(@uvrn/agent@uvrn-agent)(@uvrn/canon@uvrn-canon)(@uvrn/core@5.0.0)(@uvrn/drift@5.0.0(@uvrn/core@5.0.0)(@uvrn/score@uvrn-score))(@uvrn/identity@uvrn-identity)(@uvrn/receipt@5.0.0(@uvrn/core@5.0.0))(@uvrn/timeline@5.0.0(@uvrn/canon@uvrn-canon)(@uvrn/core@uvrn-core)(@uvrn/drift@uvrn-drift))(@uvrn/watch@5.0.0(@uvrn/agent@uvrn-agent)(@uvrn/drift@5.0.0(@uvrn/core@5.0.0)(@uvrn/score@uvrn-score)))(better-sqlite3@11.10.0)
-      '@uvrn/watch': 5.0.0(@uvrn/agent@uvrn-agent)(@uvrn/drift@5.0.0(@uvrn/core@5.0.0)(@uvrn/score@uvrn-score))
-    transitivePeerDependencies:
-      - '@suttlemedia/track-record'
-      - '@uvrn/agent'
-      - '@uvrn/canon'
-      - '@uvrn/identity'
-      - '@uvrn/score'
-      - '@uvrn/timeline'
-      - better-sqlite3
-
-  '@suttlemedia/checker@5.0.0': {}
-
-  '@suttlemedia/store-d1-client@5.0.0(@uvrn/agent@uvrn-agent)(@uvrn/canon@uvrn-canon)(@uvrn/core@5.0.0)(@uvrn/drift@5.0.0(@uvrn/core@5.0.0)(@uvrn/score@uvrn-score))(@uvrn/identity@uvrn-identity)(@uvrn/receipt@5.0.0(@uvrn/core@5.0.0))(@uvrn/timeline@5.0.0(@uvrn/canon@uvrn-canon)(@uvrn/core@uvrn-core)(@uvrn/drift@uvrn-drift))(@uvrn/watch@5.0.0(@uvrn/agent@uvrn-agent)(@uvrn/drift@5.0.0(@uvrn/core@5.0.0)(@uvrn/score@uvrn-score)))':
-    dependencies:
-      '@uvrn/core': 5.0.0
-      '@uvrn/receipt': 5.0.0(@uvrn/core@5.0.0)
-    optionalDependencies:
-      '@uvrn/agent': link:uvrn-agent
-      '@uvrn/canon': link:uvrn-canon
-      '@uvrn/drift': 5.0.0(@uvrn/core@5.0.0)(@uvrn/score@uvrn-score)
-      '@uvrn/identity': link:uvrn-identity
-      '@uvrn/timeline': 5.0.0(@uvrn/canon@uvrn-canon)(@uvrn/core@uvrn-core)(@uvrn/drift@uvrn-drift)
-      '@uvrn/watch': 5.0.0(@uvrn/agent@uvrn-agent)(@uvrn/drift@5.0.0(@uvrn/core@5.0.0)(@uvrn/score@uvrn-score))
-
-  '@suttlemedia/visual@5.0.0(@uvrn/receipt@5.0.0(@uvrn/core@5.0.0))':
-    optionalDependencies:
-      '@uvrn/receipt': 5.0.0(@uvrn/core@5.0.0)
-
   '@tootallnate/once@2.0.1': {}
 
   '@types/babel__core@7.20.5':
@@ -5466,42 +5311,6 @@ snapshots:
       eslint-visitor-keys: 3.4.3
 
   '@ungap/structured-clone@1.4.0': {}
-
-  '@uvrn/core@5.0.0': {}
-
-  '@uvrn/drift@5.0.0(@uvrn/core@5.0.0)(@uvrn/score@uvrn-score)':
-    dependencies:
-      '@uvrn/core': 5.0.0
-      '@uvrn/score': link:uvrn-score
-
-  '@uvrn/receipt@5.0.0(@uvrn/core@5.0.0)':
-    dependencies:
-      '@uvrn/core': 5.0.0
-
-  '@uvrn/store-sqlite@5.0.1(@uvrn/agent@uvrn-agent)(@uvrn/canon@uvrn-canon)(@uvrn/core@5.0.0)(@uvrn/drift@5.0.0(@uvrn/core@5.0.0)(@uvrn/score@uvrn-score))(@uvrn/identity@uvrn-identity)(@uvrn/receipt@5.0.0(@uvrn/core@5.0.0))(@uvrn/timeline@5.0.0(@uvrn/canon@uvrn-canon)(@uvrn/core@uvrn-core)(@uvrn/drift@uvrn-drift))(@uvrn/watch@5.0.0(@uvrn/agent@uvrn-agent)(@uvrn/drift@5.0.0(@uvrn/core@5.0.0)(@uvrn/score@uvrn-score)))(better-sqlite3@11.10.0)':
-    dependencies:
-      '@uvrn/core': 5.0.0
-      '@uvrn/receipt': 5.0.0(@uvrn/core@5.0.0)
-    optionalDependencies:
-      '@uvrn/agent': link:uvrn-agent
-      '@uvrn/canon': link:uvrn-canon
-      '@uvrn/drift': 5.0.0(@uvrn/core@5.0.0)(@uvrn/score@uvrn-score)
-      '@uvrn/identity': link:uvrn-identity
-      '@uvrn/timeline': 5.0.0(@uvrn/canon@uvrn-canon)(@uvrn/core@uvrn-core)(@uvrn/drift@uvrn-drift)
-      '@uvrn/watch': 5.0.0(@uvrn/agent@uvrn-agent)(@uvrn/drift@5.0.0(@uvrn/core@5.0.0)(@uvrn/score@uvrn-score))
-      better-sqlite3: 11.10.0
-
-  '@uvrn/timeline@5.0.0(@uvrn/canon@uvrn-canon)(@uvrn/core@uvrn-core)(@uvrn/drift@uvrn-drift)':
-    dependencies:
-      '@uvrn/canon': link:uvrn-canon
-      '@uvrn/core': link:uvrn-core
-      '@uvrn/drift': link:uvrn-drift
-    optional: true
-
-  '@uvrn/watch@5.0.0(@uvrn/agent@uvrn-agent)(@uvrn/drift@5.0.0(@uvrn/core@5.0.0)(@uvrn/score@uvrn-score))':
-    dependencies:
-      '@uvrn/agent': link:uvrn-agent
-      '@uvrn/drift': 5.0.0(@uvrn/core@5.0.0)(@uvrn/score@uvrn-score)
 
   '@vitest/coverage-v8@1.6.1(vitest@1.6.1(@types/node@20.19.43)(jsdom@20.0.3))':
     dependencies:

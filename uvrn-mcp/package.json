@@ -47,13 +47,9 @@
     "@uvrn/pattern": "^5.0.0",
     "@uvrn/receipt": "^5.0.0",
     "@uvrn/score": "^5.0.0",
-    "@uvrn/validate": "^5.0.0",
-    "@suttlemedia/arcanum": "^0.1.0"
+    "@uvrn/validate": "^5.0.0"
   },
   "peerDependenciesMeta": {
-    "@suttlemedia/arcanum": {
-      "optional": true
-    },
     "@uvrn/agent": {
       "optional": true
     },

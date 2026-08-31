@@ -29,11 +29,7 @@
   },
   "peerDependencies": {
     "@uvrn/core": "^5.0.0",
-    "@uvrn/drift": "^5.0.0",
-    "@suttlemedia/checker": "^5.0.0"
-  },
-  "peerDependenciesMeta": {
-    "@suttlemedia/checker": { "optional": true }
+    "@uvrn/drift": "^5.0.0"
   },
   "devDependencies": {
     "@uvrn/core": "workspace:^",

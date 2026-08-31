@@ -1,7 +1,15 @@
 # UVRN Packages — Agent Context (public repo)
 
-This is the UVRN protocol monorepo: 26 `@uvrn/*` packages (v4 generation) plus the
-protocol specifications in `SPEC/`. It is a public, MIT-licensed open-source project.
+**GitHub remote:** [`UVRN-org/uvrn-packages`](https://github.com/UVRN-org/uvrn-packages) — PRs → **`main`**.
+
+This is the UVRN protocol monorepo for the **public** generation:
+33 `@uvrn/*` workspace packages plus the protocol specifications in `SPEC/`.
+
+**Cursor / Claude agents:** this file.  
+**External / 3rd-party MCP clients:** [`uvrn-mcp/CONNECT.md`](uvrn-mcp/CONNECT.md).
+
+**Org / protocol home:** [`UVRN-org/uvrn`](https://github.com/UVRN-org/uvrn).  
+**Previous public generation:** branch `legacy/v4-main` on this repo.
 
 ## Build & test
 
@@ -9,6 +17,7 @@ protocol specifications in `SPEC/`. It is a public, MIT-licensed open-source pro
 pnpm install
 pnpm -r build
 pnpm -r test
+pnpm run check:phase1-gates
 ```
 
 pnpm ≥ 11.5 note: packages with build scripts must be approved via `allowBuilds` in the
@@ -35,5 +44,4 @@ workspace config (already set — `onlyBuiltDependencies` alone is not sufficien
 - `uvrn-protocol` is the umbrella package; `uvrn-core`, `uvrn-receipt`, `uvrn-measure`,
   `uvrn-consensus`, `uvrn-score`, `uvrn-signal` are its direct deps.
 
-See `CONTRIBUTING.md` for the PR workflow. Historical references to `admin/` in the
-CHANGELOG point to the maintainers' internal ops archive, which is not part of this repo.
+See `CONTRIBUTING.md` for the PR workflow.

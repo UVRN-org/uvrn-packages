@@ -1,9 +1,20 @@
 {
   "name": "@uvrn/store-sqlite",
-  "version": "4.1.0",
+  "version": "5.0.2",
   "description": "Zero-signup durable persistence for UVRN: every store interface implemented against a single local SQLite file, plus pushToNetwork() sync to the UVRN registry",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./track-record": {
+      "types": "./dist/track-record.d.ts",
+      "default": "./dist/track-record.js"
+    },
+    "./package.json": "./package.json"
+  },
   "files": [
     "dist",
     "README.md",
@@ -16,14 +27,15 @@
     "clean": "rm -rf dist"
   },
   "peerDependencies": {
-    "@uvrn/agent": "^4.0.0",
-    "@uvrn/canon": "^4.0.0",
-    "@uvrn/core": "^4.0.0",
-    "@uvrn/drift": "^4.0.0",
-    "@uvrn/identity": "^4.0.0",
-    "@uvrn/receipt": "^4.0.0",
-    "@uvrn/timeline": "^4.0.0",
-    "@uvrn/watch": "^4.0.0",
+    "@uvrn/agent": "^5.0.0",
+    "@uvrn/canon": "^5.0.0",
+    "@uvrn/core": "^5.0.0",
+    "@uvrn/drift": "^5.0.0",
+    "@uvrn/identity": "^5.0.0",
+    "@uvrn/receipt": "^5.0.0",
+    "@uvrn/timeline": "^5.0.0",
+    "@uvrn/track-record": "^5.0.0",
+    "@uvrn/watch": "^5.0.0",
     "better-sqlite3": "^11.0.0"
   },
   "peerDependenciesMeta": {
@@ -42,6 +54,9 @@
     "@uvrn/timeline": {
       "optional": true
     },
+    "@uvrn/track-record": {
+      "optional": true
+    },
     "@uvrn/watch": {
       "optional": true
     },
@@ -50,14 +65,15 @@
     }
   },
   "devDependencies": {
-    "@uvrn/agent": "workspace:*",
-    "@uvrn/canon": "workspace:*",
-    "@uvrn/core": "workspace:*",
-    "@uvrn/drift": "workspace:*",
-    "@uvrn/identity": "workspace:*",
-    "@uvrn/receipt": "workspace:*",
-    "@uvrn/timeline": "workspace:*",
-    "@uvrn/watch": "workspace:*",
+    "@uvrn/agent": "workspace:^",
+    "@uvrn/canon": "workspace:^",
+    "@uvrn/core": "workspace:^",
+    "@uvrn/drift": "workspace:^",
+    "@uvrn/identity": "workspace:^",
+    "@uvrn/receipt": "workspace:^",
+    "@uvrn/timeline": "workspace:^",
+    "@uvrn/track-record": "workspace:^",
+    "@uvrn/watch": "workspace:^",
     "@types/better-sqlite3": "^7.6.0",
     "@types/jest": "^29.5.0",
     "@types/node": "^20.0.0",
@@ -84,5 +100,12 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "typesVersions": {
+    "*": {
+      "track-record": [
+        "dist/track-record.d.ts"
+      ]
+    }
   }
 }

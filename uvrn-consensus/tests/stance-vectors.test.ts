@@ -18,15 +18,20 @@ function farmSourcesFromStanceVector(
   },
   claimId: string
 ): { sources: FarmSource[]; farmResult: FarmResult } {
-  const sources: FarmSource[] = vector.input.sources.map((source, index) => ({
-    ...source,
-    url: `https://example.test/${claimId}/${index}`,
-    title: source.label ?? `Source ${index}`,
-    snippet: 'No numeric prose is used.',
-    evidenceScore: 10 + index * 10,
-    credibility: 0.8,
-    publishedAt: '2026-07-18T10:00:00.000Z',
-  }));
+  const sources: FarmSource[] = vector.input.sources.map((source, index) => {
+    const publishedAt = '2026-07-18T10:00:00.000Z';
+    return {
+      ...source,
+      url: `https://example.test/${claimId}/${index}`,
+      title: source.label ?? `Source ${index}`,
+      snippet: 'No numeric prose is used.',
+      evidenceScore: 10 + index * 10,
+      credibility: 0.8,
+      publishedAt,
+      // BP-20: freshness/ts use measuredAt. Hydrate for pre-BP-20 fixtures.
+      measuredAt: publishedAt,
+    };
+  });
   return {
     sources,
     farmResult: {
@@ -36,6 +41,30 @@ function farmSourcesFromStanceVector(
       sources,
     },
   };
+}
+
+/** Hydrate measuredAt onto legacy SPEC farm fixtures (no SPEC edit). */
+function withMeasuredAt(farmResult: FarmResult): FarmResult {
+  return {
+    ...farmResult,
+    sources: farmResult.sources.map((source) => {
+      const publishedAt = (source as { publishedAt?: string }).publishedAt;
+      return {
+        ...source,
+        measuredAt: source.measuredAt ?? publishedAt,
+      };
+    }),
+  };
+}
+
+/**
+ * Pre-BP-20 stance vectors freeze consensusResult without MetricPoint.measuredAt.
+ * Strip the additive field for byte-compare; DeltaReceipt hash law is checked separately.
+ */
+function stripMeasuredAtForLegacyCompare(value: unknown): unknown {
+  return JSON.parse(
+    JSON.stringify(value, (key, v) => (key === 'measuredAt' ? undefined : v))
+  );
 }
 
 describe('dual-axis consensus BP-01 vectors', () => {
@@ -91,7 +120,7 @@ describe('dual-axis consensus BP-01 vectors', () => {
   });
 
   it('keeps the grounded-quorum fallback result byte-for-byte unchanged', () => {
-    const farmResult = fallback.input.farmResult as FarmResult;
+    const farmResult = withMeasuredAt(fallback.input.farmResult as FarmResult);
     const engine = new ConsensusEngine({
       sources: farmResult,
       claim: fallback.claim,
@@ -99,13 +128,13 @@ describe('dual-axis consensus BP-01 vectors', () => {
     const actual = engine.buildConsensusResult();
 
     expect(evaluateStanceMode(farmResult.sources)).toEqual(fallback.expected.stanceMode);
-    expect(JSON.stringify(actual)).toBe(
+    expect(JSON.stringify(stripMeasuredAtForLegacyCompare(actual))).toBe(
       JSON.stringify(fallback.expected.consensusResult)
     );
   });
 
   it('keeps frozen no-stance consensus and DeltaReceipt bytes identical', () => {
-    const farmResult = frozen.input.farmResult as FarmResult;
+    const farmResult = withMeasuredAt(frozen.input.farmResult as FarmResult);
     const engine = new ConsensusEngine({
       sources: farmResult,
       claim: frozen.input.claim,
@@ -115,7 +144,7 @@ describe('dual-axis consensus BP-01 vectors', () => {
       timestamp: frozen.input.engineTimestamp,
     });
 
-    expect(JSON.stringify(consensusResult)).toBe(
+    expect(JSON.stringify(stripMeasuredAtForLegacyCompare(consensusResult))).toBe(
       JSON.stringify(frozen.expected.consensusResult)
     );
     expect(JSON.stringify(deltaReceipt)).toBe(

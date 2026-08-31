@@ -1,18 +1,95 @@
 # UVRN — Universal Verification Receipt Network
 
-Full 26-package open protocol for measuring and proving the relationship state of evidence about a claim.
+**33-package public generation @ 5.x** — protocol implementation for measuring and proving the relationship state of evidence about a claim.
 
 UVRN measures whether independent evidence **agrees, disagrees, conflicts, or shows early potential** about a claim — and makes that measurement **provable** to anyone, human or machine.
 
-**This is the v4 / fable-refactor-1 generation** — 26 packages aligned to `4.0.0` (unpublished; supersedes the v3 LIVE generation on publish). v4 makes the protocol's claims true end-to-end: an implementation-independent spec (`SPEC/` — receipt hash contracts, Ed25519 signing, normative measurement semantics, network API), the canonical `@uvrn/receipt` object module every surface consumes, real producer signatures (*integrity-checked* vs *signed* vs *verifiable* are now distinct, earned words), durable state via `@uvrn/store-sqlite`, and the `@uvrn/protocol` umbrella. Existing v3 receipts and `verifyReceipt()` remain byte-for-byte valid (additive-only rule, golden-vector enforced). See [`CHANGELOG.md`](CHANGELOG.md).
+**This repository** ([`UVRN-org/uvrn-packages`](https://github.com/UVRN-org/uvrn-packages)) is the **public MIT implementation monorepo** — **33** workspace packages under `@uvrn/*` (pnpm workspaces) at **`5.0.x`**.
 
-**Build standard**: Bloom Protocol v1.7 — Plan → Build → Check → Update → Reflect → Continue
-**Agent context**: `AGENTS.md` (Cursor/Codex) | `CLAUDE.md` (Claude Code)
-**Protocol contracts of record**: [`SPEC/`](SPEC/) (receipt hashing, signing, measurement semantics, network API)
-**Package interface specs**: `ROADMAP.md`
+| Set | Scope | Count | Version |
+|-----|-------|-------|---------|
+| Public spine + advancements | `@uvrn/*` | 33 | `5.0.0`–`5.0.2` |
 
-> Internal planning, architecture, and audit documents live in the maintainers' private
-> workspace and are not part of this repository.
+**Recent advancements (MIT):** `@uvrn/visual`, `@uvrn/chart-memory`, `@uvrn/track-record` @ `5.0.1`.
+
+Maintainer-only ops packages (archive, checker, case-bank, D1 client) publish separately under restricted scope and are **not** included in this public tree.
+
+Public consumers use `@uvrn/*` only. Existing v3 receipts and `verifyReceipt()` remain byte-for-byte valid (additive-only rule, golden-vector enforced). See [`CHANGELOG.md`](CHANGELOG.md).
+
+> **Migrating from v4?** The previous public generation is preserved on branch [`legacy/v4-main`](https://github.com/UVRN-org/uvrn-packages/tree/legacy/v4-main).
+
+**Build standard**: Bloom Protocol v1.7 — Plan → Build → Check → Update → Reflect → Continue  
+**Agent context (in-repo coding)**: `AGENTS.md` (Cursor/Codex) | `CLAUDE.md` (Claude Code)  
+**External MCP agents**: [`uvrn-mcp/CONNECT.md`](uvrn-mcp/CONNECT.md) — preferred connect path  
+**Protocol contracts of record**: [`SPEC/`](SPEC/) (receipt hashing, signing, measurement semantics, network API)  
+**Org / protocol home**: [`UVRN-org/uvrn`](https://github.com/UVRN-org/uvrn)
+
+---
+
+## Connect an AI agent (MCP-first)
+
+Prefer **MCP over stdio**. No API keys and no database on the default path.
+
+```bash
+npx -y @uvrn/mcp
+```
+
+Full connector recipes (Claude Desktop, Cursor, Claude Code, Hermes, Odysseus, generic):
+**[`uvrn-mcp/CONNECT.md`](uvrn-mcp/CONNECT.md)**. Ready-to-copy profiles live in
+[`uvrn-mcp/connectors/`](uvrn-mcp/connectors/) (server key `uvrn`).
+
+Minimal Cursor / Claude Desktop shape:
+
+```json
+{
+  "mcpServers": {
+    "uvrn": {
+      "command": "npx",
+      "args": ["-y", "@uvrn/mcp"],
+      "env": { "LOG_LEVEL": "info" }
+    }
+  }
+}
+```
+
+**What you get:** 13 tools — `delta_run_engine`, `delta_validate_bundle`, `delta_verify_receipt`,
+`delta_score_drift`, `delta_compare`, `delta_verify_identity`, `delta_canon_qualify`,
+`delta_canon_get`, `delta_score_claim`, `delta_read_support`, `delta_report_rank_stability`,
+`delta_validate_datapoint`, `delta_pattern_scan` — plus resources and prompts. Machine-readable contract:
+[`uvrn-mcp/plugin-manifest.json`](uvrn-mcp/plugin-manifest.json). Full list: [`uvrn-mcp/CONNECT.md`](uvrn-mcp/CONNECT.md).
+
+**Honesty walls (agents):**
+
+- Integrity-checked ≠ verified (verification needs a checked producer signature).
+- `insufficient-data` is a successful honest outcome — not a failure to guess.
+- Gaps and missing origins are recorded; do not invent corroboration.
+- Possible reasons and diagnostics are not verdicts.
+
+**Not MCP tools:** v2.1 readout library surfaces (`@uvrn/algox` rank-stability, `@uvrn/lattice`
+`readSupport`, `@uvrn/consensus` `reportSpread`) are package APIs for hosts — they are **not**
+additional MCP tool names unless later exposed in the manifest.
+
+**Transport note:** “Online” here means the **published npm package over stdio**. There is **no
+hosted remote MCP URL** today. For HTTP, use `@uvrn/api` (REST) instead.
+
+Fallbacks: SDK (`@uvrn/sdk`), REST (`@uvrn/api`), CLI (`@uvrn/cli`) — see access layers below.
+
+### Agent guides
+
+How-to for agents (not hash law) lives in [`agents/`](agents/):
+
+- [`agents/SCRIBE.md`](agents/SCRIBE.md) — dual-source read (worker receipt book + article JSON)
+- [`agents/README.md`](agents/README.md) — index and dual-scope note (views/charts/track-record are public `@uvrn/*`; archive/D1/QA remain restricted)
+
+Root [`AGENTS.md`](AGENTS.md) is binding law; `agents/` is how-to.
+
+### Planning attic (git-tracked)
+
+Maintainer planning suites live in [`.admin/docs/plan-suites/`](.admin/docs/plan-suites/) — stamp, kinship, gen2 suites. **Paper ≠ start**; attic docs do not grant worker build or npm publish GO.
+
+### Maintainer MCP extras
+
+`uvrn-mcp/scripts/` (pipeline smoke) and `uvrn-mcp/host/arcanum-host.mjs` are **maintainer-only** — not in the npm tarball. See [`uvrn-mcp/ENVIRONMENT.md`](uvrn-mcp/ENVIRONMENT.md) (env-driven; no machine paths in examples).
 
 ---
 
@@ -133,12 +210,12 @@ The measurement function has several front doors. They are access layers onto th
 | SDK | `@uvrn/sdk` | Programmatic access (CLI / HTTP / local modes), bundle builders, validators. |
 | API | `@uvrn/api` | Self-hosted Fastify REST endpoints. |
 | CLI | `@uvrn/cli` | `uvrn run bundle.json` → receipt. |
-| MCP | `@uvrn/mcp` | AI-agent native access — **9 stateless tools** over stdio. |
+| MCP | `@uvrn/mcp` | AI-agent native access — **13 stateless tools** over stdio. |
 | Embed | `@uvrn/embed` | Live-status badge for any webpage (React or plain HTML). |
 
-**Expanded MCP surface** — `@uvrn/mcp` v1.2.0 exposes nine tools: `delta_run_engine`, `delta_validate_bundle`, `delta_verify_receipt`, `delta_score_drift`, `delta_compare`, `delta_verify_identity`, `delta_canon_qualify`, `delta_canon_get`, and `delta_score_claim` (claim → full consensus/measurement pipeline → MasterReceipt, returning a canonical `v_score`, a stable `claimId`, the `evidenceMode` taken, and the post-dedupe `sourceCount`). `delta_score_claim` resolves evidence from one of three paths, in precedence order: **host-provided `sources`** — an agent that can search the web supplies 2+ sources directly, each with an optional `evidenceScore` (0–100) and `credibility` (0–1); a **configured connector**; or **mock** data as the zero-external fallback. Host `evidenceScore` is carried as a first-class numeric field (never string-encoded), so a number in a source title can never override the intended score. The server takes **runtime config injection** via `createServer(runtimeConfig?)` — connectors come from config, never hardcoded vendor defaults — and ships a client-neutral `plugin-manifest.json` for discovery. stdio is the zero-config transport; any MCP-compatible agent connects with no fork.
+**Expanded MCP surface** — `@uvrn/mcp` exposes **13 tools**: `delta_run_engine`, `delta_validate_bundle`, `delta_verify_receipt`, `delta_score_drift`, `delta_compare`, `delta_verify_identity`, `delta_canon_qualify`, `delta_canon_get`, `delta_score_claim`, `delta_read_support`, `delta_report_rank_stability`, `delta_validate_datapoint`, and `delta_pattern_scan`. `delta_score_claim` resolves evidence from one of three paths, in precedence order: **host-provided `sources`** — an agent that can search the web supplies 2+ sources directly, each with an optional `evidenceScore` (0–100) and `credibility` (0–1); a **configured connector**; or **mock** data as the zero-external fallback. Host `evidenceScore` is carried as a first-class numeric field (never string-encoded), so a number in a source title can never override the intended score. The server takes **runtime config injection** via `createServer(runtimeConfig?)` — connectors come from config, never hardcoded vendor defaults — and ships a client-neutral `plugin-manifest.json` for discovery. stdio is the zero-config transport; any MCP-compatible agent connects with no fork.
 
-**Tools are a surface, not the system.** The nine MCP tools expose a *subset* of the protocol — they route into the engine packages (`core`, `drift`, `compare`, `consensus`, `normalize`, `measure`, `canon`, `identity`) plus the `FarmConnector` data-fetch contract used by `delta_score_claim`. The packages that **don't** appear as tools are not missing features: some are alternative front doors (`sdk`, `api`, `cli`, `embed`), some are foundation layers (`signal`, `score`, `lattice`), some are reference implementations of pluggable seams (`farm` connectors, `watch` delivery, the `*Store` backends including `timeline` storage/query) you replace rather than call, and the rest are supporting packages (`adapter` signing, `algox` ranking, `test` harness). The pipeline *shape* is fixed; the *edges* — where data enters, where state persists, where alerts exit — are interfaces you implement. Open source lets you change anything, but by design you rarely need to fork: you plug into named contracts. See [Design philosophy](#design-philosophy) and [Package independence](#package-independence).
+**Tools are a surface, not the system.** The 13 MCP tools expose a *subset* of the protocol — they route into the engine packages (`core`, `drift`, `compare`, `consensus`, `normalize`, `measure`, `canon`, `identity`) plus the `FarmConnector` data-fetch contract used by `delta_score_claim`. The packages that **don't** appear as tools are not missing features: some are alternative front doors (`sdk`, `api`, `cli`, `embed`), some are foundation layers (`signal`, `score`, `lattice`), some are reference implementations of pluggable seams (`farm` connectors, `watch` delivery, the `*Store` backends including `timeline` storage/query) you replace rather than call, and the rest are supporting packages (`adapter` signing, `algox` ranking, `test` harness). The pipeline *shape* is fixed; the *edges* — where data enters, where state persists, where alerts exit — are interfaces you implement. The private packages generation lets maintainers change anything in-tree, but by design hosts rarely need to fork: you plug into named contracts. See [Design philosophy](#design-philosophy) and [Package independence](#package-independence).
 
 ---
 
@@ -149,7 +226,7 @@ The measurement function has several front doors. They are access layers onto th
 | `@uvrn/core` | 2 | ✅ Live | Delta engine — V-Score math, validation, DRVC3 receipts, **Measurement contract + master receipt** |
 | `@uvrn/sdk` | 2 | ✅ Live | TypeScript SDK — submit claims, read receipts |
 | `@uvrn/adapter` | 2 | ✅ Live | DRVC3 envelope adapter — EIP-191 signatures |
-| `@uvrn/mcp` | 4 | ✅ Live | MCP server — 9 stateless tools, AI-agent native access |
+| `@uvrn/mcp` | 4 | ✅ Live | MCP server — 13 stateless tools, AI-agent native access |
 | `@uvrn/api` | 4 | ✅ Live | Fastify REST API — self-hosted deployments |
 | `@uvrn/cli` | 4 | ✅ Live | CLI — `uvrn run bundle.json` → receipt |
 | `@uvrn/drift` | 3 | ✅ Built + audited | Temporal decay scoring |
@@ -170,8 +247,17 @@ The measurement function has several front doors. They are access layers onto th
 | `@uvrn/watch` | 4 | ✅ Built + audited | Subscription & threshold alerts — `WatchStore` seam, delivery retry |
 | `@uvrn/embed` | 4 | ✅ Built + audited | Embeddable React badge + UMD script |
 | `@uvrn/receipt` | 2 | 🆕 v4 | **The canonical receipt object model** — NetworkReceipt envelope, JCS canonicalization (single ecosystem implementation), Ed25519 signing, topics, Layer D vocabulary, `toHumanView()` |
-| `@uvrn/store-sqlite` | 3 | 🆕 v4 | Every store interface against one local SQLite file + `pushToNetwork()` — durable AND zero-signup |
+| `@uvrn/store-sqlite` | 3 | 🆕 v4 | Every store interface against one local SQLite file + `pushToNetwork()` — main entry public; `/track-record` subpath peers `@uvrn/track-record@5.0.2` |
 | `@uvrn/protocol` | — | 🆕 v4 | Single-install production umbrella: core + receipt + measure + consensus + normalize + score + algox + signal |
+| `@uvrn/visual` | 4 | 🆕 public `@uvrn` | Plain-default receipt → HTML/SVG views (picture is never the proof) |
+| `@uvrn/chart-memory` | 4 | 🆕 public `@uvrn` | Plain-default history → SVG/HTML time charts (picture is never the proof) |
+| `@uvrn/jsonld` | 2 | 🆕 v5 | Offline JSON-LD projection of receipts (never a hash input) |
+| `@uvrn/track-record` | 3 | 🆕 public `@uvrn` | Per-origin track records — transcription, revisions, Brier-scored forecasts |
+| `@uvrn/meta-readout` | 4 | 🆕 v5 | HumanView → MetaReadout facts bag (soft-go context; not buy/rank law) |
+| `@uvrn/pattern` | 3 | 🆕 v5 | PatternObservations over history — detected ≠ verified; not receipt-class |
+| `@uvrn/validate` | 2 | 🆕 v5 | Datapoint validation helpers |
+
+*Workspace package count: **33** (see `pnpm-workspace.yaml`).*
 
 ---
 
@@ -233,6 +319,8 @@ uvrn-packages/
 ├── SPEC/                       ← normative protocol specifications (hashing, signing, measurement, network)
 ├── AGENTS.md                   ← Cursor/Codex agent context (read this)
 ├── CLAUDE.md                   ← Claude Code context (read this)
+├── agents/                     ← agent how-to (SCRIBE, dual-scope notes; not hash law)
+├── .admin/docs/plan-suites/    ← git-tracked planning attic (Paper ≠ start)
 ├── uvrn-core/     uvrn-sdk/   uvrn-adapter/
 ├── uvrn-mcp/      uvrn-api/   uvrn-cli/
 ├── uvrn-drift/    uvrn-agent/ uvrn-canon/
@@ -240,32 +328,23 @@ uvrn-packages/
 ├── uvrn-farm/     uvrn-normalize/ uvrn-lattice/
 ├── uvrn-consensus/ uvrn-compare/ uvrn-measure/ uvrn-identity/ uvrn-timeline/
 ├── uvrn-watch/    uvrn-embed/
-└── uvrn-receipt/  uvrn-store-sqlite/ uvrn-protocol/      ← new in v4
+├── uvrn-receipt/  uvrn-store-sqlite/ uvrn-protocol/
+├── uvrn-visual/   uvrn-chart-memory/
+└── uvrn-jsonld/ uvrn-track-record/ uvrn-validate/ uvrn-meta-readout/ uvrn-pattern/
 ```
 
 ---
 
 ## Publish order
 
-The eight `@uvrn/protocol` dependencies publish first, then the remaining packages, then the
-`@uvrn/protocol` umbrella last (so its dependents already resolve on the registry):
+Workspace has **33** public `@uvrn/*` packages. See [`PUBLISH.md`](PUBLISH.md) for publish law.
 
-```
-Protocol deps (1–8):
- 1. @uvrn/core   →  2. @uvrn/receipt → 3. @uvrn/measure
- 4. @uvrn/consensus → 5. @uvrn/normalize → 6. @uvrn/score
- 7. @uvrn/algox  →  8. @uvrn/signal
+1. Core spine packages as needed (dependency order).
+2. **Three public advancements** at `5.0.1`: `@uvrn/visual`, `@uvrn/chart-memory`, `@uvrn/track-record`.
+3. **`@uvrn/store-sqlite@5.0.2`** (peer rename → `@uvrn/track-record`).
+4. **`@uvrn/mcp`** when optional-peer docs/manifest need a patch.
 
-Remaining packages (9–25):
- 9. @uvrn/sdk    → 10. @uvrn/adapter → 11. @uvrn/farm   → 12. @uvrn/lattice
-13. @uvrn/compare → 14. @uvrn/identity → 15. @uvrn/test → 16. @uvrn/drift
-17. @uvrn/agent  → 18. @uvrn/canon   → 19. @uvrn/timeline → 20. @uvrn/mcp
-21. @uvrn/api    → 22. @uvrn/cli     → 23. @uvrn/embed  → 24. @uvrn/watch
-25. @uvrn/store-sqlite
-
-Umbrella (last):
-26. @uvrn/protocol
-```
+Do **not** run publish without Admin GO.
 
 ---
 
@@ -276,12 +355,15 @@ Umbrella (last):
 - **Design philosophy**: "Provider-Agnostic by Design" in `ROADMAP.md` and `AGENTS.md`
 - Internal architecture, build-plan, and audit documents are maintained in the maintainers' private workspace, not in this repository.
 
-## Open source
+## Repository & distribution
 
-Source code and issues: [uvrn-packages](https://github.com/UVRN-org/uvrn-packages) · MIT License · UVRN-org
+- **This GitHub repo:** [`UVRN-org/uvrn-packages`](https://github.com/UVRN-org/uvrn-packages) — **public MIT** implementation monorepo (33 packages @ 5.x).
+- **Previous generation:** [`legacy/v4-main`](https://github.com/UVRN-org/uvrn-packages/tree/legacy/v4-main) (v4.1.0 archive).
+- **Protocol / org home:** [`UVRN-org/uvrn`](https://github.com/UVRN-org/uvrn).
+- **Agent connect without clone:** published npm package [`@uvrn/mcp`](https://www.npmjs.com/package/@uvrn/mcp) (`npx -y @uvrn/mcp`).
 
 **Disclaimer:** UVRN is in Alpha. The protocol measures the **relationship between your sources** — whether they agree, disagree, conflict, or show potential — not whether any source is correct. Final trust of any output rests with the user.
 
 ## License
 
-MIT — UVRN-org
+MIT — see individual package `LICENSE` files.

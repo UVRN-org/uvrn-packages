@@ -3,11 +3,54 @@
  * These types constitute the "Protocol Law" and must remain stable.
  */
 
+/** Quantity/dimension class — not NetworkReceipt.kind or MeasurementSource.kind. */
+export type QuantityKind =
+  | 'money'
+  | 'percentage'
+  | 'count'
+  | 'date'
+  | 'trend'
+  | 'quantity';
+
+/** Whether a unit string was host-declared or text-inferred (never authoritative for comparability). */
+export type UnitSource = 'declared' | 'inferred' | 'none';
+
+export interface ObservationCodeLists {
+  ucum?: string;
+  clObsStatus?: string;
+  prov?: string;
+  stake?: string;
+}
+
 export interface MetricPoint {
   key: string;
   value: number;
   unit?: string;
-  ts?: string; // ISO string, optional
+  /** Authority of `unit`. Comparability accepts only `declared`. */
+  unitSource?: UnitSource;
+  quantityKind?: QuantityKind;
+  /** ISO — measurement/observation time. Drives freshness when declared. */
+  measuredAt?: string;
+  /** ISO — period/instant the value applies to. */
+  appliesTo?: string;
+  /** SDMX CL_OBS_STATUS code (A/E/P/F/I/U/V). */
+  obsStatus?: string;
+  /** UVRN stake code — observational, not motive. */
+  stake?: string;
+  codeLists?: ObservationCodeLists;
+  /**
+   * Optional ISO timestamp. MUST NOT be filled from document publish time
+   * (`publishedAt`). When used, prefer host-declared `measuredAt`.
+   */
+  ts?: string;
+}
+
+/** First-class refusal — no delta enters scoring for the refused pair/key. */
+export interface ComparabilityRefusal {
+  type: 'comparability-refusal';
+  reason: 'dimension-mismatch' | 'missing-unit' | 'inferred-unit-ineligible';
+  left?: { sourceId?: string; quantityKind?: QuantityKind; unit?: string };
+  right?: { sourceId?: string; quantityKind?: QuantityKind; unit?: string };
 }
 
 export interface DataSpec {
@@ -24,6 +67,12 @@ export interface DeltaBundle {
   dataSpecs: DataSpec[];
   thresholdPct: number; // 0.0 to 1.0
   maxRounds?: number; // Defaults to 5
+  /**
+   * Optional absolute near-zero tolerance. When set, pairs with
+   * |a − b| ≤ absoluteEpsilon are treated as delta 0.
+   * Unset means unset — no default; frozen engine behavior unchanged.
+   */
+  absoluteEpsilon?: number;
 }
 
 export interface DeltaRound {

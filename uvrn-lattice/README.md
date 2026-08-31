@@ -32,6 +32,20 @@ const receipt = await runLattice(
 console.log(receipt.vScore, receipt.deltaReceipt.outcome);
 ```
 
+## Product path (templates → searchDelegate → receipt)
+
+Recommended host path for live research (packages APIs only — no app UI):
+
+1. Pick a built-in template from `BUILT_IN_TEMPLATES` (e.g. `builder-radar`).
+2. Pass `searchDelegate` to `runLattice()` so each lattice domain gets domain-scoped `SearchResult[]`.
+3. Read `receipt.templateRef`, `receipt.domainsMap`, `receipt.vScore`, and optional `receipt.sufficiency`.
+
+Connector priority (highest → lowest): `connectors[domainId]` → `connector` → `searchDelegate` → `MockDomainConnector`.
+
+**Honest vocabulary:** a lattice receipt / V-Score / sufficiency readout is **not** a verified market outcome, accuracy claim, or product-market proof. Support/sufficiency ≠ accuracy.
+
+See [Manual search (Cowork)](#manual-search-cowork) for a full `searchDelegate` example. Tests cover this path in `tests/product-path-templates-searchDelegate.test.ts`.
+
 ## Manual search (Cowork)
 
 For manual Cowork sessions where Claude drives search in real time, pass a `searchDelegate`
@@ -100,15 +114,47 @@ question: *"is the right **kind** of evidence present for this specific claim?"*
 strong consensus that it is *talked about* while having no evidence that it *sells* — those are
 different claims with different burdens of proof.
 
+**Honest vocabulary:** `Supported` means required evidence *classes* are present — not that a
+claim is verified, accurate, or a market outcome. Integrity-checked ≠ verified.
+Support/sufficiency ≠ accuracy. The V-Score is never treated as accuracy.
+
+### Named support readout — `readSupport`
+
+Host-facing Support pillar export. Prefer this name when surfacing support/sufficiency to hosts
+(separate from any agent-confidence narrative). Same grading path as `verifyClaim`, with
+origin-aware corroboration (`originId`).
+
+```ts
+import { readSupport } from '@uvrn/lattice';
+
+const readout = readSupport('People are buying maximalist POD products', [
+  { source: 'Etsy sales', originId: 'origin:etsy' },
+  { source: 'marketplace velocity', originId: 'origin:shopify' },
+]);
+// → status: 'Supported', distinctOriginCount: 2, originCorroborationIncomplete: false
+
+// Same origin restated under many document URLs does NOT max corroboration:
+readSupport('People are talking about maximalist POD', [
+  { source: 'Doc A', originId: 'origin:bls' },
+  { source: 'Doc B', originId: 'origin:bls' },
+]);
+// → distinctOriginCount: 1 (not 2)
+
+// Missing originId → honest incomplete (no invented origins from bare source strings)
+```
+
+### `verifyClaim`
+
 `verifyClaim()` grades evidence **relative to the claim it is asked to support**. It is
-standalone and zero-external — no lattice run required.
+standalone and zero-external — no lattice run required. Corroboration counts distinct
+host-declared `originId` values among matched evidence (F-1 path a).
 
 ```ts
 import { verifyClaim } from '@uvrn/lattice';
 
 verifyClaim('People are buying maximalist POD products', [
-  { source: 'Etsy sales' },
-  { source: 'marketplace velocity' },
+  { source: 'Etsy sales', originId: 'origin:etsy' },
+  { source: 'marketplace velocity', originId: 'origin:shopify' },
 ]);
 // → status: 'Supported', level: 'L3', licensedClaimLevel: 'L3'
 

@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/cli",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "UVRN CLI — bundle to receipt",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -29,14 +29,14 @@
     "clean": "rm -rf dist"
   },
   "peerDependencies": {
-    "@uvrn/core": "^4.0.0",
-    "@uvrn/receipt": "^4.0.0"
+    "@uvrn/core": "^5.0.0",
+    "@uvrn/receipt": "^5.0.0"
   },
   "dependencies": {
     "commander": "^11.1.0"
   },
   "devDependencies": {
-    "@uvrn/core": "workspace:*",
+    "@uvrn/core": "workspace:^",
     "@types/jest": "^29.5.0",
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
@@ -45,7 +45,7 @@
     "jest": "^29.5.0",
     "ts-jest": "^29.1.0",
     "typescript": "^5.3.0",
-    "@uvrn/receipt": "workspace:*"
+    "@uvrn/receipt": "workspace:^"
   },
   "engines": {
     "node": ">=18.0.0"

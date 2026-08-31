@@ -1,6 +1,6 @@
 /**
  * MCP Tool Handlers
- * Implements the nine tools for the Delta Engine MCP server
+ * Implements the twelve tools for the Delta Engine MCP server
  */
 
 import { createHash } from 'node:crypto';
@@ -19,6 +19,8 @@ import { CompareEngine } from '@uvrn/compare';
 import {
   ConsensusEngine,
   type FarmResult as ConsensusFarmResult,
+  type StanceLabel,
+  type StanceMode,
 } from '@uvrn/consensus';
 import { normalize } from '@uvrn/normalize';
 import { defaultRegistry, stanceToMeasurementSources } from '@uvrn/measure';
@@ -27,9 +29,11 @@ import type { Canon, CanonStore } from '@uvrn/canon';
 import type { ClaimRegistration, FarmConnector } from '@uvrn/agent';
 import type { IdentityRegistry } from '@uvrn/identity';
 import {
+  canonicalClaimId,
   enrichMeasurements,
   generateReceiptKeyPair,
   normalizeTopic,
+  parseTopic,
   signReceipt,
   toHumanView,
   wrapMasterReceipt,
@@ -48,9 +52,20 @@ import {
   ScoreDriftOutput,
   ScoreClaimInput,
   ScoreClaimOutput,
+  ExpectedValueDivergenceNote,
+  HostMeasurementEcho,
+  StanceCounts,
+  ReadSupportInput,
+  ReadSupportOutput,
+  ReportRankStabilityInput,
+  ReportRankStabilityOutput,
+  PatternScanInput,
+  PatternScanOutput,
   ToolHandlers,
   ValidateBundleInput,
   ValidateBundleOutput,
+  ValidateDatapointInput,
+  ValidateDatapointOutput,
   VerifyIdentityInput,
   VerifyIdentityOutput,
   VerifyReceiptInput,
@@ -59,6 +74,89 @@ import {
   ExecutionError,
 } from '../types';
 import { logger } from '../logger';
+
+/**
+ * Absolute consensus cluster from ConsensusEngine dataSpecs — mode of
+ * consensus_value metrics (two-decimal keys). Used for host expectedValue
+ * observation only; not a first-class scored field (that is BP-16).
+ */
+function absoluteClusterFromDataSpecs(
+  dataSpecs: DeltaBundle['dataSpecs']
+): number | null {
+  const counts = new Map<string, { n: number; value: number }>();
+  for (const spec of dataSpecs) {
+    for (const metric of spec.metrics ?? []) {
+      if (metric.key !== 'consensus_value') continue;
+      if (typeof metric.value !== 'number' || !Number.isFinite(metric.value)) continue;
+      const key = metric.value.toFixed(2);
+      const prev = counts.get(key);
+      counts.set(key, { n: (prev?.n ?? 0) + 1, value: metric.value });
+    }
+  }
+  if (counts.size === 0) return null;
+  let best: { n: number; value: number } | null = null;
+  for (const entry of counts.values()) {
+    if (!best || entry.n > best.n) best = entry;
+  }
+  return best?.value ?? null;
+}
+
+/**
+ * Counts every stance label the sources carried and pairs them with the quorum state
+ * from `evaluateStanceMode()`. Envelope-only (BP-18): the caller sees a disagreement even
+ * when the quorum was missed, without anything reaching a hashed payload.
+ */
+function buildStanceCounts(
+  sources: readonly ConsensusFarmResult['sources'][number][],
+  stanceMode: StanceMode
+): StanceCounts {
+  const counts: Record<StanceLabel, number> = {
+    supports: 0,
+    opposes: 0,
+    mixed: 0,
+    neutral: 0,
+    insufficient: 0,
+  };
+  let unlabeled = 0;
+  for (const source of sources) {
+    const label = source.stanceLabel;
+    if (label !== undefined && label in counts) {
+      counts[label] += 1;
+    } else {
+      unlabeled += 1;
+    }
+  }
+
+  return {
+    ...counts,
+    unlabeled,
+    quorum: {
+      met: stanceMode.quorumMet,
+      evidenceAxis: stanceMode.evidenceAxis,
+      sourceCount: stanceMode.sourceCount,
+      groundedCount: stanceMode.groundedCount,
+      requiredSources: stanceMode.requiredSources,
+      requiredGrounded: stanceMode.requiredGrounded,
+      confidenceFloor: stanceMode.confidenceFloor,
+      ...(stanceMode.fallbackReason !== undefined
+        ? { reason: stanceMode.fallbackReason }
+        : {}),
+    },
+  };
+}
+
+function buildExpectedValueNote(
+  hostExpected: number,
+  measuredCluster: number | null
+): ExpectedValueDivergenceNote {
+  const absoluteDifference =
+    measuredCluster === null ? null : Math.abs(hostExpected - measuredCluster);
+  const observation =
+    measuredCluster === null
+      ? `Host expected ${hostExpected}; no absolute consensus cluster was measurable from the sources.`
+      : `Host expected ${hostExpected}; the sources landed on ${measuredCluster}; the two differ by ${absoluteDifference}.`;
+  return { hostExpected, measuredCluster, absoluteDifference, observation };
+}
 
 /**
  * buildHandlers creates the MCP tool handler bundle for one resolved runtime configuration.
@@ -139,6 +237,10 @@ export function buildHandlers(config: RuntimeConfig): ToolHandlers {
     handleCanonQualify: (input) => handleCanonQualify(input, getCanonRuntime),
     handleCanonGet: (input) => handleCanonGet(input, getCanonRuntime),
     handleScoreClaim: (input) => handleScoreClaim(input, config, signer),
+    handleReadSupport,
+    handleReportRankStability,
+    handleValidateDatapoint,
+    handlePatternScan: (input) => handlePatternScan(input, config),
   };
 }
 
@@ -206,6 +308,74 @@ async function handleRunEngine(input: RunEngineInput, config: RuntimeConfig): Pr
 }
 
 /**
+ * Tool: delta_validate_datapoint
+ * Thin adapter → `@uvrn/validate` Stage1 (+ optional Stage2 measure route).
+ * Does not overload delta_validate_bundle. Never emits verified.
+ */
+async function handleValidateDatapoint(
+  input: ValidateDatapointInput
+): Promise<ValidateDatapointOutput> {
+  logger.debug('handleValidateDatapoint called', { runStage2: input?.runStage2 === true });
+
+  try {
+    const { validateDataPoint } = await import('@uvrn/validate');
+
+    const sources: MeasurementSource[] | undefined = Array.isArray(input?.sources)
+      ? input.sources.map((s, index) => {
+          const id =
+            (typeof s.id === 'string' && s.id.trim().length > 0 && s.id) ||
+            (typeof s.url === 'string' && s.url.trim().length > 0 && s.url) ||
+            `source-${index + 1}`;
+          const label =
+            (typeof s.label === 'string' && s.label) ||
+            (typeof s.title === 'string' && s.title) ||
+            id;
+          const kind =
+            s.kind ??
+            (typeof s.value === 'number'
+              ? 'numeric'
+              : typeof s.assertion === 'string'
+                ? 'categorical'
+                : undefined);
+          const source: MeasurementSource = {
+            id,
+            label,
+            status: 'on',
+          };
+          if (kind !== undefined) source.kind = kind;
+          if (typeof s.value === 'number') source.value = s.value;
+          if (typeof s.assertion === 'string') source.assertion = s.assertion;
+          if (typeof s.ts === 'string') source.ts = s.ts;
+          return source;
+        })
+      : undefined;
+
+    const result = validateDataPoint(input?.dataPoint, {
+      runStage2: input?.runStage2 === true,
+      ...(typeof input?.claim === 'string' ? { claim: input.claim } : {}),
+      ...(sources !== undefined ? { sources } : {}),
+    });
+
+    // Belt-and-suspenders honesty: this surface must never claim verified.
+    const serialized = JSON.stringify(result);
+    if (/"verified"/.test(serialized) || /integrity-checked/.test(serialized)) {
+      throw new ExecutionError(
+        'delta_validate_datapoint refused to emit forbidden honesty tokens (verified / integrity-checked)'
+      );
+    }
+
+    return result as ValidateDatapointOutput;
+  } catch (error) {
+    if (error instanceof ValidationError || error instanceof ExecutionError) throw error;
+    logger.error('handleValidateDatapoint failed', { error });
+    throw new ExecutionError(
+      `delta_validate_datapoint failed: ${error instanceof Error ? error.message : String(error)}`,
+      error
+    );
+  }
+}
+
+/**
  * Tool: delta_validate_bundle
  * Validates bundle structure without executing
  */
@@ -236,7 +406,7 @@ async function handleValidateBundle(
       valid: result.valid,
       error: result.error,
       details: result.valid
-        ? `Bundle "${bundle.bundleId}" is valid with ${bundle.dataSpecs.length} data specs`
+        ? `Bundle "${bundle.bundleId}" passed structural validation with ${bundle.dataSpecs.length} data specs. Structure only — nothing here checks evidence, hashes, or signatures.`
         : result.error,
     };
   } catch (error) {
@@ -264,35 +434,41 @@ async function handleVerifyReceipt(
     // Validate input structure
     if (!input.receipt || typeof input.receipt !== 'object') {
       return {
+        integrityOk: false,
         verified: false,
         error: 'Invalid input: receipt must be an object',
-        details: 'The provided receipt is not a valid object',
+        details: 'The provided receipt is not an object',
       };
     }
 
     const receipt = input.receipt as DeltaReceipt;
     const result = verifyReceipt(receipt);
+    // verifyReceipt() recomputes the canonical hash and compares it. No key, no signature,
+    // no producer — so this is integrity, not verification (SPEC/uvrn-signing-v1.md).
+    const integrityOk = result.verified;
 
-    logger.info('Receipt verification completed', {
-      verified: result.verified,
+    logger.info('Receipt integrity check completed', {
+      integrityOk,
       bundleId: receipt.bundleId,
     });
 
     return {
-      verified: result.verified,
+      integrityOk,
+      verified: integrityOk,
       recomputedHash: result.recomputedHash,
       error: result.error,
-      details: result.verified
-        ? `Receipt for bundle "${receipt.bundleId}" is valid. Hash verified: ${receipt.hash}`
+      details: integrityOk
+        ? `Receipt for bundle "${receipt.bundleId}" is integrity-checked: its canonical payload rehashes to ${receipt.hash}. No producer signature was checked, so this is not verification — use verifyReceiptFull() from @uvrn/receipt for integrity plus signature.`
         : result.error,
     };
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    logger.error('Receipt verification error', { error: message });
-    
+    logger.error('Receipt integrity check error', { error: message });
+
     return {
+      integrityOk: false,
       verified: false,
-      error: 'Verification error',
+      error: 'Integrity check error',
       details: message,
     };
   }
@@ -453,6 +629,7 @@ async function handleScoreClaim(
     const registration = claimRegistrationFromInput(input);
     const nodes: NodeStatusRecord[] = [];
     const farmResults: ConsensusFarmResult[] = [];
+    const hostMeasurements: HostMeasurementEcho[] = [];
     let evidenceMode: 'host_sources' | 'connector' | 'mock';
 
     // Host-evidence precedence: any non-empty `sources` array means the caller
@@ -473,9 +650,21 @@ async function handleScoreClaim(
         assertFiniteRange(s.evidenceScore, 'evidenceScore', 0, 100);
         assertFiniteRange(s.stanceValue, 'stanceValue', -1, 1);
         assertFiniteRange(s.stanceConfidence, 'stanceConfidence', 0, 1);
+        // Uncapped is not unvalidated: any magnitude is allowed, NaN/Infinity are not.
+        assertFinite(s.value, 'value');
         assertStanceLabel(s.stanceLabel);
+        if (s.unit !== undefined && typeof s.unit !== 'string') {
+          throw new ValidationError('unit must be a string when provided');
+        }
         if (s.stanceEvidence !== undefined && typeof s.stanceEvidence !== 'string') {
           throw new ValidationError('stanceEvidence must be a string when provided');
+        }
+        if (s.value !== undefined) {
+          hostMeasurements.push({
+            url: s.url,
+            value: s.value,
+            ...(s.unit !== undefined ? { unit: s.unit } : {}),
+          });
         }
       }
       const observedAt = new Date().toISOString();
@@ -488,8 +677,23 @@ async function handleScoreClaim(
           title: s.title,
           snippet: s.snippet,
           publishedAt: s.publishedAt,
+          measuredAt: s.measuredAt,
+          appliesTo: s.appliesTo,
           credibility: s.credibility,
-          evidenceScore: s.evidenceScore,
+          // FarmSource.evidenceScore is the numeric channel consensus/normalize read
+          // (extractProminenceValue). A host-supplied `value` is the measurement, so it
+          // takes that channel when present, at its own magnitude and unrescaled. The
+          // MCP-level `evidenceScore` input keeps its 0–100 quality semantics and its
+          // range check above; `value` never widens that bound.
+          evidenceScore: s.value ?? s.evidenceScore,
+          // Host-declared unit → unitSource declared in consensus (BP-20).
+          unit: s.unit,
+          quantityKind: s.quantityKind,
+          obsStatus: s.obsStatus,
+          stake: s.stake,
+          codeLists: s.codeLists,
+          prov: s.prov,
+          originId: s.originId,
           stanceValue: s.stanceValue,
           stanceLabel: s.stanceLabel,
           stanceConfidence: s.stanceConfidence,
@@ -607,15 +811,33 @@ async function handleScoreClaim(
         : {}),
     };
 
+    // Attach additive arcanum identity fields AFTER wrap (hash sealed) and BEFORE sign.
+    // canonicalClaimId + arcanumType are unknown-fields (SPEC §2.4) — never hashed.
+    const wrapped = wrapMasterReceipt(receiptPayload, {
+      claim: { id: registration.id, text: input.claim },
+      source: 'uvrn-mcp',
+      action: 'delta_score_claim',
+      ...(topic !== undefined ? { topic } : {}),
+    });
+    const domain =
+      topic !== undefined ? parseTopic(normalizeTopic(topic).topic).domain : '';
     const networkReceipt = signReceipt(
-      wrapMasterReceipt(receiptPayload, {
-        claim: { id: registration.id, text: input.claim },
-        source: 'uvrn-mcp',
-        action: 'delta_score_claim',
-        ...(topic !== undefined ? { topic } : {}),
-      }),
+      {
+        ...wrapped,
+        canonicalClaimId: canonicalClaimId(input.claim, domain),
+        arcanumType: domain === 'markets' ? 'uvrn-market' : 'uvrn-research',
+      },
       { privateKey: signer.privateKey, publicKeyRef: signer.publicKeyRef }
     );
+
+    // FIRST CONSUMER REPOINT (BP-A2): when a Layer 4 archive/store is injected, persist
+    // after sign so the scored receipt survives process exit. Ephemeral hosts omit this —
+    // default behavior unchanged (no silent invent of a store).
+    if (config.arcanum) {
+      config.arcanum.persist(networkReceipt);
+    } else if (config.receiptStore) {
+      config.receiptStore.save(networkReceipt);
+    }
 
     const humanView = toHumanView(networkReceipt, {
       scores: {
@@ -625,6 +847,17 @@ async function handleScoreClaim(
         freshness: consensus.components.freshness,
       },
     });
+
+    // expectedValue is host input → envelope observation only. Computed after
+    // receipts are sealed so it cannot enter hashed surfaces.
+    let expectedValueDivergence: ExpectedValueDivergenceNote | undefined;
+    if (input.expectedValue !== undefined) {
+      if (typeof input.expectedValue !== 'number' || !Number.isFinite(input.expectedValue)) {
+        throw new ValidationError('expectedValue must be a finite number when provided');
+      }
+      const measuredCluster = absoluteClusterFromDataSpecs(consensus.bundle.dataSpecs);
+      expectedValueDivergence = buildExpectedValueNote(input.expectedValue, measuredCluster);
+    }
 
     return {
       masterReceipt,
@@ -636,6 +869,15 @@ async function handleScoreClaim(
       sourceCount: consensus.stats.sourceCount,
       networkReceipt,
       humanView,
+      // Envelope-only (BP-18): all five stance labels plus quorum state, reported whether
+      // or not the quorum was met. Deliberately computed after the receipts are sealed so
+      // it cannot reach `receiptPayload` — the payload's gated `stanceSummary` is untouched.
+      stanceCounts: buildStanceCounts(merged.sources, stanceMode),
+      ...(hostMeasurements.length > 0 ? { hostMeasurements } : {}),
+      ...(expectedValueDivergence !== undefined ? { expectedValueDivergence } : {}),
+      ...(input.trackRecordObservations !== undefined && input.trackRecordObservations.length > 0
+        ? { trackRecordObservations: input.trackRecordObservations }
+        : {}),
       // Ephemeral mode only: emit the public key so callers can verify this run's
       // signature. Explicit keys are never echoed in results.
       ...(signer.ephemeralPublicKey !== undefined
@@ -682,6 +924,16 @@ function assertFiniteRange(value: unknown, field: string, min: number, max: numb
     (typeof value !== 'number' || !Number.isFinite(value) || value < min || value > max)
   ) {
     throw new ValidationError(`${field} must be a finite number between ${min} and ${max}`);
+  }
+}
+
+/**
+ * Validates an optional numeric field is a finite number of any magnitude. Uncapped is
+ * not the same as unvalidated: NaN, Infinity, and non-numbers are still rejected.
+ */
+function assertFinite(value: unknown, field: string): void {
+  if (value !== undefined && (typeof value !== 'number' || !Number.isFinite(value))) {
+    throw new ValidationError(`${field} must be a finite number when provided`);
   }
 }
 
@@ -754,6 +1006,8 @@ class DefaultMockConnector implements FarmConnector {
           snippet: 'Reported metric value 100 for the claim.',
           publishedAt: now,
           credibility: 0.9,
+          // Declared metric — title/snippet scrape is opt-in and off (BP-15).
+          evidenceScore: 100,
         },
         {
           url: `mock://source-b/${claim.id}`,
@@ -761,8 +1015,162 @@ class DefaultMockConnector implements FarmConnector {
           snippet: 'Reported metric value 102 for the claim.',
           publishedAt: now,
           credibility: 0.85,
+          evidenceScore: 102,
         },
       ],
     };
+  }
+}
+
+/**
+ * Tool: delta_read_support
+ * Thin adapter → lattice `readSupport` / claim ladder. No duplicate sufficiency engine.
+ */
+async function handleReadSupport(input: ReadSupportInput): Promise<ReadSupportOutput> {
+  logger.debug('handleReadSupport called');
+
+  if (typeof input?.claim !== 'string' || input.claim.trim().length === 0) {
+    throw new ValidationError(
+      'delta_read_support requires a non-empty string `claim`. Missing claim cannot be graded for support sufficiency.'
+    );
+  }
+  if (!Array.isArray(input.evidence)) {
+    throw new ValidationError(
+      'delta_read_support requires `evidence` as an array. Omit is not allowed — pass [] for an honest Unverified / empty-coverage readout.'
+    );
+  }
+
+  try {
+    const { readSupport } = await import('@uvrn/lattice');
+    const options =
+      typeof input.ts === 'string' && input.ts.length > 0 ? { ts: input.ts } : {};
+    // Forward host evidence unchanged — lattice owns tagging / honesty vocabulary.
+    const readout = readSupport(input.claim, input.evidence as never, options);
+    return readout as unknown as ReadSupportOutput;
+  } catch (error) {
+    if (error instanceof ValidationError) throw error;
+    logger.error('handleReadSupport failed', { error });
+    throw new ExecutionError(
+      `delta_read_support failed: ${error instanceof Error ? error.message : String(error)}`,
+      error
+    );
+  }
+}
+
+/**
+ * Tool: delta_pattern_scan
+ * Thin adapter → @uvrn/pattern scanPatterns. Observatory only — detected ≠ verified; not receipt-class.
+ */
+async function handlePatternScan(
+  input: PatternScanInput,
+  config: RuntimeConfig
+): Promise<PatternScanOutput> {
+  logger.debug('handlePatternScan called');
+
+  if (typeof input?.joinScope !== 'string' || input.joinScope.trim().length === 0) {
+    throw new ValidationError(
+      'delta_pattern_scan requires a non-empty string `joinScope`. Unbound / silent global scans are refused.'
+    );
+  }
+  if (
+    !input.window ||
+    typeof input.window.from !== 'string' ||
+    typeof input.window.to !== 'string' ||
+    input.window.from.trim().length === 0 ||
+    input.window.to.trim().length === 0
+  ) {
+    throw new ValidationError(
+      'delta_pattern_scan requires `window.from` and `window.to` as non-empty ISO strings.'
+    );
+  }
+
+  try {
+    const {
+      InMemoryHistoryReader,
+      FrequencySpikeDetector,
+      scanPatterns,
+    } = await import('@uvrn/pattern');
+
+    const hasInlineHistory = Array.isArray(input.history);
+    const injected = config.patternHistoryReader;
+
+    if (!hasInlineHistory && !injected) {
+      throw new ValidationError(
+        'delta_pattern_scan requires `history` as an array (pass [] for honest insufficient) unless RuntimeConfig.patternHistoryReader is injected. Hosts map existing store list()/listRecords() into history events — v0 does not invent a cross-claim index.'
+      );
+    }
+
+    const reader = hasInlineHistory
+      ? new InMemoryHistoryReader(input.history as never)
+      : (injected as never);
+
+    const detector =
+      typeof input.minCount === 'number'
+        ? new FrequencySpikeDetector({ minCount: input.minCount })
+        : new FrequencySpikeDetector();
+
+    const result = await scanPatterns(
+      reader,
+      {
+        joinScope: input.joinScope,
+        window: input.window,
+        ...(input.subjectRefs !== undefined ? { subjectRefs: input.subjectRefs } : {}),
+      },
+      detector
+    );
+
+    return result as unknown as PatternScanOutput;
+  } catch (error) {
+    if (error instanceof ValidationError) throw error;
+    logger.error('handlePatternScan failed', { error });
+    throw new ExecutionError(
+      `delta_pattern_scan failed: ${error instanceof Error ? error.message : String(error)}`,
+      error
+    );
+  }
+}
+
+/**
+ * Tool: delta_report_rank_stability
+ * Thin adapter → algox `reportRankStability`. Ordering stability only — not publish/registry law.
+ */
+async function handleReportRankStability(
+  input: ReportRankStabilityInput
+): Promise<ReportRankStabilityOutput> {
+  logger.debug('handleReportRankStability called');
+
+  if (!Array.isArray(input?.candidates)) {
+    throw new ValidationError(
+      'delta_report_rank_stability requires `candidates` as an array of ranking candidates.'
+    );
+  }
+  if (input.candidates.length === 0) {
+    throw new ValidationError(
+      'delta_report_rank_stability requires a non-empty `candidates` array. Ranking with no candidates is undefined — supply at least one candidate with a non-empty `label`.'
+    );
+  }
+  for (let i = 0; i < input.candidates.length; i++) {
+    const c = input.candidates[i];
+    if (!c || typeof c !== 'object' || typeof c.label !== 'string' || c.label.trim().length === 0) {
+      throw new ValidationError(
+        `delta_report_rank_stability candidates[${i}] requires a non-empty string \`label\`.`
+      );
+    }
+  }
+
+  try {
+    const { reportRankStability } = await import('@uvrn/algox');
+    const report = await reportRankStability(input.candidates, {
+      ...(input.baseline !== undefined ? { baseline: input.baseline } : {}),
+      ...(input.variants !== undefined ? { variants: input.variants } : {}),
+    });
+    return report as unknown as ReportRankStabilityOutput;
+  } catch (error) {
+    if (error instanceof ValidationError) throw error;
+    logger.error('handleReportRankStability failed', { error });
+    throw new ExecutionError(
+      `delta_report_rank_stability failed: ${error instanceof Error ? error.message : String(error)}`,
+      error
+    );
   }
 }

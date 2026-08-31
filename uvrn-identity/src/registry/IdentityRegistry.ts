@@ -46,6 +46,14 @@ export class MockIdentityStore implements IdentityStore {
       })
       .slice(0, limit);
   }
+
+  /**
+   * Fixture/local continuity helper — returns recorded activities for a signer.
+   * Not a live remote query surface.
+   */
+  async listActivities(address: string): Promise<ReputationActivity[]> {
+    return [...(this.#activities.get(address) ?? [])];
+  }
 }
 
 export class IdentityRegistry {

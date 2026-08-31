@@ -1,7 +1,16 @@
 # UVRN Packages — Agent Context (public repo)
 
-This is the UVRN protocol monorepo: 26 `@uvrn/*` packages (v4 generation) plus the
-protocol specifications in `SPEC/`. It is a public, MIT-licensed open-source project.
+**GitHub remote:** [`UVRN-org/uvrn-packages`](https://github.com/UVRN-org/uvrn-packages) — PRs land on **`main`**.
+
+This is the UVRN protocol monorepo for the **public** generation:
+33 `@uvrn/*` workspace packages plus the protocol specifications in `SPEC/`.
+
+**Cursor / Claude agents:** this file.  
+**Read book + article / how to speak results:** [`agents/SCRIBE.md`](agents/SCRIBE.md) (index: [`agents/README.md`](agents/README.md)).  
+**External / 3rd-party MCP clients** (connectors, online agents): [`uvrn-mcp/CONNECT.md`](uvrn-mcp/CONNECT.md) — not this file.
+
+**Org / protocol home:** [`UVRN-org/uvrn`](https://github.com/UVRN-org/uvrn).  
+**Previous public generation:** branch `legacy/v4-main` on this repo.
 
 ## Build & test
 
@@ -9,6 +18,7 @@ protocol specifications in `SPEC/`. It is a public, MIT-licensed open-source pro
 pnpm install
 pnpm -r build
 pnpm -r test
+pnpm run check:phase1-gates
 ```
 
 pnpm ≥ 11.5 note: packages with build scripts must be approved via `allowBuilds` in the
@@ -16,24 +26,14 @@ workspace config (already set — `onlyBuiltDependencies` alone is not sufficien
 
 ## Binding laws (do not violate)
 
-1. **Additive-only against live receipts.** The legacy `drvc3-receipt-1` hash contract and
-   the `uvrn-receipt-4` hash field list are FROZEN (`SPEC/uvrn-receipt-v1.md`). New fields
-   may be added; existing hashed fields may never change meaning, order, or encoding.
-   Golden vectors in `SPEC/` must keep passing byte-identically.
-2. **Honest vocabulary.** A hash recompute alone is "integrity-checked". "Verified" requires
-   integrity AND a producer signature that checks out (`SPEC/uvrn-signing-v1.md`). Never
-   claim more than the math proves — in code, docs, or UI strings.
-3. **In-repo dependencies use `workspace:^`** so publishing rewrites them to the released
-   version range.
+1. **Additive-only against live receipts.** Golden vectors in `SPEC/` must keep passing byte-identically.
+2. **Honest vocabulary.** Integrity-checked ≠ verified without a valid producer signature.
+3. **In-repo dependencies use `workspace:^`** so publishing rewrites them to the released version range.
 
 ## Layout
 
-- `uvrn-*/` — one package each; `src/` TypeScript, `dist/` build output (gitignored),
-  per-package README + CHANGELOG + tests.
-- `SPEC/` — implementation-independent protocol specs + golden test vectors. Spec changes
-  are protocol changes: they need their own PR and review.
-- `uvrn-protocol` is the umbrella package; `uvrn-core`, `uvrn-receipt`, `uvrn-measure`,
-  `uvrn-consensus`, `uvrn-score`, `uvrn-signal` are its direct deps.
+- `uvrn-*/` — one package each; `src/` TypeScript, `dist/` build output.
+- `SPEC/` — protocol specs + golden test vectors.
+- `agents/` — agent how-to. Start at [`agents/SCRIBE.md`](agents/SCRIBE.md).
 
-See `CONTRIBUTING.md` for the PR workflow. Historical references to `admin/` in the
-CHANGELOG point to the maintainers' internal ops archive, which is not part of this repo.
+See `CONTRIBUTING.md` for the PR workflow.

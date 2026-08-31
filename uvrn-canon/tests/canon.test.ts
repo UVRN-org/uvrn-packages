@@ -216,3 +216,81 @@ describe('Canon.verify()', () => {
     expect(await canon.verify(tampered)).toBe(false);
   });
 });
+
+describe('Canon checker gate (BP-03)', () => {
+  it('attaches ai attestation without changing verify (non-hashed)', async () => {
+    const attestation = {
+      kind: 'ai' as const,
+      identity: 'fixture-ai-v1',
+      decidedAt: '2026-07-22T00:00:00.000Z',
+      verdict: 'pass' as const,
+      notes: 'ok',
+    };
+    const store = new MockStore();
+    const canon = new Canon({
+      stores: [store],
+      signer: new MockSigner(),
+      canonizerId: 'test-canonizer',
+      autoSuggest: {
+        enabled: true,
+        consecutiveRuns: 3,
+        minScore: 85,
+        suggestionTtlMs: 60 * 60 * 1000,
+      },
+      checker: { check: async () => attestation },
+    } as CanonConfig);
+
+    const result = await canon.canonize({
+      driftReceipt: makeReceipt(),
+      finalSnapshot: makeSnapshot(),
+      trigger: { type: 'manual', confirmed_by: 'shawn' },
+    });
+
+    expect(result.reviewer_attestation?.kind).toBe('ai');
+    expect(result.receipt.reviewer_attestation?.identity).toBe('fixture-ai-v1');
+    expect(await canon.verify(result.receipt)).toBe(true);
+
+    // D9: human kind accepted on same seam
+    const withHuman = {
+      ...result.receipt,
+      reviewer_attestation: {
+        kind: 'human' as const,
+        identity: 'reviewer-alice',
+        decidedAt: '2026-07-22T01:00:00.000Z',
+        verdict: 'pass' as const,
+      },
+    };
+    expect(await canon.verify(withHuman)).toBe(true);
+  });
+
+  it('blocks canonize when checker returns fail', async () => {
+    const canon = new Canon({
+      stores: [new MockStore()],
+      signer: new MockSigner(),
+      canonizerId: 'test-canonizer',
+      autoSuggest: {
+        enabled: true,
+        consecutiveRuns: 3,
+        minScore: 85,
+        suggestionTtlMs: 60 * 60 * 1000,
+      },
+      checker: {
+        check: async () => ({
+          kind: 'ai',
+          identity: 'fixture-ai-v1',
+          decidedAt: new Date().toISOString(),
+          verdict: 'fail',
+          notes: 'nope',
+        }),
+      },
+    } as CanonConfig);
+
+    await expect(
+      canon.canonize({
+        driftReceipt: makeReceipt(),
+        finalSnapshot: makeSnapshot(),
+        trigger: { type: 'manual', confirmed_by: 'shawn' },
+      }),
+    ).rejects.toThrow(/checker rejected/);
+  });
+});

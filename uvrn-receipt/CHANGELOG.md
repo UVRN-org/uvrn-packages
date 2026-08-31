@@ -1,5 +1,19 @@
 # @uvrn/receipt — Changelog
 
+## Unreleased
+
+### Added
+- Actionable explanations (BP-v2.1-LATER-D3): `buildActionableExplanation()` + optional
+  `HumanView.actionableExplanation` from `toHumanView` when split/disagree facts are
+  present. Drivers answer “what would move disagree → agree?” with measurement /
+  stance / D2 diagnostic / optional spread anchors. Render-only; no hashed field-list
+  changes; no invented ranking policy.
+- Source-quality diagnostics (BP-v2.1-LATER-D2): `assessSourceQuality()` + optional
+  `HumanView.sourceQualityDiagnostics` when hosts supply `sourceQualityInputs` via
+  `toHumanView` options or a non-hashed envelope member. Weak/inconsistent
+  `stanceLabel` / `evidenceScore` / `credibility` are machine-checkable; no hashed
+  field-list changes; no fake high-confidence language when inputs are weak.
+
 ## [4.1.0] - 2026-07-19
 
 ### Closing release

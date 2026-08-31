@@ -44,7 +44,7 @@ describe('MCP Protocol Compliance', () => {
 
   it('should list tools', async () => {
     const tools = await client.listTools();
-    expect(tools.tools).toHaveLength(9);
+    expect(tools.tools).toHaveLength(13);
     expect(tools.tools.map((t) => t.name)).toEqual([
       'delta_run_engine',
       'delta_validate_bundle',
@@ -55,6 +55,10 @@ describe('MCP Protocol Compliance', () => {
       'delta_canon_qualify',
       'delta_canon_get',
       'delta_score_claim',
+      'delta_read_support',
+      'delta_report_rank_stability',
+      'delta_validate_datapoint',
+      'delta_pattern_scan',
     ]);
   });
 

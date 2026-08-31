@@ -29,6 +29,27 @@ await registry.record({
 const rep = await registry.reputation('0xA9F1...');
 ```
 
+## Local fixture continuity (D6)
+
+For package-local “persistence” without live remote identity, export a `MockIdentityStore` snapshot and hydrate it later:
+
+```ts
+import {
+  IdentityRegistry,
+  MockIdentityStore,
+  exportFixtureSnapshot,
+  hydrateFixtureSnapshot,
+} from '@uvrn/identity';
+
+const ephemeral = new MockIdentityStore();
+const registry = new IdentityRegistry({ store: ephemeral });
+// … recordEvent with attested fixture evidence …
+const snapshot = await exportFixtureSnapshot(ephemeral);
+const persistent = await hydrateFixtureSnapshot(snapshot);
+```
+
+Live remote / store-backed identity remains Admin-gated (D9). See `fixtures/continuity/`.
+
 ## Evidence-based recording: `recordEvent()`
 
 `recordEvent()` is the v4 path: each event may carry `AttestedEvidence` — an Ed25519 signature over the canonical JSON of `{ publicKeyRef, receiptHash, schemaVersion, sigVersion: 'uvrn-sig-1', signedAt? }`, verified against the raw 32-byte public key in `evidence.publicKey` (base64). Payload bytes use the shared environment-pure `@uvrn/core/canonical-serialize-2` module; identity contains no live serializer copy.

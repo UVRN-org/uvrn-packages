@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/compare",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "Cross-receipt comparison and consensus divergence tracking for UVRN",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -16,8 +16,8 @@
     "clean": "rm -rf dist"
   },
   "peerDependencies": {
-    "@uvrn/core": "^4.0.0",
-    "@uvrn/drift": "^4.0.0"
+    "@uvrn/core": "^5.0.0",
+    "@uvrn/drift": "^5.0.0"
   },
   "peerDependenciesMeta": {
     "@uvrn/timeline": {
@@ -25,9 +25,9 @@
     }
   },
   "devDependencies": {
-    "@uvrn/core": "workspace:*",
-    "@uvrn/drift": "workspace:*",
-    "@uvrn/test": "workspace:*",
+    "@uvrn/core": "workspace:^",
+    "@uvrn/drift": "workspace:^",
+    "@uvrn/test": "workspace:^",
     "@types/jest": "^29.5.0",
     "@types/node": "^20.0.0",
     "jest": "^29.5.0",

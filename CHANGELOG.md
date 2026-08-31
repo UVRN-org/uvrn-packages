@@ -3,6 +3,35 @@
 > Historical references to `admin/` and `.admin/` below point to the maintainers' internal
 > ops archive (plans, audits, findings), which is not part of this public repository.
 
+## [5.0.0 public repo sync] — 2026-08-30
+
+- **Public GitHub sync:** This tree replaces v4 `main` with the **33-package public `@uvrn/*` generation** from the private v2.1 line.
+- Previous public generation archived on branch **`legacy/v4-main`** (@ v4.1.0).
+- Excluded from public export: maintainer ops drawers (arcanum, checker, case-bank, store-d1-client) and `.admin/`.
+- CI gates retuned: **33 public / 0 drawers**.
+
+## [Unreleased] — dual-scope split (33 public + 4 restricted)
+
+- **Promoted to public `@uvrn/*` (MIT, `5.0.1`):** `@uvrn/visual`, `@uvrn/chart-memory`, `@uvrn/track-record` — end-user receipt views, history charts, per-origin track records. `5.0.1` republish after zombie `5.0.0` tarball (metadata 404 / E403 republish).
+- **Restricted `@suttlemedia/*` (4 ops only):** `arcanum`, `store-d1-client`, `checker`, `case-bank` — maintainer ops/QA; UNLICENSED, `restricted`.
+- `@uvrn/store-sqlite@5.0.2` optional peer + subpath → `@uvrn/track-record`; main entry + main `.d.ts` stay free of `@suttlemedia/` strings.
+- Publish order: four restricted first (SuttleMedia org) → three public advancements (UVRN org) → `store-sqlite@5.0.2`.
+
+## [Unreleased] — 5.0.1 public patches + `@suttlemedia/*` drawers
+
+- **Private 7 drawers** renamed prior private VIP scope → `@suttlemedia/*` (`arcanum` `0.1.0`, others `5.0.0`); `publishConfig.access: restricted`; `UNLICENSED`; `private` cleared for publish.
+- `@uvrn/mcp@5.0.1` optional peer → `@suttlemedia/arcanum` `^0.1.0` (publish after private verify).
+- `@uvrn/store-sqlite@5.0.1` optional peer + subpath → `@suttlemedia/track-record`; main entry + main `.d.ts` stay free of private scope.
+- Publish order locked: seven `@suttlemedia/*` first and verified, then the two public patches.
+
+## [5.0.0] — 2026-08-15 — dual-scope prep (Phase 1)
+
+- **Public 30** `@uvrn/*` bumped to `5.0.0`; in-repo deps use `workspace:^`; published range hard-cut `^5.0.0`.
+- **Private 7 drawers** initially prior private VIP scope (`arcanum` `0.1.0`); moved to `@suttlemedia/*` (see Unreleased).
+- `@uvrn/store-sqlite`: lazy-load private track-record on subpath `@uvrn/store-sqlite/track-record`; main `.d.ts` private-scope-free.
+- MCP optional peer: private arcanum `^0.1.0`.
+- Docs: dual-scope README; [`PUBLISH.md`](PUBLISH.md) (pnpm only).
+
 ## [Unreleased — 4.0.0] — v4 / fable-refactor-1 generation
 
 Refactor of the v3 LIVE generation per `admin/plans/00-MASTER-PLAN.md`. Decisions resolved 2026-06-10: version line 4.0.0 (D-1), copy-then-refactor (D-2), `@uvrn/protocol` umbrella yes (D-3), controlled starter topic taxonomy + free tags (D-4).

@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/lattice",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "Cross-domain evidence decomposition layer for the UVRN protocol",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -23,9 +23,9 @@
     "clean": "rm -rf dist"
   },
   "peerDependencies": {
-    "@uvrn/core": "^4.0.0",
-    "@uvrn/farm": "^4.0.0",
-    "@uvrn/normalize": "^4.0.0"
+    "@uvrn/core": "^5.0.0",
+    "@uvrn/farm": "^5.0.0",
+    "@uvrn/normalize": "^5.0.0"
   },
   "peerDependenciesMeta": {
     "@uvrn/farm": {
@@ -36,9 +36,9 @@
     }
   },
   "devDependencies": {
-    "@uvrn/core": "workspace:*",
-    "@uvrn/farm": "workspace:*",
-    "@uvrn/normalize": "workspace:*",
+    "@uvrn/core": "workspace:^",
+    "@uvrn/farm": "workspace:^",
+    "@uvrn/normalize": "workspace:^",
     "@types/jest": "^29.5.0",
     "@types/node": "^20.0.0",
     "jest": "^29.5.0",

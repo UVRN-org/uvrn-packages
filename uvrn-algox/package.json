@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/algox",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "Tunable signal-ranking pipeline — turns a pile of agent-gathered candidates into a ranked list of the most prominent signals for any dashboard.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

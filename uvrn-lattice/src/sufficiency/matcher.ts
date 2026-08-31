@@ -19,7 +19,8 @@ export interface MatchOptions {
 
 // Pure, deterministic matcher. Intersects the claim's required evidence classes with what was
 // obtained and emits a Supported/Unverified verdict plus a coverage-based score. Never touches
-// V-Score / delta math.
+// V-Score / delta math. Corroboration counts distinct host-declared originIds (F-1 path a) —
+// never bare document `source` strings alone.
 export function matchSufficiency(
   claim: ClaimSpec,
   evidence: EvidenceItem[],
@@ -32,10 +33,26 @@ export function matchSufficiency(
   const missing = required.filter((cls) => !obtained.includes(cls));
   const status = missing.length === 0 ? 'Supported' : 'Unverified';
 
-  const evidenceCoverageScore = computeCoverageScore(required, matched, evidence);
+  const matchedItems = evidence.filter((item) => matched.includes(item.evidenceClass));
+  const { distinctOriginCount, originCorroborationIncomplete, corroboration } =
+    originCorroboration(matchedItems);
+
+  const evidenceCoverageScore = computeCoverageScore(
+    required,
+    matched,
+    matchedItems,
+    corroboration
+  );
   const coverageBand = bandFor(evidenceCoverageScore, status);
   const licensedClaimLevel = highestLicensedLevel(obtained);
-  const interpretation = buildInterpretation(status, coverageBand, missing, licensedClaimLevel);
+  const interpretation = buildInterpretation(
+    status,
+    coverageBand,
+    missing,
+    licensedClaimLevel,
+    distinctOriginCount,
+    originCorroborationIncomplete
+  );
 
   return {
     claim: claim.text,
@@ -49,23 +66,58 @@ export function matchSufficiency(
     missingEvidence: missing,
     matchedEvidence: matched,
     licensedClaimLevel,
+    distinctOriginCount,
+    originCorroborationIncomplete,
     interpretation,
-    explanation: `Evidence sufficiency for a ${claim.level} (${CLAIM_LADDER[claim.level].verbClass}) claim, graded by coverage of required evidence classes. Independent of the V-Score.`,
+    explanation: `Evidence sufficiency for a ${claim.level} (${CLAIM_LADDER[claim.level].verbClass}) claim, graded by coverage of required evidence classes and distinct-origin corroboration. Independent of the V-Score; support/sufficiency is not accuracy or verification.`,
     ts,
   };
+}
+
+function originCorroboration(matchedItems: EvidenceItem[]): {
+  distinctOriginCount: number;
+  originCorroborationIncomplete: boolean;
+  corroboration: number;
+} {
+  if (matchedItems.length === 0) {
+    return {
+      distinctOriginCount: 0,
+      originCorroborationIncomplete: false,
+      corroboration: 0,
+    };
+  }
+
+  const declaredOrigins: string[] = [];
+  let incomplete = false;
+
+  for (const item of matchedItems) {
+    const originId = typeof item.originId === 'string' ? item.originId.trim() : '';
+    if (originId.length === 0) {
+      incomplete = true;
+    } else {
+      declaredOrigins.push(originId);
+    }
+  }
+
+  const distinctOriginCount = unique(declaredOrigins).length;
+  // When any matched item lacks originId, do not invent origins from source strings —
+  // origin-aware corroboration contributes 0 (honest incomplete).
+  const corroboration = incomplete ? 0 : Math.min(distinctOriginCount / 2, 1);
+
+  return { distinctOriginCount, originCorroborationIncomplete: incomplete, corroboration };
 }
 
 function computeCoverageScore(
   required: EvidenceClass[],
   matched: EvidenceClass[],
-  evidence: EvidenceItem[]
+  matchedItems: EvidenceItem[],
+  corroboration: number
 ): number {
   if (required.length === 0) {
     return 0;
   }
 
   const coverage = matched.length / required.length;
-  const matchedItems = evidence.filter((item) => matched.includes(item.evidenceClass));
 
   const strength =
     matchedItems.length === 0
@@ -73,9 +125,6 @@ function computeCoverageScore(
       : matchedItems.reduce((sum, item) => sum + (item.value ?? NEUTRAL_STRENGTH), 0) /
         matchedItems.length /
         100;
-
-  const distinctSources = unique(matchedItems.map((item) => item.source)).length;
-  const corroboration = Math.min(distinctSources / 2, 1);
 
   const score = coverage * (0.5 + 0.25 * strength + 0.25 * corroboration);
   return clamp01(round3(score));
@@ -117,16 +166,22 @@ function buildInterpretation(
   status: SufficiencyVerdict['status'],
   band: CoverageBand,
   missing: EvidenceClass[],
-  licensedClaimLevel: ClaimLevel | null
+  licensedClaimLevel: ClaimLevel | null,
+  distinctOriginCount: number,
+  originCorroborationIncomplete: boolean
 ): string {
   const licenses = licensedClaimLevel
     ? `Evidence licenses claims up to ${licensedClaimLevel} (${CLAIM_LADDER[licensedClaimLevel].verbClass}).`
     : 'Evidence licenses no claim level.';
 
+  const originNote = originCorroborationIncomplete
+    ? ` Origin-aware corroboration incomplete (missing originId on matched evidence; distinctOriginCount=${distinctOriginCount}).`
+    : ` Distinct origins among matched evidence: ${distinctOriginCount}.`;
+
   if (status === 'Supported') {
-    return `Supported (coverage: ${band}). ${licenses}`;
+    return `Supported (coverage: ${band}). ${licenses}${originNote} Support/sufficiency is not accuracy, verification, or market truth.`;
   }
-  return `Unverified. Requires ${missing.join(', ')} evidence; not obtained. ${licenses}`;
+  return `Unverified. Requires ${missing.join(', ')} evidence; not obtained. ${licenses}${originNote} Support/sufficiency is not accuracy, verification, or market truth.`;
 }
 
 function unique<T>(values: T[]): T[] {

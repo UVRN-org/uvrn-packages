@@ -124,6 +124,20 @@ export class Canon {
     const claimId = driftReceipt.claim_id ?? driftReceipt.receipt_id;
     const decayCurve = (driftReceipt as { decay_curve?: string }).decay_curve ?? driftReceipt.drift?.curve ?? 'default';
 
+    let reviewerAttestation: import('./types/index').CheckerAttestation | undefined;
+    if (this.config.checker) {
+      reviewerAttestation = await this.config.checker.check({
+        claimId,
+        receiptId: driftReceipt.receipt_id,
+        summary: `canonize ${claimId}`,
+      });
+      if (reviewerAttestation.verdict === 'fail') {
+        throw new Error(
+          `[Canon] checker rejected canonization (${reviewerAttestation.kind}/${reviewerAttestation.identity}): ${reviewerAttestation.notes ?? 'fail'}`,
+        );
+      }
+    }
+
     if (input.suggestionId) {
       const suggestion = this.suggestions.get(input.suggestionId);
       if (!suggestion) {
@@ -141,7 +155,8 @@ export class Canon {
 
     const canonSeq = await this.nextCanonSeq(claimId);
 
-    const preHash: Omit<CanonReceipt, 'content_hash' | 'signature' | 'storage_proofs'> = {
+    // reviewer_attestation is non-hashed (with storage_proofs) — omit from preHash
+    const preHash: Omit<CanonReceipt, 'content_hash' | 'signature' | 'storage_proofs' | 'reviewer_attestation'> = {
       canon_id:       '',
       receipt_id:     driftReceipt.receipt_id,
       claim_id:       claimId,
@@ -172,6 +187,7 @@ export class Canon {
       content_hash:  contentHash,
       signature,
       storage_proofs: [],
+      ...(reviewerAttestation ? { reviewer_attestation: reviewerAttestation } : {}),
     };
 
     const storageProofs = await this.multiStore.writeAll(receipt);
@@ -185,7 +201,12 @@ export class Canon {
       throw new Error('[Canon] post-write signature verification failed');
     }
 
-    return { receipt, storageProofs, verified };
+    return {
+      receipt,
+      storageProofs,
+      verified,
+      ...(reviewerAttestation ? { reviewer_attestation: reviewerAttestation } : {}),
+    };
   }
 
   dismiss(suggestionId: string): void {
@@ -210,7 +231,9 @@ export class Canon {
 
   async verify(receipt: CanonReceipt): Promise<boolean> {
     try {
-      const { content_hash, signature, storage_proofs, public_key, ...rest } = receipt;
+      const { content_hash, signature, storage_proofs, reviewer_attestation, public_key, ...rest } = receipt;
+      void storage_proofs;
+      void reviewer_attestation;
       const preHash = { ...rest, canon_id: '', public_key };
       const recomputed = await sha256(canonicalJson(preHash));
       if (recomputed !== content_hash) return false;
@@ -245,4 +268,4 @@ export class Canon {
 
 export { sha256, canonicalJson, NodeSigner, MockSigner } from './signer/index';
 export { MultiStore, MockStore, R2Store, SupabaseStore, IpfsStore } from './store/index';
-export type { CanonConfig, CanonReceipt, CanonSuggestion, CanonStore, CanonSigner, CanonizeInput, CanonizeResult, QualificationResult, StorageProof, StoreType } from './types/index';
+export type { CanonConfig, CanonReceipt, CanonSuggestion, CanonStore, CanonSigner, CanonizeInput, CanonizeResult, QualificationResult, StorageProof, StoreType, CheckerAttestation, CheckerPort } from './types/index';

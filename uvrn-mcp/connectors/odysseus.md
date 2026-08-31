@@ -21,8 +21,9 @@ launch form drops straight into that model.
    - **Args:** `-y @uvrn/mcp`
    - **Env (optional):** `LOG_LEVEL=info`
 
-3. Reload tools in Odysseus. The agent can then call UVRN's 9 tools as it chooses
-   (`delta_run_engine`, `delta_score_claim`, …). The zero-external default path needs no API keys.
+3. Reload tools in Odysseus. The agent can then call UVRN's 13 tools as it chooses
+   (`delta_run_engine`, `delta_score_claim`, `delta_validate_datapoint`, `delta_pattern_scan`, …). The zero-external default
+   path needs no API keys.
 
 ## Local-build variant
 

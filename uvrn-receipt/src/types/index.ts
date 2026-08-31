@@ -113,6 +113,21 @@ export interface NetworkReceipt {
   sdk?: SdkInfo;
   /** Producer signature; additive, never hashed. */
   signature?: ReceiptSignature;
+  /**
+   * Optional host-supplied source-quality inputs (BP-v2.1-LATER-D2).
+   * Non-hashed unknown-field (SPEC §2.4) — never enters receiptHash.
+   */
+  sourceQualityInputs?: import('../source-quality').SourceQualityInput[];
+  /**
+   * Cross-run claim identity (`claim:<12 hex>`) from `@uvrn/receipt` `canonicalClaimId()`.
+   * Additive unknown-field (SPEC §2.4 / uvrn-claim-id-v1) — never enters receiptHash.
+   */
+  canonicalClaimId?: string;
+  /**
+   * Arcanum purpose label (e.g. `uvrn-market`, `uvrn-research`).
+   * Additive unknown-field (SPEC §2.4) — never enters receiptHash; never overloads `kind`/`tags`.
+   */
+  arcanumType?: string;
 }
 
 /**
@@ -130,12 +145,20 @@ export interface HumanScoreCard {
   completeness?: number;
   parity?: number;
   freshness?: number;
+  /** Untyped median and range reported by the retained consensus sources. */
+  absoluteConsensusValue?: {
+    median: number | null;
+    n: number;
+    min: number | null;
+    max: number | null;
+  };
   /** Plain meaning per component (SPEC vocabulary D4) — always present. */
   plainMeaning: {
     vScore: string;
     completeness: string;
     parity: string;
     freshness: string;
+    absoluteConsensusValue?: string;
   };
 }
 
@@ -182,6 +205,20 @@ export interface HumanProvenance {
 }
 
 /**
+ * IdeaSnapshot is a possibility-phrased reading of observed receipt patterns.
+ * Render-only (humanView). MUST NOT enter hashed payload, tags, narrative, or suggestedFixes.
+ */
+export interface IdeaSnapshot {
+  id: string;
+  /** Tag / field pattern the rule fired on. */
+  basis: string;
+  text: string;
+  generator: 'rules' | 'model';
+  /** True only for model-layer output so readers can tell it apart from rules. */
+  modelGenerated?: boolean;
+}
+
+/**
  * HumanView is the structured, UI-agnostic human representation of a receipt.
  * Any renderer (React, CLI, plain HTML, PDF) can present it without protocol knowledge.
  */
@@ -205,6 +242,22 @@ export interface HumanView {
     parent: 'align' | 'split' | 'contradict' | 'early' | 'insufficient';
     definition: string;
   };
+  /**
+   * Rule-based idea snapshots (BP-22). Render-only; never hashed.
+   * Distinct from `provenance` (integrity/signature honesty) and from W3C PROV edges.
+   */
+  ideaSnapshots?: IdeaSnapshot[];
+  /**
+   * Source-quality diagnostics (BP-v2.1-LATER-D2). Render-only; never hashed.
+   * Present when weak/inconsistent stanceLabel / evidenceScore / credibility inputs
+   * were assessed from options or non-hashed envelope `sourceQualityInputs`.
+   */
+  sourceQualityDiagnostics?: import('../source-quality').SourceQualityDiagnostic[];
+  /**
+   * Actionable disagree→agree explanations (BP-v2.1-LATER-D3). Render-only; never hashed.
+   * Present when split/disagree facts can be anchored to measurement/receipt surfaces.
+   */
+  actionableExplanation?: import('../actionable-explanations').ActionableExplanation;
   provenance: HumanProvenance;
   howToVerify: string;
 }

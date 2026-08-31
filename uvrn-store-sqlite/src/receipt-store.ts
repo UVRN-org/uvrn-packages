@@ -81,6 +81,28 @@ export class SqliteReceiptStore {
     }));
   }
 
+  /** list returns all stored receipts oldest-first (synced and unsynced). */
+  list(): StoredNetworkReceipt[] {
+    const rows = this.#db.raw
+      .prepare(
+        'SELECT json, created_at, synced, synced_at, registry_id FROM network_receipts ORDER BY created_at ASC'
+      )
+      .all() as Array<{
+      json: string;
+      created_at: string;
+      synced: number;
+      synced_at: string | null;
+      registry_id: number | null;
+    }>;
+    return rows.map((row) => ({
+      receipt: JSON.parse(row.json) as NetworkReceipt,
+      createdAt: row.created_at,
+      synced: row.synced === 1,
+      syncedAt: row.synced_at ?? undefined,
+      registryId: row.registry_id ?? undefined,
+    }));
+  }
+
   /**
    * pushToNetwork submits unsynced receipts oldest-first. 2xx marks the row synced; a 5xx
    * stops the run (server trouble — retry later, order preserved); a 4xx records the failure

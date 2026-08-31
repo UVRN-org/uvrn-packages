@@ -26,19 +26,25 @@ The Delta Engine MCP server exposes UVRN's Delta Engine functionality to AI assi
 
 ## Features
 
-### 🔧 Nine MCP Tools
+### 🔧 Twelve MCP Tools
 
 | Tool | Description |
 |------|-------------|
 | **`delta_run_engine`** | Execute Delta Engine on bundles to verify data consensus across sources |
 | **`delta_validate_bundle`** | Validate bundle structure without executing (fast pre-flight check) |
-| **`delta_verify_receipt`** | Verify receipt integrity by recomputing hashes |
+| **`delta_verify_receipt`** | Integrity-check a receipt by recomputing its hash (`integrityOk`; `verified` is a deprecated alias) |
 | **`delta_score_drift`** | Score temporal drift for an already enriched `DriftInputReceipt` |
 | **`delta_compare`** | Compare exactly two already scored receipts with `claimId` and `vScore` |
 | **`delta_verify_identity`** | Look up signer reputation in an in-memory identity registry |
 | **`delta_canon_qualify`** | Read-only canon candidacy assessment for a `DriftSnapshot` |
 | **`delta_canon_get`** | Read a canon receipt by id from the configured `CanonStore` |
-| **`delta_score_claim`** | Score a claim from host-provided sources, a configured connector, or mock data → verifiable `MasterReceipt` + `v_score` |
+| **`delta_score_claim`** | Score a claim from host-provided sources, a configured connector, or mock data → `MasterReceipt` + `v_score` + envelope `stanceCounts` |
+| **`delta_read_support`** | Post-pipeline: lattice `readSupport` claim-ladder sufficiency (not accuracy) |
+| **`delta_report_rank_stability`** | Post-pipeline: algox `reportRankStability` ordering stability (not publish law) |
+| **`delta_validate_datapoint`** | Easy-verify a DataPoint: Stage1 `structurally-ok` \| `malformed`; optional Stage2 measure route (never `verified`) |
+| **`delta_pattern_scan`** | Observatory: `@uvrn/pattern` scan — PatternObservations (detected ≠ verified; not receipt-class) |
+
+**Migration note:** surface grew 12 → 13 with additive `delta_pattern_scan` (after validate’s 11 → 12). See `CONNECT.md`.
 
 ### 📦 Four MCP Resources
 
@@ -253,7 +259,11 @@ Validate bundle structure without executing the engine.
 
 ### `delta_verify_receipt`
 
-Verify receipt integrity by recomputing its hash.
+Integrity-check a DeltaReceipt by recomputing its canonical hash. Returns `integrityOk`
+(true means the receipt has not been altered). This does **not** check a producer
+signature — so it is not verification. (`verified` is a deprecated alias of
+`integrityOk`.) For full verification — integrity plus a producer signature that
+checks out — use `verifyReceiptFull()` from `@uvrn/receipt`.
 
 **Input:**
 ```json
@@ -270,18 +280,20 @@ Verify receipt integrity by recomputing its hash.
 }
 ```
 
-**Output (Valid):**
+**Output (integrity ok):**
 ```json
 {
+  "integrityOk": true,
   "verified": true,
   "recomputedHash": "sha256:abc123...",
-  "details": "Receipt for bundle \"test-bundle-001\" is valid. Hash verified: sha256:abc123..."
+  "details": "Receipt for bundle \"test-bundle-001\" is integrity-checked: its canonical payload rehashes to sha256:abc123.... No producer signature was checked, so this is not verification — use verifyReceiptFull() from @uvrn/receipt for integrity plus signature."
 }
 ```
 
-**Output (Invalid):**
+**Output (integrity failed):**
 ```json
 {
+  "integrityOk": false,
   "verified": false,
   "error": "Hash mismatch",
   "details": "Expected sha256:abc123..., got sha256:def456..."
@@ -461,10 +473,12 @@ The path taken is reported back as `evidenceMode` (`host_sources` | `connector` 
 
 **Host-evidence rules (for agents supplying `sources`):**
 
-- **`evidenceScore` is the measurement; `credibility` is the weight** — two distinct concepts. `evidenceScore` is *what* a source says about the claim (0–100); `credibility` is *how much* to trust that source (0–1).
-- **`evidenceScore` is a first-class numeric field, not text.** Do not encode it into the `snippet`. The scorer reads the field directly, so a number elsewhere in the `title`/`snippet` (a year, "Top 10", a price) can never override it. If `evidenceScore` is omitted, the scorer falls back to the first number found in `title`/`snippet`.
+- **`value` is the uncapped measurement; `evidenceScore` is the 0–100 quality score.** When `value` is present it is the measurement (any finite magnitude). Optional free-text `unit` is echoed on the result envelope and does not influence scoring — do not rescale a real-world number into `evidenceScore`.
+- **`evidenceScore` is the measurement; `credibility` is the weight** — two distinct concepts. `evidenceScore` is *what* a source says about the claim (0–100); `credibility` is *how much* to trust that source (0–1). When both `value` and `evidenceScore` are supplied, `value` wins as the measurement.
+- **`evidenceScore` is a first-class numeric field, not text.** Do not encode it into the `snippet`. The scorer reads the field directly, so a number elsewhere in the `title`/`snippet` (a year, "Top 10", a price) can never override it. If `evidenceScore` is omitted (and no `value`), the scorer falls back to the first number found in `title`/`snippet`.
 - **At least 2 sources are required for host mode.** Exactly one source is a hard `ValidationError` — it does **not** fall back to a connector/mock. Omit `sources` (or pass `[]`) to use connectors/mock instead.
-- **Bounds are enforced.** `evidenceScore` outside 0–100, `credibility` outside 0–1, or any non-finite value (`NaN`/`Infinity`) is rejected with a `ValidationError`.
+- **Bounds are enforced.** `evidenceScore` outside 0–100, `credibility` outside 0–1, non-finite `value`, or any other non-finite number is rejected with a `ValidationError`.
+- **`stanceCounts` on the result envelope** reports all five stance labels plus quorum state on every run (envelope-only, never hashed). Distinct from the receipt payload's gated `stanceSummary` (support/oppose only, quorum-on only).
 
 **Input (host-provided sources):**
 ```json
@@ -606,11 +620,17 @@ Default matrix:
 | Identity store | Lazy `new MockIdentityStore()` from `@uvrn/identity` when identity tools run |
 | Connectors | `[]`; no provider such as `CoinGeckoFarm` is hardcoded |
 | Receipt signing (`signing`) | `'ephemeral'` — one fresh Ed25519 keypair per handler construction, `publicKeyRef: 'uvrn-mcp-ephemeral'`, public key echoed in results as `signerPublicKey` |
+| Arcanum archive (`arcanum`) | omitted — scored NetworkReceipts are not persisted (process-exit leak). Inject `@suttlemedia/arcanum` `openArcanum()` for durable local archive |
+| Receipt store (`receiptStore`) | omitted — optional `{ save }` alias when not using `arcanum.persist` |
 
 Programmatic example:
 
 ```typescript
 import { createServer } from '@uvrn/mcp';
+import { openArcanum, loadArcanumProducerSigning, toRuntimeSigning } from '@suttlemedia/arcanum';
+
+const producer = loadArcanumProducerSigning();
+const archive = openArcanum(); // UVRN_ARCANUM_DB or <umbrella>/data/arcanum/master.db
 
 const server = createServer({
   logLevel: 'info',
@@ -620,7 +640,9 @@ const server = createServer({
   identityStore: myIdentityStore,
   // Durable producer identity for delta_score_claim NetworkReceipts (default: 'ephemeral').
   // With explicit keys, no key material is ever emitted in tool results.
-  signing: { privateKey: process.env.UVRN_RECEIPT_KEY!, publicKeyRef: 'my-org-pk-2026-v1' },
+  signing: toRuntimeSigning(producer), // publicKeyRef = arcanum-producer-v1
+  // FIRST CONSUMER: persist signed receipts so they survive process exit.
+  arcanum: archive,
 });
 ```
 

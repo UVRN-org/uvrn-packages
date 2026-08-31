@@ -55,6 +55,14 @@ const result = verifyReceiptFull(signed, { keys: { 'my-pk-2026-v1': keys.publicK
 // 5. Render for humans — any UI (React, CLI, plain HTML) can present this.
 const view = toHumanView(signed);
 // → { headline, verdictLabel: 'Sources align', verdictTone: 'aligned', sources, gaps, provenance, ... }
+
+// 6. Optional source-quality diagnostics (render-only / non-hashed):
+const withQuality = toHumanView(signed, {
+  sourceQualityInputs: [
+    { id: 'src-a', stanceLabel: 'supports', evidenceScore: 10, credibility: 0.2, stanceConfidence: 0.95, stanceEvidence: 'note' },
+  ],
+});
+// → humanView.sourceQualityDiagnostics + gaps entries when stance/evidence/credibility are weak or inconsistent
 ```
 
 ## Integrity-checked vs signed vs verifiable
@@ -76,6 +84,10 @@ const view = toHumanView(signed);
 - Existing v3 receipts and `verifyReceipt()` stay byte-for-byte valid (additive-only rule).
 - Gaps are recorded, not hidden: unavailable sources, missing evidence, and unsigned provenance
   all appear explicitly in `toHumanView()` output.
+- Source-quality diagnostics (optional): weak/inconsistent `stanceLabel` / `evidenceScore` /
+  `credibility` surface on `humanView.sourceQualityDiagnostics` (and mirrored into `gaps`).
+  Inputs may be passed via `toHumanView` options or non-hashed `receipt.sourceQualityInputs`
+  (unknown-field rule — does not change `receiptHash`).
 
 ## Peer dependencies
 

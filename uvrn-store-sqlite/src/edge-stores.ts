@@ -4,6 +4,9 @@
  *
  * Serializability note (from the WatchStore contract): `notify.callback` functions and custom
  * DeliveryTarget instances cannot be persisted; this store round-trips URL-based targets only.
+ *
+ * Track-record-backed APIs live on the optional subpath `@uvrn/store-sqlite/track-record`
+ * so the public main entry does not require the private track-record peer.
  */
 
 import type { Subscription, WatchStore } from '@uvrn/watch';

@@ -35,6 +35,12 @@ export interface ClaimLevelMeta {
 export interface EvidenceItem {
   evidenceClass: EvidenceClass;
   source: string;
+  /**
+   * Host-declared origin identity for distinct-origin corroboration (F-1 path a).
+   * Prefer host-supplied values. When absent, origin-aware corroboration is incomplete —
+   * bare `source` strings are not treated as distinct origins.
+   */
+  originId?: string;
   key?: string;
   value?: number; // optional 0..100 strength; only used in scoring when a genuine strength signal
   ts?: string;
@@ -44,6 +50,8 @@ export interface EvidenceItem {
 // Raw evidence that has not yet been classified — fed to an EvidenceTagger.
 export interface TaggableEvidence {
   source: string;
+  /** Optional host-declared origin; forwarded onto EvidenceItem when present. */
+  originId?: string;
   key?: string;
   value?: number;
   ts?: string;
@@ -66,12 +74,19 @@ export interface SufficiencyVerdict {
   level: ClaimLevel;
   status: SufficiencyStatus;
   coverageBand: CoverageBand;
-  evidenceCoverageScore: number; // 0..1, coverage-based — NOT the V-Score
+  evidenceCoverageScore: number; // 0..1, coverage-based — NOT the V-Score; NOT accuracy
   requiredEvidence: EvidenceClass[];
   obtainedEvidence: EvidenceClass[];
   missingEvidence: EvidenceClass[];
   matchedEvidence: EvidenceClass[];
   licensedClaimLevel: ClaimLevel | null; // highest level the obtained evidence can actually support
+  /** Count of unique non-empty originId values among matched evidence items. */
+  distinctOriginCount: number;
+  /**
+   * True when any matched item lacks a host-declared originId — origin-aware corroboration
+   * is incomplete (no invented origins from bare source strings).
+   */
+  originCorroborationIncomplete: boolean;
   interpretation: string;
   explanation: string;
   ts: string;

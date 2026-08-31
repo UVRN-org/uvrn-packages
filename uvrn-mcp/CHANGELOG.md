@@ -1,5 +1,27 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- **`delta_validate_datapoint` (additive; tip surface 11 → 12).** Thin adapter over
+  `@uvrn/validate`: Stage1 DataPoint shape (`structurally-ok` \| `malformed`) + optional
+  explicit `runStage2` route into existing `@uvrn/measure`. Never emits `verified`. Does **not**
+  overload `delta_validate_bundle`. CONNECT + plugin-manifest + connector count honesty updated.
+- **uvrn-pattern-mining Wave 2 — `delta_pattern_scan` (additive; surface 12 → 13).** Thin adapter →
+  `@uvrn/pattern` `scanPatterns`. Requires `joinScope` + `window`; host `history` batch or
+  `RuntimeConfig.patternHistoryReader`. Detected ≠ verified; not receipt-class; measured-gap
+  escalate when store batch read fails. No SPEC/receipt-4 rewrite.
+- **BP-v2.1-LATER-D4 — MCP post-pipeline tools (additive; surface 9 → 11).** Thin adapters:
+  `delta_read_support` → lattice `readSupport` / claim ladder; `delta_report_rank_stability` →
+  algox `reportRankStability`. Documented path: `delta_score_claim` → support → rank-stability.
+  Existing nine tools unchanged. CONNECT + plugin-manifest migration note. No package version bump;
+  no publish; no duplicate engines.
+- **`RuntimeConfig.arcanum` / `receiptStore`** — optional Layer 4 persist inject. When set,
+  `delta_score_claim` persists the signed NetworkReceipt after `signReceipt` (first consumer
+  repoint). Ephemeral hosts that omit both keep prior discard-at-exit behavior.
+- Vitest `bp-a2-arcanum-persist.test.ts` — durable `arcanum-producer-v1` + archive restart +
+  `verifyReceiptFull`.
+
 ## [4.1.0] - 2026-07-19
 
 ### Closing release

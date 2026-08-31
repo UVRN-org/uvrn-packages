@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/receipt",
-  "version": "4.1.0",
+  "version": "5.0.0",
   "description": "The canonical UVRN receipt object model: NetworkReceipt envelope, JCS canonicalization, Ed25519 signing, topics, vocabulary, and UI-agnostic human rendering",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -42,7 +42,7 @@
     "clean": "rm -rf dist"
   },
   "peerDependencies": {
-    "@uvrn/core": "^4.1.0"
+    "@uvrn/core": "^5.0.0"
   },
   "devDependencies": {
     "@uvrn/core": "workspace:^",

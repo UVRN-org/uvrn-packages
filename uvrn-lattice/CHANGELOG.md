@@ -1,8 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- **BP-v2.1-LATER-D7:** product-path docs (templates → `searchDelegate` → receipt) + end-to-end test `tests/product-path-templates-searchDelegate.test.ts`. Docs/tests only — no lattice src code change this unit. Honest vocabulary retained (receipt ≠ verified market).
+
 ## [4.0.0] - 2026-06-10 (unreleased, v4 / fable-refactor-1)
 
 ### Added
+- **BP-v2.1-Support:** host-facing `readSupport` named support readout; optional `originId` on
+  evidence / taggable / domain signals; sufficiency verdict fields `distinctOriginCount` and
+  `originCorroborationIncomplete`. Corroboration counts distinct host-declared origins (F-1
+  path a) — never bare `source` strings alone; missing `originId` → honest incomplete
+  (corroboration term 0). Support/sufficiency ≠ accuracy; V-Score ≠ accuracy; not verification.
 - `MockDomainConnector` now emits a loud one-time `console.warn` when constructed outside test
   environments (`NODE_ENV !== 'test'` and `JEST_WORKER_ID` unset): the connector supplies
   SYNTHETIC data and must not be trusted for real results. Once per process; dependency-free;

@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/adapter",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "UVRN DRVC3 envelope adapter — wraps core receipts with EIP-191 signatures",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -25,7 +25,7 @@
     "clean": "rm -rf dist"
   },
   "peerDependencies": {
-    "@uvrn/core": "^4.0.0"
+    "@uvrn/core": "^5.0.0"
   },
   "dependencies": {
     "ethers": "^6.0.0",
@@ -33,7 +33,7 @@
     "ajv-formats": "^2.1.1"
   },
   "devDependencies": {
-    "@uvrn/core": "workspace:*",
+    "@uvrn/core": "workspace:^",
     "@types/jest": "^29.5.0",
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",

@@ -242,6 +242,8 @@ export const VERDICT_LEGEND =
  * honesty rule: it scores evidence quality, never truth.
  */
 export const SCORE_PLAIN_MEANING = {
+  absoluteConsensusValue:
+    'The median and range of the untyped values retained after source deduplication. It reports where those sources landed, not whether the claim is true.',
   completeness: 'How many of the sources we asked actually answered.',
   parity: 'How closely the answering sources agree with each other.',
   freshness: 'How recent the evidence is.',

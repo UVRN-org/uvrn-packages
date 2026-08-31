@@ -36,11 +36,34 @@ export interface CanonReceipt {
   // Empty array means not yet stored (shouldn't happen).
   storage_proofs: StorageProof[];
 
+  // ── Reviewer attestation (BP-03) — non-hashed sidecar ───
+  // Excluded from content_hash (same class as storage_proofs).
+  // Optional so pre-checker receipts remain valid.
+  reviewer_attestation?: CheckerAttestation;
+
   // ── DRVC3 compliance ────────────────────────────────────
   certificate:    'DRVC3 v1.01';
   block_state:    'canonized';      // always canonized — never loose
   tags:           string[];        // includes #canonized
   replay_id:      string;          // unique replay handle
+}
+
+/** Reviewer attestation — D9: kind ai | human on the same seam. */
+export interface CheckerAttestation {
+  kind: 'ai' | 'human';
+  identity: string;
+  decidedAt: string;
+  verdict: 'pass' | 'fail' | 'abstain';
+  notes?: string;
+}
+
+/** Injectable checker port (implemented by @suttlemedia/checker or host). */
+export interface CheckerPort {
+  check(input: {
+    claimId: string;
+    receiptId: string;
+    summary?: string;
+  }): Promise<CheckerAttestation>;
 }
 
 // ── What triggered the canonization ──────────────────────
@@ -108,6 +131,9 @@ export interface CanonConfig {
 
   // Who is canonizing (written into receipt)
   canonizerId: string;           // e.g. 'uvrn-agent-prod-01'
+
+  // Optional AI/human checker gate (BP-03). Fixture-only locally.
+  checker?: CheckerPort;
 }
 
 // ── Signer interface ──────────────────────────────────────
@@ -134,6 +160,8 @@ export interface CanonizeResult {
   receipt:        CanonReceipt;
   storageProofs:  StorageProof[];
   verified:       boolean;         // signature verified post-write
+  /** Echo of non-hashed reviewer attestation when checker ran. */
+  reviewer_attestation?: CheckerAttestation;
 }
 
 // ── Qualification check result ────────────────────────────

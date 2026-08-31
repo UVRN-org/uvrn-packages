@@ -18,3 +18,24 @@ export { topK } from './stages/selectors/topK';
 export type { TopKOptions } from './stages/selectors/topK';
 
 export { buildSignalStages, rankSignals, resolveConfig } from './presets/signals';
+export {
+  reportRankStability,
+  candidateIdentity,
+  DEFAULT_RANK_STABILITY_VARIANTS,
+} from './presets/rankStability';
+export type {
+  RankStabilityStatus,
+  RankStabilityVariant,
+  RankStabilityOptions,
+  RankStabilityEntry,
+  RankStabilityReport,
+} from './presets/rankStability';
+
+export {
+  measurementResultsToCandidates,
+  rankMeasurementResults,
+} from './presets/measurementBridge';
+export type {
+  MeasurementResultLike,
+  MeasurementBridgeOptions,
+} from './presets/measurementBridge';

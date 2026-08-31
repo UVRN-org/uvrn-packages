@@ -8,3 +8,5 @@ export { bridgeFromDomainSignals, normalizeEvidence } from './bridge';
 export type { EvidenceInput } from './bridge';
 export { verifyClaim, verifyClaimAsync } from './verifyClaim';
 export type { ClaimInput, VerifyClaimOptions } from './verifyClaim';
+export { readSupport } from './readSupport';
+export type { SupportReadout, ReadSupportOptions } from './readSupport';

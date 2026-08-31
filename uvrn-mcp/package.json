@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/mcp",
-  "version": "4.1.0",
+  "version": "5.0.1",
   "description": "UVRN MCP server — AI-native bundle processing",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -33,20 +33,27 @@
     "format": "prettier --write \"src/**/*.ts\""
   },
   "peerDependencies": {
-    "@uvrn/agent": "^4.0.0",
-    "@uvrn/canon": "^4.0.0",
-    "@uvrn/compare": "^4.0.0",
-    "@uvrn/consensus": "^4.0.0",
-    "@uvrn/core": "^4.0.0",
-    "@uvrn/drift": "^4.0.0",
-    "@uvrn/identity": "^4.0.0",
-    "@uvrn/measure": "^4.0.0",
-    "@uvrn/normalize": "^4.0.0",
-    "@uvrn/receipt": "^4.0.0",
-    "@uvrn/score": "^4.0.0"
+    "@uvrn/agent": "^5.0.0",
+    "@uvrn/algox": "^5.0.0",
+    "@uvrn/canon": "^5.0.0",
+    "@uvrn/compare": "^5.0.0",
+    "@uvrn/consensus": "^5.0.0",
+    "@uvrn/core": "^5.0.0",
+    "@uvrn/drift": "^5.0.0",
+    "@uvrn/identity": "^5.0.0",
+    "@uvrn/lattice": "^5.0.0",
+    "@uvrn/measure": "^5.0.0",
+    "@uvrn/normalize": "^5.0.0",
+    "@uvrn/pattern": "^5.0.0",
+    "@uvrn/receipt": "^5.0.0",
+    "@uvrn/score": "^5.0.0",
+    "@uvrn/validate": "^5.0.0"
   },
   "peerDependenciesMeta": {
     "@uvrn/agent": {
+      "optional": true
+    },
+    "@uvrn/algox": {
       "optional": true
     },
     "@uvrn/canon": {
@@ -67,16 +74,25 @@
     "@uvrn/identity": {
       "optional": true
     },
+    "@uvrn/lattice": {
+      "optional": true
+    },
     "@uvrn/measure": {
       "optional": true
     },
     "@uvrn/normalize": {
       "optional": true
     },
+    "@uvrn/pattern": {
+      "optional": true
+    },
     "@uvrn/receipt": {
       "optional": true
     },
     "@uvrn/score": {
+      "optional": true
+    },
+    "@uvrn/validate": {
       "optional": true
     }
   },
@@ -87,17 +103,21 @@
     "@types/node": "^20.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
-    "@uvrn/agent": "workspace:*",
-    "@uvrn/canon": "workspace:*",
-    "@uvrn/compare": "workspace:*",
-    "@uvrn/consensus": "workspace:*",
-    "@uvrn/core": "workspace:*",
-    "@uvrn/drift": "workspace:*",
-    "@uvrn/identity": "workspace:*",
-    "@uvrn/measure": "workspace:*",
-    "@uvrn/normalize": "workspace:*",
-    "@uvrn/receipt": "workspace:*",
-    "@uvrn/score": "workspace:*",
+    "@uvrn/agent": "workspace:^",
+    "@uvrn/algox": "workspace:^",
+    "@uvrn/canon": "workspace:^",
+    "@uvrn/compare": "workspace:^",
+    "@uvrn/consensus": "workspace:^",
+    "@uvrn/core": "workspace:^",
+    "@uvrn/drift": "workspace:^",
+    "@uvrn/identity": "workspace:^",
+    "@uvrn/lattice": "workspace:^",
+    "@uvrn/measure": "workspace:^",
+    "@uvrn/normalize": "workspace:^",
+    "@uvrn/pattern": "workspace:^",
+    "@uvrn/receipt": "workspace:^",
+    "@uvrn/score": "workspace:^",
+    "@uvrn/validate": "workspace:^",
     "@vitest/coverage-v8": "^1.6.1",
     "esbuild": "^0.20.2",
     "eslint": "^8.0.0",

@@ -39,6 +39,41 @@ Every measurement emits `insufficient-data` per `SPEC/uvrn-measurement-v1.md` §
 | `history` / `agreementHistory` | — | potential (scores 0..1, oldest first) |
 | `confidenceFloor` | `0.25` | potential |
 
+### Operator note: host-configurable `agreeThreshold`
+
+`agree` and `potential` read `context.agreeThreshold` on each evaluate call. The package default is **`0.9`** and is **not** silently lowered to pass CaseBank or other diagnostics.
+
+| Mode | Behavior |
+|---|---|
+| Omit `context.agreeThreshold` | Uses default `0.9` |
+| Set `context.agreeThreshold` | That host value applies for that run only |
+| Change the package default | **Out of scope** — do not retune `DEFAULT_AGREE_THRESHOLD` to absorb known diagnostic fails |
+
+Hosts that need a looser or tighter band for a specific product surface pass an explicit override. Improving range / conflict / potential quality for messy forecasts should use **typed observations** (`quantityKind`, declared UCUM `unit`, field, dates on `MeasurementSource.attributes` per `SPEC/uvrn-typed-observation-v1.md`) — **not** prose or title scrape, and **not** a global default soften.
+
+```typescript
+import { agreeMeasurement, withTypedObservation } from '@uvrn/measure';
+
+const sources = [
+  withTypedObservation(
+    { id: 'a', kind: 'numeric', value: 100 },
+    { quantityKind: 'money', unit: 'USD', unitSource: 'declared', field: 'revenue' }
+  ),
+  withTypedObservation(
+    { id: 'b', kind: 'numeric', value: 120 },
+    { quantityKind: 'money', unit: 'USD', unitSource: 'declared', field: 'revenue' }
+  ),
+];
+
+// Same typed pair, two host policies — default 0.9 stays unless the host opts in.
+agreeMeasurement.evaluate({ claim: '…', sources, context: { agreeThreshold: 0.75 } });
+agreeMeasurement.evaluate({ claim: '…', sources, context: { agreeThreshold: 0.95 } });
+```
+
+`withTypedObservation` only merges host-declared axes into `attributes`. It never invents `quantityKind` or units from claim text or titles.
+
+**D5 forecast realism:** eight additive short-horizon market goldens live in `SPEC/vectors/typed-observation-forecast-realism.json` and `uvrn-case-bank/fixtures/forecast-realism/` — exercised by `tests/forecast-realism-goldens.test.ts`. Default thresholds stay; CaseBank frozen baseline is untouched.
+
 ## Usage
 
 ```typescript

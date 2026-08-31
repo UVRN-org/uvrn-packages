@@ -54,6 +54,32 @@ describe('delta_verify_receipt', () => {
     expect(result.verified).toBe(false);
     expect(result.error).toBe('Receipt missing hash');
   });
+
+  it('reports integrityOk with verified retained as a deprecated alias', async () => {
+    const { handleRunEngine, handleVerifyReceipt } = await loadHandlers();
+    const receipt = (await handleRunEngine({ bundle: createTestBundle() })).receipt;
+
+    const ok = await handleVerifyReceipt({ receipt });
+    expect(ok.integrityOk).toBe(true);
+    expect(ok.verified).toBe(ok.integrityOk);
+
+    const tampered = await handleVerifyReceipt({
+      receipt: { ...receipt, outcome: 'indeterminate' as const },
+    });
+    expect(tampered.integrityOk).toBe(false);
+    expect(tampered.verified).toBe(tampered.integrityOk);
+  });
+
+  it('never calls a hash recompute verification in its details string', async () => {
+    const { handleRunEngine, handleVerifyReceipt } = await loadHandlers();
+    const receipt = (await handleRunEngine({ bundle: createTestBundle() })).receipt;
+    const result = await handleVerifyReceipt({ receipt });
+
+    expect(result.details).toContain('integrity-checked');
+    expect(result.details).toContain('verifyReceiptFull');
+    expect(result.details).not.toMatch(/hash verified/i);
+    expect(result.details).not.toMatch(/is valid/i);
+  });
 });
 
 describe('delta_run_engine', () => {
@@ -637,6 +663,229 @@ describe('delta_score_claim', () => {
     ).rejects.toThrow('stanceLabel must be one of');
   });
 
+  it('reports all five stance labels on the envelope below quorum, with the quorum reason', async () => {
+    vi.doUnmock('@uvrn/core');
+    vi.resetModules();
+    const { handleScoreClaim } = await loadHandlers();
+
+    // Two grounded sources that disagree — below the 4-source quorum, so the payload's
+    // stanceSummary stays absent while the envelope still shows the disagreement.
+    const result = await handleScoreClaim({
+      claim: 'Guidance is cooling off',
+      sources: [
+        { url: 'https://example.com/a', title: 'A', snippet: 'demand', evidenceScore: 85, publishedAt: '2026-05-01T00:00:00.000Z', stanceValue: 0.2, stanceLabel: 'supports' as const, stanceConfidence: 0.7, stanceEvidence: 'Still constructive.' },
+        { url: 'https://example.com/b', title: 'B', snippet: 'demand', evidenceScore: 85, publishedAt: '2026-05-03T00:00:00.000Z', stanceValue: -0.6, stanceLabel: 'opposes' as const, stanceConfidence: 0.8, stanceEvidence: 'Guidance cooling.' },
+      ],
+    });
+
+    expect(result.stanceCounts).toEqual({
+      supports: 1,
+      opposes: 1,
+      mixed: 0,
+      neutral: 0,
+      insufficient: 0,
+      unlabeled: 0,
+      quorum: {
+        met: false,
+        evidenceAxis: 'prominence',
+        sourceCount: 2,
+        groundedCount: 2,
+        requiredSources: 4,
+        requiredGrounded: 3,
+        confidenceFloor: 0.6,
+        reason: 'source-quorum-missed',
+      },
+    });
+
+    // The gate on the hashed payload is untouched: no stanceSummary below quorum.
+    const payload = result.networkReceipt.payload as { stanceSummary?: unknown };
+    expect(payload.stanceSummary).toBeUndefined();
+    expect((payload as { stanceCounts?: unknown }).stanceCounts).toBeUndefined();
+  });
+
+  it('keeps stanceCounts on the envelope only when the quorum is met', async () => {
+    vi.doUnmock('@uvrn/core');
+    vi.resetModules();
+    const { handleScoreClaim } = await loadHandlers();
+    const grounded = (id: string, label: 'supports' | 'opposes', value: number) => ({
+      url: `https://example.com/${id}`,
+      title: id.toUpperCase(),
+      snippet: `Evidence ${id}`,
+      evidenceScore: 60,
+      stanceValue: value,
+      stanceLabel: label,
+      stanceConfidence: 0.9,
+      stanceEvidence: `${id} states a position.`,
+    });
+
+    const result = await handleScoreClaim({
+      claim: 'Quorum-met stance claim',
+      sources: [
+        grounded('a', 'supports', 0.9),
+        grounded('b', 'opposes', -0.8),
+        grounded('c', 'supports', 0.7),
+        { url: 'https://example.com/d', title: 'D', snippet: 'Evidence D', evidenceScore: 50, stanceLabel: 'neutral' as const, stanceConfidence: 0.9, stanceEvidence: 'D takes no side.' },
+      ],
+    });
+
+    expect(result.stanceCounts).toMatchObject({
+      supports: 2,
+      opposes: 1,
+      neutral: 1,
+      mixed: 0,
+      insufficient: 0,
+      unlabeled: 0,
+      quorum: { met: true, evidenceAxis: 'stance' },
+    });
+    expect(result.stanceCounts.quorum.reason).toBeUndefined();
+
+    const payload = result.networkReceipt.payload as {
+      stanceSummary?: { support: number; oppose: number };
+      stanceCounts?: unknown;
+    };
+    // Payload keeps its two-label gated shape; the five-label counts never enter it.
+    expect(payload.stanceSummary).toEqual({ support: 2, oppose: 1 });
+    expect(payload.stanceCounts).toBeUndefined();
+  });
+
+  it('counts sources that carry no stance label instead of dropping them', async () => {
+    vi.doUnmock('@uvrn/core');
+    vi.resetModules();
+    const { handleScoreClaim } = await loadHandlers();
+    const result = await handleScoreClaim({
+      claim: 'Unlabeled sources are still counted',
+      sources: [
+        { url: 'https://example.com/a', title: 'A', snippet: 'demand', evidenceScore: 80 },
+        { url: 'https://example.com/b', title: 'B', snippet: 'demand', evidenceScore: 60 },
+      ],
+    });
+
+    expect(result.stanceCounts.unlabeled).toBe(2);
+    expect(result.stanceCounts.quorum).toMatchObject({
+      met: false,
+      groundedCount: 0,
+      reason: 'source-quorum-missed',
+    });
+  });
+
+  it('round-trips an uncapped host value at large and small magnitudes', async () => {
+    vi.doUnmock('@uvrn/core');
+    vi.resetModules();
+    const { handleScoreClaim } = await loadHandlers();
+
+    // Timestamps are spaced beyond the 24h dedup window so both identical-value sources
+    // survive; the point is that the magnitude round-trips unrescaled.
+    const large = await handleScoreClaim({
+      claim: 'Speed of light in vacuum is exactly 299792458 m/s',
+      expectedValue: 299792458,
+      sources: [
+        { url: 'https://example.com/a', title: 'CODATA', snippet: 'defined constant', value: 299792458, unit: 'm/s', publishedAt: '2026-06-01T00:00:00.000Z' },
+        { url: 'https://example.com/b', title: 'BIPM', snippet: 'defined constant', value: 299792458, unit: 'm/s', publishedAt: '2026-06-05T00:00:00.000Z' },
+      ],
+    });
+
+    expect(large.hostMeasurements).toEqual([
+      { url: 'https://example.com/a', value: 299792458, unit: 'm/s' },
+      { url: 'https://example.com/b', value: 299792458, unit: 'm/s' },
+    ]);
+    expect(large.expectedValueDivergence?.measuredCluster).toBe(299792458);
+    expect(large.expectedValueDivergence?.absoluteDifference).toBe(0);
+
+    const small = await handleScoreClaim({
+      claim: 'Trace concentration holds at 0.00042 ppm',
+      expectedValue: 0.00042,
+      sources: [
+        { url: 'https://example.com/a', title: 'Lab A', snippet: 'trace reading', value: 0.00042, unit: 'ppm', publishedAt: '2026-06-01T00:00:00.000Z' },
+        { url: 'https://example.com/b', title: 'Lab B', snippet: 'trace reading', value: 0.00042, unit: 'ppm', publishedAt: '2026-06-05T00:00:00.000Z' },
+      ],
+    });
+
+    expect(small.hostMeasurements?.[0]?.value).toBe(0.00042);
+    expect(small.expectedValueDivergence?.measuredCluster).toBe(0.00042);
+  });
+
+  it('prefers host value over evidenceScore as the measurement', async () => {
+    vi.doUnmock('@uvrn/core');
+    vi.resetModules();
+    const { handleScoreClaim } = await loadHandlers();
+
+    const result = await handleScoreClaim({
+      claim: 'value wins over evidenceScore',
+      expectedValue: 1200,
+      sources: [
+        { url: 'https://example.com/a', title: 'A', snippet: 'reading', value: 1200, evidenceScore: 80, publishedAt: '2026-06-01T00:00:00.000Z' },
+        { url: 'https://example.com/b', title: 'B', snippet: 'reading', value: 1200, evidenceScore: 60, publishedAt: '2026-06-05T00:00:00.000Z' },
+      ],
+    });
+
+    // The measured cluster is the supplied value, not either evidenceScore.
+    expect(result.expectedValueDivergence?.measuredCluster).toBe(1200);
+  });
+
+  it('rejects a non-finite value while leaving the evidenceScore bound intact', async () => {
+    vi.doUnmock('@uvrn/core');
+    vi.resetModules();
+    const { handleScoreClaim } = await loadHandlers();
+    const base = { url: 'https://example.com/b', title: 'B', snippet: 'demand', value: 10 };
+
+    await expect(
+      handleScoreClaim({
+        claim: 'value NaN',
+        sources: [{ url: 'https://example.com/a', title: 'A', snippet: 'demand', value: Number.NaN }, base],
+      })
+    ).rejects.toThrow('value must be a finite number when provided');
+
+    await expect(
+      handleScoreClaim({
+        claim: 'value Infinity',
+        sources: [{ url: 'https://example.com/a', title: 'A', snippet: 'demand', value: Infinity }, base],
+      })
+    ).rejects.toThrow('value must be a finite number when provided');
+
+    // An uncapped `value` does not relax evidenceScore's 0–100 bound.
+    await expect(
+      handleScoreClaim({
+        claim: 'evidenceScore still bounded',
+        sources: [{ url: 'https://example.com/a', title: 'A', snippet: 'demand', value: 1e9, evidenceScore: 150 }, base],
+      })
+    ).rejects.toThrow('evidenceScore must be a finite number between 0 and 100');
+
+    await expect(
+      handleScoreClaim({
+        claim: 'unit must be a string',
+        sources: [{ url: 'https://example.com/a', title: 'A', snippet: 'demand', value: 5, unit: 7 as never }, base],
+      })
+    ).rejects.toThrow('unit must be a string when provided');
+  });
+
+  it('leaves the receipt hash unchanged when unit is supplied — unit influences nothing', async () => {
+    vi.doUnmock('@uvrn/core');
+    vi.resetModules();
+    const { handleScoreClaim } = await loadHandlers();
+    const sources = [
+      { url: 'https://example.com/a', title: 'A', snippet: 'reading', value: 42.5, publishedAt: '2026-06-01T00:00:00.000Z' },
+      { url: 'https://example.com/b', title: 'B', snippet: 'reading', value: 42.5, publishedAt: '2026-06-05T00:00:00.000Z' },
+    ];
+
+    // Pin the clock so the two runs differ only by `unit` — the handler stamps
+    // observedAt/fetchedAt with Date.now(), which would otherwise diverge.
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-06-10T00:00:00.000Z'));
+    try {
+      const without = await handleScoreClaim({ claim: 'unit is inert', claimId: 'unit-inert', sources });
+      const with_ = await handleScoreClaim({
+        claim: 'unit is inert',
+        claimId: 'unit-inert',
+        sources: sources.map((s) => ({ ...s, unit: 'kg' })),
+      });
+
+      expect(with_.masterReceipt.masterHash).toBe(without.masterReceipt.masterHash);
+      expect(with_.v_score).toBe(without.v_score);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('derives a collision-resistant claimId from claim text when none is supplied', async () => {
     vi.doUnmock('@uvrn/core');
     vi.resetModules();
@@ -669,6 +918,7 @@ describe('delta_score_claim', () => {
               snippet: 'value 100',
               publishedAt: '2026-06-05T00:00:00.000Z',
               credibility: 0.9,
+              evidenceScore: 100,
             },
             {
               url: 'mock://b',
@@ -676,6 +926,7 @@ describe('delta_score_claim', () => {
               snippet: 'value 102',
               publishedAt: '2026-06-05T00:00:00.000Z',
               credibility: 0.9,
+              evidenceScore: 102,
             },
           ],
         };
@@ -729,12 +980,14 @@ describe('delta_score_claim', () => {
               snippet: 'value 100',
               publishedAt: 'not-a-date',
               credibility: 0.9,
+              evidenceScore: 100,
             },
             {
               url: 'mock://missing-timestamp',
               title: 'Missing Timestamp Source',
               snippet: 'value 102',
               credibility: 0.9,
+              evidenceScore: 102,
             },
           ],
         };
@@ -848,6 +1101,106 @@ describe('delta_score_claim', () => {
     expect(fresh.signerPublicKey).not.toBe(first.signerPublicKey);
   });
 
+  it('attaches identical canonicalClaimId across two score runs of the same claim×domain', async () => {
+    vi.doUnmock('@uvrn/core');
+    vi.resetModules();
+    const { canonicalClaimId } = await import('@uvrn/receipt');
+    const { handleScoreClaim } = await loadHandlers();
+    const claim = 'Arcanum identity floor claim for BP-A1';
+    const topic = 'markets/creator-tools/demo';
+    const a = await handleScoreClaim({ claim, topic });
+    const b = await handleScoreClaim({ claim, topic });
+
+    expect(a.networkReceipt.canonicalClaimId).toMatch(/^claim:[0-9a-f]{12}$/);
+    expect(a.networkReceipt.canonicalClaimId).toBe(b.networkReceipt.canonicalClaimId);
+    expect(a.networkReceipt.canonicalClaimId).toBe(canonicalClaimId(claim, 'markets'));
+  });
+
+  it('durable arcanum-producer-v1 injection verifies via verifyReceiptFull', async () => {
+    vi.doUnmock('@uvrn/core');
+    vi.resetModules();
+    const { generateReceiptKeyPair, verifyReceiptFull } = await import('@uvrn/receipt');
+    const keyPair = generateReceiptKeyPair();
+    const { handleScoreClaim } = await loadHandlers({
+      signing: { privateKey: keyPair.privateKey, publicKeyRef: 'arcanum-producer-v1' },
+    });
+    const result = await handleScoreClaim({
+      claim: 'Arcanum durable producer claim',
+      topic: 'research/identity-floor',
+    });
+
+    expect(result.signerPublicKey).toBeUndefined();
+    expect(result.networkReceipt.signature?.publicKeyRef).toBe('arcanum-producer-v1');
+    expect(JSON.stringify(result)).not.toContain(keyPair.privateKey);
+    const full = verifyReceiptFull(result.networkReceipt, {
+      keys: { 'arcanum-producer-v1': keyPair.publicKey },
+    });
+    expect(full.integrityOk).toBe(true);
+    expect(full.signatureOk).toBe(true);
+    expect(full.verified).toBe(true);
+  });
+
+  it('maps arcanumType markets→uvrn-market; else/missing→uvrn-research', async () => {
+    vi.doUnmock('@uvrn/core');
+    vi.resetModules();
+    const { handleScoreClaim } = await loadHandlers();
+
+    const market = await handleScoreClaim({
+      claim: 'Market demand is rising',
+      topic: 'markets/crypto/BTC',
+    });
+    expect(market.networkReceipt.arcanumType).toBe('uvrn-market');
+    expect(market.networkReceipt.kind).toBe('master');
+
+    const research = await handleScoreClaim({
+      claim: 'Research adaptation holds',
+      topic: 'research/adaptation',
+    });
+    expect(research.networkReceipt.arcanumType).toBe('uvrn-research');
+
+    const missing = await handleScoreClaim({ claim: 'No topic claim stays research' });
+    expect(missing.networkReceipt.arcanumType).toBe('uvrn-research');
+    expect(missing.networkReceipt.topic).toBeUndefined();
+
+    // Purpose is not stuffed into tags.
+    expect(market.networkReceipt.tags).toBeUndefined();
+    expect(research.networkReceipt.tags).toBeUndefined();
+  });
+
+  it('additive canonicalClaimId + arcanumType do not change receiptHash (unknown-field)', async () => {
+    vi.doUnmock('@uvrn/core');
+    vi.resetModules();
+    const { computeNetworkReceiptHash } = await import('@uvrn/receipt');
+    const { handleScoreClaim } = await loadHandlers();
+    const result = await handleScoreClaim({
+      claim: 'Hash stability under additive arcanum fields',
+      topic: 'markets/demo',
+    });
+    const receipt = result.networkReceipt;
+    expect(receipt.canonicalClaimId).toBeDefined();
+    expect(receipt.arcanumType).toBe('uvrn-market');
+
+    const { canonicalClaimId: _c, arcanumType: _a, signature: _s, ...baseline } = receipt;
+    expect(computeNetworkReceiptHash(baseline)).toBe(receipt.receiptHash);
+    expect(computeNetworkReceiptHash(receipt)).toBe(receipt.receiptHash);
+  });
+
+  it('ephemeral path still emits signerPublicKey and verifies (regression)', async () => {
+    vi.doUnmock('@uvrn/core');
+    vi.resetModules();
+    const { verifyReceiptFull } = await import('@uvrn/receipt');
+    const { handleScoreClaim } = await loadHandlers();
+    const result = await handleScoreClaim({ claim: 'Ephemeral regression claim' });
+
+    expect(result.networkReceipt.signature?.publicKeyRef).toBe('uvrn-mcp-ephemeral');
+    expect(typeof result.signerPublicKey).toBe('string');
+    expect(result.networkReceipt.canonicalClaimId).toMatch(/^claim:[0-9a-f]{12}$/);
+    expect(result.networkReceipt.arcanumType).toBe('uvrn-research');
+    expect(
+      verifyReceiptFull(result.networkReceipt, { publicKey: result.signerPublicKey }).verified
+    ).toBe(true);
+  });
+
   it('should wrap unexpected score-claim failures in ExecutionError', async () => {
     process.env.VERBOSE_ERRORS = 'true';
     vi.resetModules();
@@ -874,5 +1227,247 @@ describe('delta_score_claim', () => {
       expect(err.details).toHaveProperty('originalError');
       expect(err.details!.originalError!.message).toBe('score-claim boom');
     }
+  });
+});
+
+describe('delta_read_support (post-pipeline)', () => {
+  it('happy path: returns Supported readout via lattice readSupport', async () => {
+    const { handleReadSupport } = await loadHandlers();
+    const result = await handleReadSupport({
+      claim: 'People are buying maximalist POD products',
+      evidence: [
+        {
+          evidenceClass: 'purchase',
+          source: 'Etsy sales feed',
+          originId: 'origin:etsy',
+          explanation: 'sales',
+        },
+        {
+          evidenceClass: 'purchase',
+          source: 'Shopify velocity',
+          originId: 'origin:shopify',
+          explanation: 'velocity',
+        },
+      ],
+      ts: '2026-05-25T12:00:00.000Z',
+    });
+
+    expect(result.status).toBe('Supported');
+    expect(result.level).toBe('L3');
+    expect(result.missingEvidence).toEqual([]);
+    expect(typeof result.evidenceCoverageScore).toBe('number');
+  });
+
+  it('empty evidence array yields honest Unverified / empty coverage', async () => {
+    const { handleReadSupport } = await loadHandlers();
+    const result = await handleReadSupport({
+      claim: 'People are buying maximalist POD products',
+      evidence: [],
+      ts: '2026-05-25T12:00:00.000Z',
+    });
+
+    expect(result.status).toBe('Unverified');
+    expect(result.coverageBand).toBe('none');
+    expect(result.evidenceCoverageScore).toBe(0);
+  });
+
+  it('missing claim is a ValidationError', async () => {
+    const { handleReadSupport } = await loadHandlers();
+    await expect(handleReadSupport({ claim: '', evidence: [] } as any)).rejects.toMatchObject({
+      name: 'ValidationError',
+      message: expect.stringMatching(/requires a non-empty string `claim`/),
+    });
+  });
+
+  it('omitted evidence is a ValidationError (not silent invent)', async () => {
+    const { handleReadSupport } = await loadHandlers();
+    await expect(handleReadSupport({ claim: 'People are buying POD' } as any)).rejects.toMatchObject({
+      name: 'ValidationError',
+      message: expect.stringMatching(/requires `evidence` as an array/),
+    });
+  });
+});
+
+describe('delta_pattern_scan (observatory)', () => {
+  const window = {
+    from: '2026-08-01T00:00:00.000Z',
+    to: '2026-08-31T23:59:59.000Z',
+  };
+
+  it('happy path: frequency spike observations; never verified / not receipt-class', async () => {
+    const { handlePatternScan } = await loadHandlers();
+    const result = await handlePatternScan({
+      joinScope: 'mcp-test-scope',
+      window,
+      history: [
+        { id: '1', subjectRef: 'claim:z', observedAt: '2026-08-02T00:00:00.000Z' },
+        { id: '2', subjectRef: 'claim:z', observedAt: '2026-08-03T00:00:00.000Z' },
+        { id: '3', subjectRef: 'claim:z', observedAt: '2026-08-04T00:00:00.000Z' },
+      ],
+      minCount: 3,
+    });
+
+    expect(result.status).toBe('observations');
+    expect(result.honesty).toMatchObject({
+      detectedNotVerified: true,
+      receiptClass: false,
+    });
+    const blob = JSON.stringify(result).toLowerCase();
+    expect(blob).not.toMatch(/"verified"\s*:\s*true/);
+  });
+
+  it('empty history → honest insufficient', async () => {
+    const { handlePatternScan } = await loadHandlers();
+    const result = await handlePatternScan({
+      joinScope: 'mcp-test-scope',
+      window,
+      history: [],
+    });
+    expect(result.status).toBe('insufficient');
+    expect(result.observations).toEqual([]);
+  });
+
+  it('missing joinScope is ValidationError', async () => {
+    const { handlePatternScan } = await loadHandlers();
+    await expect(
+      handlePatternScan({ joinScope: '', window, history: [] } as any)
+    ).rejects.toMatchObject({
+      name: 'ValidationError',
+      message: expect.stringMatching(/joinScope/),
+    });
+  });
+
+  it('omitted history without injected reader is ValidationError', async () => {
+    const { handlePatternScan } = await loadHandlers();
+    await expect(
+      handlePatternScan({ joinScope: 'scope', window } as any)
+    ).rejects.toMatchObject({
+      name: 'ValidationError',
+      message: expect.stringMatching(/requires `history`/),
+    });
+  });
+});
+
+describe('delta_report_rank_stability (post-pipeline)', () => {
+  const candidates = [
+    {
+      label: 'oversized blazers',
+      url: 'https://vogue.com/a',
+      source: 'vogue.com',
+      prominence: 90,
+      observedAt: '2026-05-20',
+      signals: { mentions: 1200 },
+    },
+    {
+      label: 'quiet luxury',
+      url: 'https://vogue.com/b',
+      source: 'vogue.com',
+      prominence: 85,
+      observedAt: '2026-05-21',
+      signals: { mentions: 1500 },
+    },
+    {
+      label: 'ballet flats',
+      url: 'https://elle.com/d',
+      source: 'elle.com',
+      prominence: 80,
+      observedAt: '2026-05-22',
+      signals: { mentions: 900 },
+    },
+  ];
+
+  it('happy path: returns baseline + survive/reorder report via algox', async () => {
+    const { handleReportRankStability } = await loadHandlers();
+    const result = await handleReportRankStability({
+      candidates,
+      baseline: { now: '2026-05-24T00:00:00.000Z', weights: { prominence: 1 } },
+    });
+
+    expect(Array.isArray(result.variants)).toBe(true);
+    expect((result.variants as unknown[]).length).toBe(3);
+    expect(Array.isArray(result.report)).toBe(true);
+    expect((result.report as unknown[]).length).toBeGreaterThan(0);
+    for (const entry of result.report as Array<{ status: string }>) {
+      expect(['survive', 'reorder']).toContain(entry.status);
+    }
+  });
+
+  it('missing candidates is a ValidationError', async () => {
+    const { handleReportRankStability } = await loadHandlers();
+    await expect(handleReportRankStability({} as any)).rejects.toMatchObject({
+      name: 'ValidationError',
+      message: expect.stringMatching(/requires `candidates` as an array/),
+    });
+  });
+
+  it('empty candidates is a ValidationError', async () => {
+    const { handleReportRankStability } = await loadHandlers();
+    await expect(handleReportRankStability({ candidates: [] })).rejects.toMatchObject({
+      name: 'ValidationError',
+      message: expect.stringMatching(/non-empty `candidates`/),
+    });
+  });
+
+  it('candidate without label is a ValidationError', async () => {
+    const { handleReportRankStability } = await loadHandlers();
+    await expect(
+      handleReportRankStability({ candidates: [{ label: '  ' }] as any })
+    ).rejects.toMatchObject({
+      name: 'ValidationError',
+      message: expect.stringMatching(/non-empty string `label`/),
+    });
+  });
+});
+
+describe('delta_validate_datapoint', () => {
+  it('Stage1 structurally-ok without Stage2 when flag omitted', async () => {
+    const { handleValidateDatapoint } = await loadHandlers();
+    const result = await handleValidateDatapoint({
+      dataPoint: { id: 'dp-1', kind: 'metric', value: 42 },
+    });
+    expect(result.stage).toBe(1);
+    expect(result.stage1).toBe('structurally-ok');
+    expect(result.stage2).toBeUndefined();
+    expect(JSON.stringify(result)).not.toMatch(/"verified"/);
+    expect(JSON.stringify(result)).not.toMatch(/integrity-checked/);
+  });
+
+  it('Stage1 malformed for missing fields', async () => {
+    const { handleValidateDatapoint } = await loadHandlers();
+    const result = await handleValidateDatapoint({
+      dataPoint: { id: '', kind: '', value: undefined as unknown as number },
+    });
+    expect(result.stage1).toBe('malformed');
+    expect(result.stage2).toBeUndefined();
+  });
+
+  it('runStage2 with <2 sources → insufficient-data (honest success)', async () => {
+    const { handleValidateDatapoint } = await loadHandlers();
+    const result = await handleValidateDatapoint({
+      dataPoint: { id: 'dp-1', kind: 'metric', value: 42 },
+      runStage2: true,
+      sources: [{ url: 'https://a.example', value: 100, title: 'A' }],
+    });
+    expect(result.stage).toBe(2);
+    expect(result.stage2?.token).toBe('insufficient-data');
+    expect(JSON.stringify(result)).not.toMatch(/"verified"/);
+  });
+
+  it('runStage2 with ≥2 sources returns measure vocabulary (never verified)', async () => {
+    const { handleValidateDatapoint } = await loadHandlers();
+    const result = await handleValidateDatapoint({
+      dataPoint: { id: 'dp-1', kind: 'metric', value: 42 },
+      runStage2: true,
+      claim: 'Values should agree',
+      sources: [
+        { url: 'https://a.example', value: 100, title: 'A' },
+        { url: 'https://b.example', value: 101, title: 'B' },
+      ],
+    });
+    expect(result.stage).toBe(2);
+    expect(result.stage1).toBe('structurally-ok');
+    expect(result.stage2?.measurements?.length).toBeGreaterThan(0);
+    expect(JSON.stringify(result)).not.toMatch(/"verified"/);
+    expect(JSON.stringify(result)).not.toMatch(/integrity-checked/);
   });
 });

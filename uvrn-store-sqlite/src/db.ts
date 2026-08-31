@@ -223,4 +223,32 @@ CREATE TABLE IF NOT EXISTS network_receipts (
   json         TEXT NOT NULL
 );
 CREATE INDEX IF NOT EXISTS idx_network_receipts_synced ON network_receipts(synced, created_at);
+
+CREATE TABLE IF NOT EXISTS track_records (
+  origin_id  TEXT PRIMARY KEY,
+  updated_at TEXT NOT NULL,
+  json       TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_track_records_updated ON track_records(updated_at);
+
+CREATE TABLE IF NOT EXISTS track_transcriptions (
+  sample_id TEXT PRIMARY KEY,
+  origin_id TEXT NOT NULL,
+  json      TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_track_transcriptions_origin ON track_transcriptions(origin_id);
+
+CREATE TABLE IF NOT EXISTS track_revisions (
+  revision_id TEXT PRIMARY KEY,
+  origin_id   TEXT NOT NULL,
+  json        TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_track_revisions_origin ON track_revisions(origin_id);
+
+CREATE TABLE IF NOT EXISTS track_forecast_resolutions (
+  forecast_id TEXT PRIMARY KEY,
+  origin_id   TEXT NOT NULL,
+  json        TEXT NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_track_forecasts_origin ON track_forecast_resolutions(origin_id);
 `;

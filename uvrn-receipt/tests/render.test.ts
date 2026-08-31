@@ -36,6 +36,24 @@ describe('toHumanView', () => {
     expect(view.howToVerify).toContain('integrity-checked only');
   });
 
+  it('renders the unhashed absolute consensus value with honest plain meaning', () => {
+    const view = toHumanView(wrapped, {
+      scores: {
+        absoluteConsensusValue: { median: 101, n: 3, min: 100, max: 103 },
+      },
+    });
+
+    expect(view.scoreCard.absoluteConsensusValue).toEqual({
+      median: 101,
+      n: 3,
+      min: 100,
+      max: 103,
+    });
+    expect(view.scoreCard.plainMeaning.absoluteConsensusValue).toContain(
+      'not whether the claim is true'
+    );
+  });
+
   it('tone precedence: contradiction outranks alignment', () => {
     const conflicted = wrapMasterReceipt(
       {

@@ -1,0 +1,60 @@
+{
+  "name": "@uvrn/jsonld",
+  "version": "5.0.0",
+  "description": "Offline JSON-LD projection of UVRN receipts — separate object graph, never a hash input",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./context": {
+      "types": "./dist/context.d.ts",
+      "default": "./dist/context.js"
+    }
+  },
+  "files": [
+    "dist",
+    "context",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "jsonld": "^9.0.0"
+  },
+  "devDependencies": {
+    "@uvrn/core": "workspace:^",
+    "@uvrn/receipt": "workspace:^",
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT",
+  "keywords": [
+    "uvrn",
+    "json-ld",
+    "projection",
+    "provenance",
+    "offline"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UVRN-org/uvrn-packages.git",
+    "directory": "uvrn-jsonld"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

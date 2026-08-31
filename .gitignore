@@ -11,7 +11,12 @@ dist/
 **/.git
 .claude/
 .codex/
-.admin/
+# Ignore .admin contents, but allow planning attic (tip factory/PLANNING-ATTIC.md §6)
+.admin/*
+!.admin/docs/
+.admin/docs/*
+!.admin/docs/plan-suites/
+!.admin/docs/plan-suites/**
 .codex-staging/
 
 
@@ -24,3 +29,6 @@ pod-trends-report.html
 
 # Local-only (maintainers ops archive — never committed to the public repo)
 admin/
+
+# Hive local overrides (machine tip path) — never commit
+.hive/local.*

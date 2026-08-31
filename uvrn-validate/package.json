@@ -1,0 +1,51 @@
+{
+  "name": "@uvrn/validate",
+  "version": "5.0.0",
+  "description": "Easy-verify front desk: DataPoint Stage1 shape check + optional Stage2 route into @uvrn/measure (never emits verified)",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "SKILL.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "clean": "rm -rf dist"
+  },
+  "peerDependencies": {
+    "@uvrn/core": "^5.0.0",
+    "@uvrn/measure": "^5.0.0"
+  },
+  "devDependencies": {
+    "@uvrn/core": "workspace:^",
+    "@uvrn/measure": "workspace:^",
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "MIT",
+  "keywords": [
+    "uvrn",
+    "validate",
+    "datapoint",
+    "structurally-ok",
+    "measure"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UVRN-org/uvrn-packages.git",
+    "directory": "uvrn-validate"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

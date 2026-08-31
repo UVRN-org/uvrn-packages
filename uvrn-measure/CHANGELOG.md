@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- Forecast-realism goldens (BP-v2.1-LATER-D5): eight messy short-horizon market cases exercised via `withTypedObservation` — no title scrape, no agree-threshold retune.
+- Actionable threshold facts (BP-v2.1-LATER-D3): `thresholdFactsFromResults` / `parseAgreeExplanation` / `parseDisagreeExplanation` / `primaryDisagreeToAgreeHint` — extract score/spread vs threshold from existing measurement explanations; no new ranking policy.
+- Operator docs for host-configurable `context.agreeThreshold` (default remains `0.9`; not silently lowered for diagnostics).
+- `withTypedObservation()` thin helper to attach host-declared typed-observation axes onto `MeasurementSource.attributes` (no prose/title scrape).
+- Sensitivity tests: at least two host `agreeThreshold` overrides with typed money/percentage observations; default-unchanged lock.
+
 ## [4.1.0] - 2026-07-19
 
 ### Closing release

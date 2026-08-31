@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- Forecast-realism goldens (BP-v2.1-LATER-D5): scrape-off + future `obsStatus: F` exclusion coverage for eight additive short-horizon market fixtures — no threshold retune.
+- Spread driver facts (BP-v2.1-LATER-D3): `spreadToDriverFacts(reportSpread(...))` maps a `SpreadReadout` into plain factual anchors for actionable explanations (state only — never opportunity/buy-now language).
+- Spread pillar (BP-v2.1-Spread): role label+organize helpers (`normalizeRoleAssignment`, `organizeByRole`), additive C-2 `calculateClassPartitionedAgreement`, and named C-3 readout `reportSpread` (magnitude + sign). Honest divergence state only — not an opportunity/accuracy score. Does not change `calculateOriginAgreementScore` / engine parity semantics.
+- Input honesty (BP-15): `extractProminenceValue` no longer scrapes titles by default; absent `evidenceScore` is unusable (`valueSource: 'none'`). Text scrape is opt-in via `allowTextScrape` (default off) and skips bare years / list-count patterns.
+- `valueSource` / `timestampSource` on every `RankedSource`; farm-wide `unusableSourceCount` and `inferredTimestampCount` stamped on ranked sources and available from `extractRankedSourcesWithHonesty`.
+- Undated sources earn no recency credit (inferred timestamps are not passed to `calculateRecencyScore`).
+
 ## [4.1.0] - 2026-07-19
 
 ### Closing release

@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- Local fixture continuity helpers (`exportFixtureSnapshot` / `hydrateFixtureSnapshot`) for ephemeral attested reputation → reloadable JSON snapshot (BP-v2.1-LATER-D6). Not live remote persistence.
+- `MockIdentityStore.listActivities()` for fixture round-trip.
+- Continuity fixture + tests under `fixtures/continuity/` and `tests/continuity-ephemeral-to-persistent.test.ts`.
+
 ## [4.1.0] - 2026-07-19
 
 ### Closing release

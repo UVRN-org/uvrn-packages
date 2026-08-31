@@ -10,6 +10,12 @@ the decision-complete semantics of the four starter measurements and the `insuff
 verdict. The vocabulary is open — hosts may add measurement types by implementing the same
 contract — but the four starters mean exactly what this document says, everywhere.
 
+> **Additive cross-reference (BP-19):** Typed quantity dimensions (`quantityKind`), UCUM units,
+> three dates, SDMX observation status, W3C PROV relations, stake, and code-list versioning are
+> specified in `SPEC/uvrn-typed-observation-v1.md`. That document does **not** redefine
+> `MeasurementSource.kind` (`numeric` \| `categorical` \| `boolean` \| `range`). See its
+> vocabulary collision table before adding fields.
+
 ---
 
 ## 1. The contract (from `@uvrn/core`, unchanged shape)
@@ -50,6 +56,13 @@ not usable, but MUST still be reported in master-receipt `nodes` — recorded, n
 | `windowSize` | `3` | potential |
 | `history` / `agreementHistory` | — | potential (scores 0..1, oldest first) |
 | `confidenceFloor` | `0.25` | potential |
+
+**Host override (additive clarification):** `agreeThreshold` is per-call host context.
+Omitting it MUST use default `0.9`. Hosts MAY pass a different finite number for a single
+evaluate run. Implementations MUST NOT silently lower the package default to absorb
+diagnostic or CaseBank failures. Typed quantity axes (`quantityKind`, declared UCUM `unit`,
+dates, etc.) belong on measure input `attributes` per `uvrn-typed-observation-v1` §10 —
+not scraped from claim prose or titles.
 
 ---
 

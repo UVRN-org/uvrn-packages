@@ -21,7 +21,16 @@ export type {
   StanceMeasurementProjection,
   StanceSource,
 } from './stance';
+export { withTypedObservation } from './typedObservation';
+export type { TypedObservationAttrs } from './typedObservation';
 export { MeasurementRegistry, defaultRegistry } from './registry';
+export {
+  parseAgreeExplanation,
+  parseDisagreeExplanation,
+  thresholdFactsFromResults,
+  primaryDisagreeToAgreeHint,
+} from './explain';
+export type { MeasurementResultLike, MeasurementThresholdFact } from './explain';
 export type {
   AgreeVerdict,
   ConflictVerdict,

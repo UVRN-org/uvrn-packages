@@ -309,6 +309,59 @@ LOG_LEVEL=debug
 
 ---
 
+## Maintainer variables (pipeline smoke only)
+
+These are **not** read by the default `npx -y @uvrn/mcp` stdio server. Required only for
+[`host/arcanum-host.mjs`](host/arcanum-host.mjs) and the [`scripts/`](scripts/) pipeline smokes.
+
+### UVRN_UMBRELLA
+
+**Description:** Absolute path to the umbrella checkout (Arcanum `master.db` location).
+
+**Required:** Yes — for all maintainer pipeline scripts and Arcanum host.
+
+**Example:**
+```bash
+export UVRN_UMBRELLA=/path/to/uvrn-packages
+```
+
+### UVRN_WORKER_URL
+
+**Description:** Worker base URL for outbox sync and GET read-back verify.
+
+**Default:** `https://uvrn-worker.uvrn-workers.workers.dev`
+
+### UVRN_WORKER_KEY / UVRN_API_KEY
+
+**Description:** Bearer token for worker POST/GET. Set in the environment; never commit.
+
+**Required:** Yes for `pipeline-worker-sync-verify.mjs` unless using opt-in file load below.
+
+### UVRN_LOAD_KEY_FILE
+
+**Description:** Opt-in only — load worker key from a local file path. No baked-in paths in repo scripts.
+
+**Required:** No. Use only when you explicitly want disk load instead of env.
+
+---
+
+## Maintainer pipeline smoke (local only)
+
+These scripts are **not** part of the published `npx -y @uvrn/mcp` default. They exercise Arcanum
+persist + worker sync for maintainers who already have an umbrella checkout and credentials.
+
+| Script | Purpose |
+|---|---|
+| [`host/arcanum-host.mjs`](host/arcanum-host.mjs) | Stdio MCP with Arcanum signing + SQLite persist (`UVRN_UMBRELLA` required) |
+| [`scripts/pipeline-smoke-score-claim.mjs`](scripts/pipeline-smoke-score-claim.mjs) | Phase 1: score-claim smoke + persist verify |
+| [`scripts/pipeline-worker-sync-verify.mjs`](scripts/pipeline-worker-sync-verify.mjs) | Phases 3–4: outbox sync + GET read-back |
+
+**Required env:** `UVRN_UMBRELLA` (absolute umbrella path). Worker sync also needs
+`UVRN_WORKER_KEY` or `UVRN_API_KEY`. Optional opt-in disk load: `UVRN_LOAD_KEY_FILE=<path>`.
+Scripts never print secret values. Variable details in the **Maintainer variables** section above.
+
+---
+
 **Related Documentation:**
 - [README.md](./README.md) - Package overview
 - [CONNECT.md](./CONNECT.md) - Connect any MCP client

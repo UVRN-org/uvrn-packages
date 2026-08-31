@@ -24,6 +24,8 @@ section and the `NOTICE` file for the full credit.
 ## What this package provides
 
 - `rankSignals(candidates, config)` — one call, ranked result out.
+- `reportRankStability(candidates, options)` — baseline ranking plus which identities **survive** or **reorder** under declared weight variants (ordering stability only — not verification, accuracy, or market outcome).
+- `measurementResultsToCandidates` / `rankMeasurementResults` — thin bridge from measurement-result-like rows → `Candidate[]` / `rankSignals` (packages APIs only; not verification).
 - A composable pipeline (`runPipeline`) and individual stages you can re-wire.
 
 ## What you provide
@@ -65,6 +67,55 @@ result.config;   // the knobs actually used
 ```
 
 Feed `result.ranked` straight into any dashboard component.
+
+## Rank stability (ordering under re-weight)
+
+Use `reportRankStability` when you need to know which baseline ranks hold under alternative weightings. The report is about **ordering stability**, not whether a ranking is verified, accurate, or predictive of market outcome.
+
+```ts
+import { reportRankStability, DEFAULT_RANK_STABILITY_VARIANTS } from '@uvrn/algox';
+
+const stability = await reportRankStability(candidates, {
+  baseline: { now: '2026-05-24T00:00:00.000Z', weights: { prominence: 1 } },
+  // omit variants to use DEFAULT_RANK_STABILITY_VARIANTS (N=3 implementer PREP proposal)
+});
+
+stability.baseline.rankedLabels; // baseline order
+stability.variants;              // per-variant ranked label lists
+stability.report;                // { identity, label, baselineRank, status: 'survive'|'reorder', variantRanks }
+```
+
+Default variants (`DEFAULT_RANK_STABILITY_VARIANTS`) are an implementer PREP proposal for this unit — not product law:
+
+| Name | Weights |
+|---|---|
+| `mentions-only` | `{ mentions: 1 }` |
+| `prominence-mentions-balanced` | `{ prominence: 1, mentions: 1 }` |
+| `mentions-dominant` | `{ prominence: 0.25, mentions: 1 }` |
+
+An identity **survives** when it occupies the same 1-based rank in every variant ranking; otherwise it **reorders**. Identity is `id` when present, else the normalized label.
+
+## Measurement → ranked signals (bridge)
+
+Hosts that already have measurement results (agree / disagree / conflict / potential) can map them into algox candidates without hand-building `Candidate[]`. This closes the measure→rank gap; it does **not** claim measurement output is verified, accurate, or a market outcome.
+
+```ts
+import { measurementResultsToCandidates, rankMeasurementResults } from '@uvrn/algox';
+
+const results = [
+  { type: 'agree', verdict: 'agree', confidence: 0.9, explanation: '…', evidenceRefs: ['a', 'b'] },
+  { type: 'disagree', verdict: 'disagree', confidence: 0.55, explanation: '…' },
+];
+
+// Mapper only
+const candidates = measurementResultsToCandidates(results);
+
+// Or one-call into existing rankSignals (defaults maxAgeDays: null)
+const ranked = await rankMeasurementResults(results, { topK: 5 });
+ranked.ranked; // ScoredCandidate[] — ordering under weights, not verification
+```
+
+Prominence is `confidence × 100` when confidence is present. Extra fields (`measurementType`, `measurementVerdict`, `explanation`, `evidenceRefs`) pass through on the candidate. Insufficient-data rows are kept by default so hosts see the gap (`includeInsufficient: false` to omit).
 
 ## Tuning knobs
 

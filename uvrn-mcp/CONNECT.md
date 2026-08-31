@@ -5,12 +5,25 @@ to it the same way — by launching a **stdio** server and discovering its tools
 **zero-external default path** (in-memory mocks, no API keys, no database), so it works on any
 machine with nothing to sign up for.
 
-It exposes **9 tools**:
+It exposes **13 tools** (was 12 — migration note below):
 
 `delta_run_engine`, `delta_validate_bundle`, `delta_verify_receipt`, `delta_score_drift`,
 `delta_compare`, `delta_verify_identity`, `delta_canon_qualify`, `delta_canon_get`,
-`delta_score_claim` — plus 4 resources and 3 prompts. The machine-readable contract is
+`delta_score_claim`, `delta_read_support`, `delta_report_rank_stability`,
+`delta_validate_datapoint`, `delta_pattern_scan` — plus 4 resources and 3 prompts. The machine-readable contract is
 [`plugin-manifest.json`](plugin-manifest.json) (the single source of truth for the tool surface).
+
+**Migration (12 → 13):** Existing twelve tools are unchanged. Additive observatory tool
+`delta_pattern_scan` (`@uvrn/pattern` `scanPatterns`) — detected ≠ verified; not receipt-class;
+requires `joinScope` + `window` + host `history` (or injected `patternHistoryReader`). Clients that
+hard-code a tool count of 12 should update discovery expectations; prior tool *names* stay stable.
+
+**Prior migration (11 → 12):** Additive easy-verify tool `delta_validate_datapoint` (`@uvrn/validate`
+Stage1 + optional Stage2 measure route) does **not** overload `delta_validate_bundle` (bundles ≠ DataPoints).
+
+**Prior migration (9 → 11):** Two additive post-pipeline tools after `delta_score_claim`:
+`delta_read_support` (lattice `readSupport` / claim ladder) and `delta_report_rank_stability`
+(algox `reportRankStability`).
 
 ---
 
@@ -20,8 +33,12 @@ Every connector below uses one of these. Prefer **npx** — it has no machine-sp
 
 | Form | Command | When |
 |---|---|---|
-| **Online (recommended)** | `npx -y @uvrn/mcp` | Pulls the published package; nothing to clone, build, or peer-install. |
+| **Published npm / stdio (recommended)** | `npx -y @uvrn/mcp` | Pulls the published package over **stdio**; nothing to clone, build, or peer-install. (“Online” here means npm — **not** a hosted remote MCP URL.) |
 | **Local build** | `node <ABSOLUTE_PATH_TO_REPO>/uvrn-mcp/dist/index.js` | You cloned the repo and built `dist/` (below). |
+
+> **No remote MCP URL today.** `@uvrn/mcp` speaks **stdio only** (`StdioServerTransport`). There is
+> no SSE / Streamable HTTP / cloud MCP endpoint to paste into a connector. For HTTP access, use
+> REST via `@uvrn/api` instead. Host your own stdio launcher (npx or local `node`) in the client.
 
 > Replace `<ABSOLUTE_PATH_TO_REPO>` with the absolute path to your checkout. Never commit a real
 > path into shared config — keep machine-specific wiring local.
@@ -52,10 +69,16 @@ Open Claude Desktop's MCP settings file, merge the `mcpServers` block from
 [`connectors/claude-desktop.json`](connectors/claude-desktop.json), then fully quit and relaunch the
 app. To test an unpublished checkout, use the local-build launch form above in local config only.
 
+### Cursor
+Merge the `mcpServers` block from [`connectors/cursor.json`](connectors/cursor.json) into Cursor's
+MCP settings (same npx shape as Claude Desktop). Restart MCP / reload the window so the `uvrn`
+server appears. Project [`.mcp.json`](../.mcp.json) is a **local-build** profile for this checkout
+after `dist/` exists — prefer the npx connector for third-party or zero-clone use.
+
 ### Claude Code (local agents)
 A project-scoped [`.mcp.json`](../.mcp.json) at the repo root already registers `uvrn` with the
 relative local-build path. Open the repo in Claude Code, approve the server when prompted (after
-building `dist/`), and the 9 tools are available to local agents.
+building `dist/`), and the 13 tools are available to local agents.
 
 ### Hermes (Nous Research)
 Config file: `~/.hermes/config.yaml`. Merge the `mcp_servers` block from
@@ -81,15 +104,53 @@ stdio; the contract is `plugin-manifest.json`.
 | `STORAGE_PATH` | (none) | Optional receipt cache path |
 | `VERBOSE_ERRORS` | `false` | Include stack traces in error responses |
 
+### Maintainer-only (pipeline smoke scripts)
+
+Not used by the default `npx -y @uvrn/mcp` stdio launch. Required for
+[`scripts/pipeline-smoke-score-claim.mjs`](scripts/pipeline-smoke-score-claim.mjs),
+[`scripts/pipeline-worker-sync-verify.mjs`](scripts/pipeline-worker-sync-verify.mjs), and
+[`host/arcanum-host.mjs`](host/arcanum-host.mjs) when Arcanum persist is enabled.
+
+| Variable | Required | Purpose |
+|---|---|---|
+| `UVRN_UMBRELLA` | **Yes** (maintainer scripts) | Absolute path to umbrella checkout (Arcanum `master.db`) |
+| `UVRN_WORKER_URL` | No (defaults to prod worker) | Worker base URL for sync/read-back verify |
+| `UVRN_WORKER_KEY` or `UVRN_API_KEY` | **Yes** (worker sync) | Bearer token for worker POST/GET — set in env, never commit |
+| `UVRN_LOAD_KEY_FILE` | No (opt-in only) | Load worker key from a local file path; explicit opt-in, no baked-in paths |
+
+---
+
+## First call (after connect)
+
+Have the agent call **`delta_score_claim`** with **host-provided `sources`** (the agent brings
+evidence — two or more sources). That exercises the claim → measurement → MasterReceipt path
+without requiring a farm connector or API keys. See the tool schema in
+[`plugin-manifest.json`](plugin-manifest.json) and the package README for field details.
+
+### Documented post-pipeline path
+
+After `delta_score_claim`, hosts may invoke optional post-steps on the same MCP surface (no
+duplicate engines — thin adapters over existing package APIs):
+
+1. **`delta_score_claim`** — score the claim → MasterReceipt / V-Score  
+2. **`delta_read_support`** — lattice `readSupport` / claim-ladder sufficiency (requires `claim` +
+   `evidence`; pass `evidence: []` for an honest Unverified / empty-coverage readout)  
+3. **`delta_report_rank_stability`** — algox `reportRankStability` ordering stability (requires a
+   non-empty `candidates` array; default weight variants are an implementer PREP proposal, not
+   product / publish law)
+
+Default path needs **no auth tokens**. Do not invent `AUTH_TOKEN` / webhook secrets; those are
+not required for the zero-external stdio launch.
+
 ---
 
 ## Verify the connection
 
-Ask the connected agent: **"What UVRN tools are available?"** — expect the 9 `delta_*` tools.
+Ask the connected agent: **"What UVRN tools are available?"** — expect the 13 `delta_*` tools.
 
 To verify the server directly (no client), pipe an MCP handshake over stdin.
 
-**Online (published package):**
+**Published npm (stdio):**
 
 ```bash
 printf '%s\n' \
@@ -109,8 +170,8 @@ printf '%s\n' \
   | node <ABSOLUTE_PATH_TO_REPO>/uvrn-mcp/dist/index.js
 ```
 
-A healthy server reports `delta-engine-mcp` v1.2.0 with `tools: 9, resources: 4, prompts: 3` and
-returns the 9 tool names.
+A healthy server reports `delta-engine-mcp` v1.2.0 with `tools: 13, resources: 4, prompts: 3` and
+returns the 13 tool names.
 
 ---
 

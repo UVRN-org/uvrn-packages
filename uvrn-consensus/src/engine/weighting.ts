@@ -62,3 +62,22 @@ export function calculateWeightedScore(
     coverageScore * weights.coverage
   );
 }
+
+/**
+ * Resolve the credibility score used for weighting.
+ * Learned consumption is opt-in (`useLearned` default false). When on and a learned
+ * value exists for the origin, it replaces the declared score for weighting; callers
+ * should still report both numbers.
+ */
+export function resolveCredibilityForWeighting(input: {
+  declared?: number;
+  learned?: number;
+  useLearned?: boolean;
+}): { weightScore: number; declaredScore: number; learnedScore?: number } {
+  const declaredScore = normalizeCredibilityScore(input.declared);
+  if (!input.useLearned || input.learned == null) {
+    return { weightScore: declaredScore, declaredScore };
+  }
+  const learnedScore = normalizeCredibilityScore(input.learned);
+  return { weightScore: learnedScore, declaredScore, learnedScore };
+}

@@ -100,6 +100,40 @@ The `summary` field is intentionally short and verbatim-ready for logs or LLM re
 - `ConsensusEngineOptions`
 - `ConsensusStats`
 - `RankedSource`
+- `reportSpread` / `calculateClassPartitionedAgreement` / role helpers (Spread pillar)
+
+### Named spread readout — `reportSpread`
+
+Host-facing **spread** capability (BP-v2.1-Spread): label + organize claim-relative roles, compute **class-partitioned** within-role agreement (C-2), and return a signed cross-role divergence readout (C-3) with **magnitude** and **sign**.
+
+**EvidenceClass home:** the `EvidenceClass` string union is **mirrored** in `@uvrn/consensus` (aligned with `@uvrn/lattice`) so this additive readout does not add a lattice peer. Keep the unions in sync when lattice taxonomy changes.
+
+**Role is claim-relative:** the host declares (or assumes-with-why) role per claim; optional `claimId` is host bookkeeping. Packages do not invent a global source→role registry.
+
+```ts
+import { reportSpread } from '@uvrn/consensus';
+
+const readout = reportSpread([
+  {
+    id: 'pinterest',
+    metricValue: 100,
+    originId: 'pin',
+    role: { provenance: 'declared', evidenceClass: 'attention' },
+  },
+  {
+    id: 'etsy',
+    metricValue: 10,
+    originId: 'etsy',
+    role: { provenance: 'declared', evidenceClass: 'supply_entry' },
+  },
+]);
+// readout.magnitude, readout.sign, readout.signedDivergence
+// incomplete axis → magnitude/sign are null (withheld), distinct from balanced 0/0
+```
+
+**Magnitude defaults:** `demandClass=attention`, `supplyClass=supply_entry`; per-class representative = mean of first-seen `metricValue` per `originId`; `magnitude = |demand−supply| / max((|d|+|s|)/2, 1e-9)`; `sign = sign(demand−supply)`. C-2 field `multipleClassesPresent` means 2+ class partitions exist — not a measured numeric gap (use `reportSpread` for that).
+
+Honest vocabulary: divergence **state** only — not an opportunity/accuracy score and not a market verdict. Missing roles label as `no_role` / `unknown` (incomplete assumed is a separate organize bucket); assumed roles require `why`. Existing `calculateOriginAgreementScore` / engine parity semantics are unchanged.
 
 ## Dependencies
 

@@ -30,6 +30,25 @@ export function validateBundle(bundle: DeltaBundle): ValidationResult {
     return { valid: false, error: 'thresholdPct must be > 0 and <= 1' };
   }
 
+  // Validate absoluteEpsilon only when present — absent means unchanged.
+  if (bundle.absoluteEpsilon !== undefined) {
+    if (
+      typeof bundle.absoluteEpsilon !== 'number' ||
+      !Number.isFinite(bundle.absoluteEpsilon)
+    ) {
+      return {
+        valid: false,
+        error: 'absoluteEpsilon must be a finite number when present',
+      };
+    }
+    if (bundle.absoluteEpsilon < 0) {
+      return {
+        valid: false,
+        error: 'absoluteEpsilon must be >= 0 when present',
+      };
+    }
+  }
+
   // Validate internals of dataSpecs
   for (let i = 0; i < bundle.dataSpecs.length; i++) {
     const spec = bundle.dataSpecs[i];

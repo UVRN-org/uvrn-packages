@@ -1,7 +1,7 @@
 {
   "name": "uvrn-packages",
   "private": true,
-  "description": "UVRN protocol packages — full 26-package open protocol. Publish to npm under @uvrn scope.",
+  "description": "UVRN protocol packages — public 33-package generation @ 5.x (MIT). Implementation monorepo for UVRN-org/uvrn-packages.",
   "workspaces": [
     "uvrn-core",
     "uvrn-sdk",
@@ -22,13 +22,20 @@
     "uvrn-consensus",
     "uvrn-compare",
     "uvrn-measure",
+    "uvrn-validate",
     "uvrn-identity",
     "uvrn-timeline",
     "uvrn-watch",
     "uvrn-embed",
     "uvrn-receipt",
+    "uvrn-meta-readout",
+    "uvrn-pattern",
     "uvrn-store-sqlite",
-    "uvrn-protocol"
+    "uvrn-visual",
+    "uvrn-chart-memory",
+    "uvrn-protocol",
+    "uvrn-jsonld",
+    "uvrn-track-record"
   ],
   "scripts": {
     "build": "pnpm -r run build",
@@ -42,12 +49,18 @@
     "test:wave1": "pnpm --filter @uvrn/signal --filter @uvrn/score --filter @uvrn/test run test",
     "build:wave2": "pnpm --filter @uvrn/farm --filter @uvrn/normalize run build",
     "build:wave3": "pnpm --filter @uvrn/consensus --filter @uvrn/compare --filter @uvrn/identity --filter @uvrn/timeline run build",
-    "build:wave4": "pnpm --filter @uvrn/watch --filter @uvrn/embed run build"
+    "build:wave4": "pnpm --filter @uvrn/watch --filter @uvrn/embed run build",
+    "check:publish-access": "node scripts/check-publish-access.mjs",
+    "check:packed-manifests": "node scripts/check-packed-manifests.mjs",
+    "check:dual-dry-run": "node scripts/dual-dry-run.mjs",
+    "check:phase1-gates": "pnpm run check:publish-access && pnpm run check:published-purity && pnpm run check:packed-manifests && pnpm run test:mcp-connectors && pnpm run test:mcp-tarball && pnpm run check:dual-dry-run"
   },
   "devDependencies": {
+    "tsx": "^4.23.1",
     "typescript": "^5.3.0"
   },
   "engines": {
     "node": ">=18.0.0"
-  }
+  },
+  "packageManager": "pnpm@11.5.2"
 }

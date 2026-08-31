@@ -12,11 +12,31 @@ export type StanceLabel =
   | 'neutral'
   | 'insufficient';
 
+/** Host-declared W3C PROV relations (codes only — never inferred). */
+export interface HostProvRelations {
+  wasDerivedFrom?: string;
+  hadPrimarySource?: string;
+  wasQuotedFrom?: string;
+  wasRevisionOf?: string;
+  wasAttributedTo?: string;
+}
+
 export interface FarmSource extends AgentFarmSource {
   stanceValue?: number;
   stanceLabel?: StanceLabel;
   stanceConfidence?: number;
   stanceEvidence?: string;
+  /** Host-declared UCUM (or UCUM-compatible) unit. */
+  unit?: string;
+  quantityKind?: import('@uvrn/core').QuantityKind;
+  measuredAt?: string;
+  appliesTo?: string;
+  obsStatus?: string;
+  stake?: string;
+  codeLists?: import('@uvrn/core').ObservationCodeLists;
+  prov?: HostProvRelations;
+  /** Optional explicit origin id; otherwise derived from host `prov` or the source URL. */
+  originId?: string;
 }
 
 export interface FarmResult extends Omit<AgentFarmResult, 'sources'> {
@@ -72,6 +92,12 @@ export interface DedupConfig {
   mode?: 'relative' | 'absolute' | 'off';
 }
 
+/** Where a prominence metric value came from. */
+export type ValueSource = 'declared' | 'scraped' | 'none';
+
+/** Whether a source timestamp was host-declared or substituted from fetch time. */
+export type TimestampSource = 'declared' | 'inferred';
+
 export interface ConsensusEngineOptions {
   sources: FarmResult;
   weights?: Partial<SourceWeights>;
@@ -81,10 +107,28 @@ export interface ConsensusEngineOptions {
    * v3 behavior exactly: relative mode, ±1% tolerance, 1-day window.
    */
   dedup?: DedupConfig;
+  /**
+   * Opt-in learned credibility from per-origin track records (BP-23).
+   * Default **false** — declared connector/transformer constants remain the weight input.
+   * When true, `learnedCredibilityByOrigin[originId]` replaces the declared score for
+   * weighting when present; both declared and learned scores are stamped on RankedSource.
+   */
+  useLearnedCredibility?: boolean;
+  /**
+   * Map of originId → learned credibility in [0,1] or 0–100.
+   * Ignored unless `useLearnedCredibility` is true. Build via TrackRecordStore.getLearnedCredibility.
+   */
+  learnedCredibilityByOrigin?: Record<string, number>;
 }
 
 export interface ConsensusStats {
   sourceCount: number;
+  /**
+   * Median and range of the numeric metrics retained after deduplication.
+   * These untyped values report what the retained sources landed on; they do
+   * not establish that the underlying claim is true.
+   */
+  absoluteConsensusValue: AbsoluteConsensusValue;
   agreementScore: number;
   coverageScore: number;
   recencyScore: number;
@@ -95,7 +139,47 @@ export interface ConsensusStats {
    * the frozen prominence result byte-identical (D2 hard wall 4).
    */
   evidenceAxis?: 'stance';
+  /**
+   * Count of input sources that could not contribute a prominence value.
+   * Additive; omitted from ConsensusEngine.stats() in this unit so frozen
+   * ConsensusResult bytes stay identical — available via RankedSource stamps
+   * and `extractRankedSourcesWithHonesty`.
+   */
+  unusableSourceCount?: number;
+  /**
+   * Count of input sources whose publication time was inferred (absent/invalid).
+   * Additive; same exposure path as `unusableSourceCount`.
+   */
+  inferredTimestampCount?: number;
 }
+
+export interface AbsoluteConsensusValue {
+  median: number | null;
+  n: number;
+  min: number | null;
+  max: number | null;
+}
+
+export interface InsufficientIndependentSources {
+  insufficientIndependentSources: {
+    inputCount: number;
+    usableCount: number;
+    retainedCount: number;
+    requiredCount: 2;
+    shortfall: number;
+    deduplicatedCount: number;
+    reason: string;
+  };
+  absoluteConsensusValue: AbsoluteConsensusValue;
+}
+
+export type BundleBuildResult =
+  | import('@uvrn/core').DeltaBundle
+  | InsufficientIndependentSources;
+
+export type ConsensusBuildResult =
+  | ConsensusResult
+  | InsufficientIndependentSources;
 
 /**
  * Named V-Score input components derived from a consensus run.
@@ -132,7 +216,66 @@ export interface RankedSource {
   metricValue: number;
   publishedAt: string;
   unit?: string;
+  unitSource?: import('@uvrn/core').UnitSource;
+  quantityKind?: import('@uvrn/core').QuantityKind;
+  measuredAt?: string;
+  appliesTo?: string;
+  obsStatus?: string;
+  stake?: string;
+  /** Resolved origin identity (host PROV or self). Never from value-similarity. */
+  originId: string;
   originalSource: FarmSource;
+  /** How the metric value was obtained. */
+  valueSource: ValueSource;
+  /**
+   * Whether measurement time was host-declared (`measuredAt`) or inferred.
+   * Publish time alone does not make this `declared`.
+   */
+  timestampSource: TimestampSource;
+  /**
+   * Farm-wide count of sources with no usable prominence value.
+   * Stamped identically on every ranked source (same pattern as coverageScore).
+   */
+  unusableSourceCount: number;
+  /**
+   * Farm-wide count of sources with absent/invalid measuredAt (and no usable
+   * declared measurement time).
+   */
+  inferredTimestampCount: number;
+  /** Sources excluded from the observation pool as forecasts (`obsStatus: F`). */
+  excludedForecastCount: number;
+  /** Document count sharing this origin beyond the first (restatement signal). */
+  transcriptionCorroboration: number;
+  /** Distinct origins in the observation pool (agreement denominator basis). */
+  distinctOriginCount: number;
+  /**
+   * Declared credibility (connector/host) after normalizeCredibilityScore.
+   * Present when `useLearnedCredibility` is on so callers can compare declared vs learned.
+   */
+  declaredCredibilityScore?: number;
+  /**
+   * Learned credibility observation used for weighting when opt-in is on.
+   * Omitted when opt-in is off or no learned score exists for the origin.
+   */
+  learnedCredibilityScore?: number;
+}
+
+/** Full aggregation result including honesty counts when the ranked list is empty. */
+export interface RankedSourcesResult {
+  ranked: RankedSource[];
+  unusableSourceCount: number;
+  inferredTimestampCount: number;
+  excludedForecastCount: number;
+  /** Pre-dedup observation-pool size (documents). */
+  observationSourceCount: number;
+  distinctOriginCount: number;
+  /** How many sources are restatements of a declared multi-doc origin. */
+  transcriptionCorroboration: number;
+  /**
+   * Agreement over the pre-dedup observation pool by distinct origins.
+   * Use this (not document-count over deduped ranked) for honest origin scoring.
+   */
+  originAgreementScore: number;
 }
 
 export class ConsensusError extends Error {

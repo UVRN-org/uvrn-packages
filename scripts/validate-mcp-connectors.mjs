@@ -17,6 +17,16 @@ assert.deepEqual(
   'Claude Desktop connector must use the zero-config npx launch'
 );
 
+const cursor = JSON.parse(read('uvrn-mcp/connectors/cursor.json'));
+assert.deepEqual(
+  {
+    command: cursor.mcpServers?.uvrn?.command,
+    args: cursor.mcpServers?.uvrn?.args,
+  },
+  expectedLaunch,
+  'Cursor connector must use the zero-config npx launch'
+);
+
 const claudeCode = JSON.parse(read('.mcp.json'));
 assert.deepEqual(
   {
@@ -34,12 +44,20 @@ assert.match(hermes, /mcp_uvrn_delta_run_engine/);
 const odysseus = read('uvrn-mcp/connectors/odysseus.md');
 assert.match(odysseus, /Command:\*\* `npx`/);
 assert.match(odysseus, /Args:\*\* `-y @uvrn\/mcp`/);
-assert.match(odysseus, /9 tools/);
+assert.match(odysseus, /13 tools/);
 
 const manifest = JSON.parse(read('uvrn-mcp/plugin-manifest.json'));
-assert.equal(manifest.capabilities.tools.length, 9);
-assert.equal(new Set(manifest.capabilities.tools).size, 9);
+assert.equal(manifest.capabilities.tools.length, 13);
+assert.equal(new Set(manifest.capabilities.tools).size, 13);
+assert.ok(
+  manifest.capabilities.tools.includes('delta_validate_datapoint'),
+  'manifest must list additive delta_validate_datapoint'
+);
+assert.ok(
+  manifest.capabilities.tools.includes('delta_pattern_scan'),
+  'manifest must list additive delta_pattern_scan'
+);
 
 console.log(
-  'PASS: Claude Desktop, Claude Code, Hermes, and Odysseus profiles match the nine-tool stdio contract'
+  'PASS: Claude Desktop, Cursor, Claude Code, Hermes, and Odysseus profiles match the thirteen-tool stdio contract'
 );

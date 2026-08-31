@@ -25,9 +25,15 @@ export class DefaultEvidenceTagger implements EvidenceTagger {
       return null;
     }
 
+    const originId =
+      typeof input.originId === 'string' && input.originId.trim().length > 0
+        ? input.originId.trim()
+        : undefined;
+
     return {
       evidenceClass: rule.evidenceClass,
       source: input.source,
+      ...(originId ? { originId } : {}),
       key: input.key,
       value: input.value,
       ts: input.ts,

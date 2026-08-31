@@ -1,16 +1,26 @@
-import type { FarmResult, FarmSource } from '@uvrn/agent';
 import { validateBundle } from '@uvrn/core';
 
-import { ConsensusEngine, ConsensusError } from '../src';
+import {
+  ConsensusEngine,
+  type BundleBuildResult,
+  type ConsensusBuildResult,
+  type FarmResult,
+  type FarmSource,
+} from '../src';
 
 function buildSource(overrides: Partial<FarmSource> = {}): FarmSource {
+  const publishedAt = overrides.publishedAt ?? '2026-04-01T00:00:00.000Z';
+  const measuredAt = overrides.measuredAt ?? publishedAt;
   return {
     url: 'https://example.com/source',
     title: 'Reserve ratio 100',
     snippet: 'Exchange reserves remain at 100 USD according to the latest filing.',
-    publishedAt: '2026-04-01T00:00:00.000Z',
     credibility: 0.8,
+    evidenceScore: 100,
     ...overrides,
+    publishedAt,
+    // BP-20: freshness uses measuredAt. Tests declare it (default = publish).
+    measuredAt,
   };
 }
 
@@ -25,12 +35,14 @@ function buildFarmResult(overrides: Partial<FarmResult> = {}): FarmResult {
         title: 'Reserve ratio 100',
         snippet: 'Exchange reserves remain at 100 USD.',
         credibility: 0.9,
+        evidenceScore: 100,
       }),
       buildSource({
         url: 'https://example.com/source-b',
         title: 'Reserve ratio 103',
         snippet: 'Independent attestation shows 103 USD.',
         credibility: 0.85,
+        evidenceScore: 103,
       }),
     ],
     ...overrides,
@@ -69,12 +81,14 @@ describe('@uvrn/consensus', () => {
             title: 'Reserve ratio 110',
             publishedAt: '2026-03-01T00:00:00.000Z',
             credibility: 0.95,
+            evidenceScore: 110,
           }),
           buildSource({
             url: 'https://example.com/new',
             title: 'Reserve ratio 108',
             publishedAt: '2026-04-01T12:00:00.000Z',
             credibility: 0.8,
+            evidenceScore: 108,
           }),
         ],
       }),
@@ -96,6 +110,7 @@ describe('@uvrn/consensus', () => {
             snippet: 'Reported reserve ratio 100 USD.',
             credibility: 0.95,
             publishedAt: '2026-04-01T00:00:00.000Z',
+            evidenceScore: 100,
           }),
           buildSource({
             url: 'https://example.com/low',
@@ -103,6 +118,7 @@ describe('@uvrn/consensus', () => {
             snippet: 'Reported reserve ratio 100.5 USD.',
             credibility: 0.55,
             publishedAt: '2026-04-01T01:00:00.000Z',
+            evidenceScore: 100.5,
           }),
           buildSource({
             url: 'https://example.com/third',
@@ -110,6 +126,7 @@ describe('@uvrn/consensus', () => {
             snippet: 'Independent reserve ratio 108 USD.',
             credibility: 0.8,
             publishedAt: '2026-04-01T03:00:00.000Z',
+            evidenceScore: 108,
           }),
         ],
       }),
@@ -136,18 +153,107 @@ describe('@uvrn/consensus', () => {
     expect(stats.coverageScore).toBe(100);
     expect(stats.recencyScore).toBeCloseTo(96.666, 2);
     expect(stats.weightedConsensusScore).toBeCloseTo(94, 0);
+    expect(stats.absoluteConsensusValue).toEqual({
+      median: 101.5,
+      n: 2,
+      min: 100,
+      max: 103,
+    });
     expect(stats.summary).toContain('Consensus derived from 2 usable sources');
   });
 
-  it('buildBundle() throws ConsensusError when fewer than 2 usable numeric sources remain', () => {
+  it('returns structured insufficientIndependentSources before bundle construction', () => {
     const engine = new ConsensusEngine({
       sources: buildFarmResult({
-        sources: [buildSource({ title: 'Reserve update', snippet: 'No numeric evidence present.' })],
+        sources: [
+          buildSource({
+            title: 'Reserve update',
+            snippet: 'No numeric evidence present.',
+            evidenceScore: undefined,
+          }),
+        ],
       }),
     });
 
-    expect(() => engine.buildBundle()).toThrow(ConsensusError);
-    expect(() => engine.buildBundle()).toThrow('at least 2 usable numeric sources');
+    const result = engine.buildBundle<BundleBuildResult>();
+    expect('insufficientIndependentSources' in result).toBe(true);
+    if (!('insufficientIndependentSources' in result)) {
+      throw new Error('expected insufficient-source result');
+    }
+    expect(result).toEqual({
+      insufficientIndependentSources: {
+        inputCount: 1,
+        usableCount: 0,
+        retainedCount: 0,
+        requiredCount: 2,
+        shortfall: 2,
+        deduplicatedCount: 0,
+        reason:
+          'Only 0 of 1 input sources contained a usable numeric measurement; 2 more independent sources required.',
+      },
+      absoluteConsensusValue: { median: null, n: 0, min: null, max: null },
+    });
+  });
+
+  it('computes the absolute median over retained post-dedup metrics only', () => {
+    const engine = new ConsensusEngine({
+      sources: buildFarmResult({
+        sources: [
+          buildSource({
+            url: 'https://example.com/one',
+            evidenceScore: 1,
+            credibility: 0.8,
+          }),
+          buildSource({
+            url: 'https://example.com/hundred',
+            evidenceScore: 100,
+            credibility: 0.95,
+          }),
+          buildSource({
+            url: 'https://example.com/near-duplicate',
+            evidenceScore: 101,
+            credibility: 0.5,
+          }),
+          buildSource({
+            url: 'https://example.com/thousand',
+            evidenceScore: 1000,
+            credibility: 0.8,
+          }),
+        ],
+      }),
+    });
+
+    // Pre-dedup median is (100 + 101) / 2 = 100.5. The lower-ranked 101
+    // is removed as near-identical, so retained [1, 100, 1000] has median 100.
+    expect(engine.stats().absoluteConsensusValue).toEqual({
+      median: 100,
+      n: 3,
+      min: 1,
+      max: 1000,
+    });
+  });
+
+  it('buildConsensusResult() returns structured collapse without throwing', () => {
+    const engine = new ConsensusEngine({
+      sources: buildFarmResult({
+        sources: [
+          buildSource({ url: 'https://example.com/a', evidenceScore: 50 }),
+          buildSource({ url: 'https://example.com/b', evidenceScore: 50 }),
+        ],
+      }),
+    });
+
+    const result = engine.buildConsensusResult<ConsensusBuildResult>();
+    expect(result).toHaveProperty('insufficientIndependentSources', {
+      inputCount: 2,
+      usableCount: 2,
+      retainedCount: 1,
+      requiredCount: 2,
+      shortfall: 1,
+      deduplicatedCount: 1,
+      reason:
+        '2 usable measurements were found, but 1 near-identical source was removed, leaving 1; 1 more independent source required.',
+    });
   });
 
   it('prefers source.evidenceScore over numeric titles so equal scores fully agree', () => {
@@ -201,6 +307,7 @@ describe('@uvrn/consensus', () => {
             snippet: 'Reported reserve ratio 100 USD.',
             credibility: 0.95,
             publishedAt: '2026-04-01T00:00:00.000Z',
+            evidenceScore: 100,
           }),
           buildSource({
             url: 'https://example.com/low',
@@ -208,6 +315,7 @@ describe('@uvrn/consensus', () => {
             snippet: 'Reported reserve ratio 100.5 USD.',
             credibility: 0.55,
             publishedAt: '2026-04-01T01:00:00.000Z',
+            evidenceScore: 100.5,
           }),
         ],
       });
@@ -245,6 +353,7 @@ describe('@uvrn/consensus', () => {
               snippet: 'Reported reserve ratio 100 USD.',
               credibility: 0.95,
               publishedAt: '2026-04-01T00:00:00.000Z',
+              evidenceScore: 100,
             }),
             buildSource({
               url: 'https://example.com/nearby',
@@ -252,6 +361,7 @@ describe('@uvrn/consensus', () => {
               snippet: 'Reported reserve ratio 105 USD.',
               credibility: 0.55,
               publishedAt: '2026-04-01T01:00:00.000Z',
+              evidenceScore: 105,
             }),
           ],
         });
@@ -276,6 +386,7 @@ describe('@uvrn/consensus', () => {
               snippet: 'Reported reserve ratio 103 USD.',
               credibility: 0.95,
               publishedAt: '2026-04-01T00:00:00.000Z',
+              evidenceScore: 103,
             }),
             buildSource({
               url: 'https://example.com/b',
@@ -283,6 +394,7 @@ describe('@uvrn/consensus', () => {
               snippet: 'Reported reserve ratio 100 USD.',
               credibility: 0.55,
               publishedAt: '2026-04-01T01:00:00.000Z',
+              evidenceScore: 100,
             }),
           ],
         });

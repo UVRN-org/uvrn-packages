@@ -2,6 +2,8 @@
  * @uvrn/store-sqlite — every UVRN store interface implemented against one local SQLite file.
  * Durable AND zero-signup: the file-based zero-external path (plan A3). This is also the local
  * store of the desktop dashboard: same file, same interfaces, plus pushToNetwork() sync.
+ *
+ * Track-record APIs: import from `@uvrn/store-sqlite/track-record` (optional vip peer).
  */
 
 export * from './db';

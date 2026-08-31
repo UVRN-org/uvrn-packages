@@ -20,10 +20,14 @@ import {
   canonGetSchema,
   canonQualifySchema,
   compareSchema,
+  readSupportSchema,
+  reportRankStabilitySchema,
+  patternScanSchema,
   runEngineSchema,
   scoreClaimSchema,
   scoreDriftSchema,
   validateBundleSchema,
+  validateDatapointSchema,
   verifyIdentitySchema,
   verifyReceiptSchema,
 } from './tools/schemas';
@@ -39,7 +43,11 @@ import {
   RunEngineInput,
   ScoreClaimInput,
   ScoreDriftInput,
+  ReadSupportInput,
+  ReportRankStabilityInput,
+  PatternScanInput,
   ValidateBundleInput,
+  ValidateDatapointInput,
   VerifyIdentityInput,
   VerifyReceiptInput,
 } from './types';
@@ -84,15 +92,21 @@ export function createServer(runtimeConfig?: RuntimeConfig): Server {
         {
           name: 'delta_validate_bundle',
           description:
-            'Validate a DeltaBundle structure without executing the engine. ' +
-            'Checks required fields, data types, and structural integrity.',
+            'Check a DeltaBundle\'s structure without executing the engine — required fields, data ' +
+            'types, and shape. Structural only: it says nothing about whether the evidence is sound, ' +
+            'and nothing here is a hash or signature check.',
           inputSchema: validateBundleSchema,
         },
         {
           name: 'delta_verify_receipt',
           description:
-            'Verify the integrity of a DeltaReceipt by recomputing its hash. ' +
-            'Ensures the receipt has not been tampered with.',
+            'Integrity-check a DeltaReceipt by recomputing its canonical hash. Returns `integrityOk`: ' +
+            'true means the receipt has not been altered since it was produced. It does NOT mean the ' +
+            'receipt was verified — no producer signature is checked here, so nothing about who ' +
+            'produced it is established. (`verified` is a deprecated alias of `integrityOk`, kept for ' +
+            'existing callers.) For full verification — integrity plus a producer signature that checks ' +
+            'out — use verifyReceiptFull() from @uvrn/receipt; its FullVerifyResult reports `integrityOk` ' +
+            'and `signatureOk` separately so the two are never conflated.',
           inputSchema: verifyReceiptSchema,
         },
         {
@@ -132,8 +146,32 @@ export function createServer(runtimeConfig?: RuntimeConfig): Server {
         {
           name: 'delta_score_claim',
           description:
-            'Score a claim against evidence and return a verifiable MasterReceipt + canonical V-Score, plus a signed NetworkReceipt envelope (`networkReceipt`) and a render-ready `humanView`. Optionally pass `topic` ("domain/subject/instrument") to organize the receipt. Evidence options: (1) if you can search the web, gather sources and pass them as `sources`; (2) if you cannot, have an admin configure a connector; (3) otherwise it runs on built-in mock data. Check `evidenceMode` in the result to see which path was used (`mock` = no real evidence, low-confidence score).',
+            'Score a claim against evidence and return a MasterReceipt + canonical V-Score, plus a signed NetworkReceipt envelope (`networkReceipt`) and a render-ready `humanView`. Optionally pass `topic` ("domain/subject/instrument") to organize the receipt. Evidence options: (1) if you can search the web, gather sources and pass them as `sources`; (2) if you cannot, have an admin configure a connector; (3) otherwise it runs on built-in mock data. Check `evidenceMode` in the result to see which path was used (`mock` = no real evidence, low-confidence score). Per source, pass the measurement as `value` at its real magnitude (uncapped, finite) with an optional free-text `unit`; `evidenceScore` stays a 0–100 quality score, so do not rescale a real-world number into it. The result envelope carries `stanceCounts`: all five stance labels (supports/opposes/mixed/neutral/insufficient) plus quorum state and, when the quorum was missed, the reason — reported on every run, so a disagreement below quorum is visible rather than looking empty. This differs from the receipt payload\'s `stanceSummary`, which reports only support/oppose and only once the stance quorum activates; the two coexist and mean different things. `stanceCounts` is envelope-only and never enters a hashed receipt. After scoring, optional post-pipeline tools: `delta_read_support` (lattice sufficiency) then `delta_report_rank_stability` (algox ordering stability).',
           inputSchema: scoreClaimSchema,
+        },
+        {
+          name: 'delta_read_support',
+          description:
+            'Post-pipeline after `delta_score_claim`: grade claim-ladder support sufficiency via lattice `readSupport`. Returns a SupportReadout (Supported/Unverified, coverage band, missing evidence classes, origin corroboration). This is coverage/sufficiency — not V-Score, not accuracy, not verification. Requires `claim` + `evidence` array (pass [] for an honest empty-coverage Unverified readout). Does not invent origins or duplicate the scoring engine.',
+          inputSchema: readSupportSchema,
+        },
+        {
+          name: 'delta_report_rank_stability',
+          description:
+            'Post-pipeline after support readout (optional): report which baseline ranks survive vs reorder under declared weight variants via algox `reportRankStability`. Ordering stability only — not verification, accuracy, market outcome, or publish/registry posture. Requires a non-empty `candidates` array with `label` on each entry. Default variants are an implementer PREP proposal (N=3), not product law.',
+          inputSchema: reportRankStabilitySchema,
+        },
+        {
+          name: 'delta_validate_datapoint',
+          description:
+            'Easy-verify a DataPoint (id/kind/value): Stage1 shape/presence → structurally-ok | malformed only. Optional explicit `runStage2` routes into existing `@uvrn/measure` when ≥2 host sources are supplied; fewer than 2 host sources with the flag on returns honest insufficient-data (success). Never emits verified. Distinct from delta_validate_bundle (bundles ≠ DataPoints) and from delta_verify_receipt (hash integrity).',
+          inputSchema: validateDatapointSchema,
+        },
+        {
+          name: 'delta_pattern_scan',
+          description:
+            'Observatory: scan host-supplied measurement history for PatternObservations via @uvrn/pattern. Detected ≠ verified ≠ true. Observations are not receipt-class (not hashed/signed like claim receipts). Requires non-empty `joinScope` + `window` (no silent global scan). Pass `history` as an array mapped from existing store APIs (list()/listRecords()) — or inject RuntimeConfig.patternHistoryReader; pass [] for honest insufficient. If the store-API batch read cannot answer the scoped scan, returns measured-gap / escalate (index may become required). Never emits verified patterns.',
+          inputSchema: patternScanSchema,
         },
       ],
     };
@@ -243,6 +281,62 @@ export function createServer(runtimeConfig?: RuntimeConfig): Server {
 
         case 'delta_score_claim': {
           const result = await handlers.handleScoreClaim(request.params.arguments as unknown as ScoreClaimInput);
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+          };
+        }
+
+        case 'delta_read_support': {
+          const result = await handlers.handleReadSupport(
+            request.params.arguments as unknown as ReadSupportInput
+          );
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+          };
+        }
+
+        case 'delta_report_rank_stability': {
+          const result = await handlers.handleReportRankStability(
+            request.params.arguments as unknown as ReportRankStabilityInput
+          );
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+          };
+        }
+
+        case 'delta_validate_datapoint': {
+          const result = await handlers.handleValidateDatapoint(
+            request.params.arguments as unknown as ValidateDatapointInput
+          );
+          return {
+            content: [
+              {
+                type: 'text',
+                text: JSON.stringify(result, null, 2),
+              },
+            ],
+          };
+        }
+
+        case 'delta_pattern_scan': {
+          const result = await handlers.handlePatternScan(
+            request.params.arguments as unknown as PatternScanInput
+          );
           return {
             content: [
               {
@@ -423,7 +517,7 @@ export async function startServer(): Promise<void> {
 
   logger.info('Delta Engine MCP Server started successfully');
   logger.info('Server capabilities:', {
-    tools: 9,
+    tools: 12,
     resources: 4,
     prompts: 3,
   });

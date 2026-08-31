@@ -20,6 +20,20 @@ import {
   verdictHuman,
   type VerdictDescriptor,
 } from '../vocabulary';
+import {
+  buildIdeaSnapshots,
+  type BuildIdeaSnapshotsOptions,
+} from '../snapshots/rules';
+import {
+  assessConfidenceTheaterRisk,
+  assessSourceQuality,
+  type SourceQualityDiagnostic,
+  type SourceQualityInput,
+} from '../source-quality';
+import {
+  buildActionableExplanation,
+  type SpreadDriverFactInput,
+} from '../actionable-explanations';
 
 interface MeasurementLike {
   type?: unknown;
@@ -38,11 +52,38 @@ interface NodeLike {
 /** Optional facts the producing surface can add to the human view. */
 export interface HumanViewOptions {
   /** V-Score and components when the surface computed them (0–100 / 0–1 respectively). */
-  scores?: { vScore?: number; completeness?: number; parity?: number; freshness?: number };
+  scores?: {
+    vScore?: number;
+    completeness?: number;
+    parity?: number;
+    freshness?: number;
+    absoluteConsensusValue?: {
+      median: number | null;
+      n: number;
+      min: number | null;
+      max: number | null;
+    };
+  };
   /** Base URL for the public receipt page; default is the uvrn.org portal. */
   verifyBaseUrl?: string;
   /** Registry timestamp when known. */
   registeredAt?: string;
+  /**
+   * Opt-in model-layer seam for idea snapshots (BP-22). Default off.
+   * When on, output is clearly marked `modelGenerated`; no live model call is made here.
+   */
+  enableModelSnapshots?: boolean;
+  /**
+   * Host-declared source-quality inputs for D2 diagnostics (preferred).
+   * When omitted, `receipt.sourceQualityInputs` (non-hashed envelope member) is used if present.
+   */
+  sourceQualityInputs?: SourceQualityInput[];
+  /**
+   * Optional host-supplied spread driver facts (BP-v2.1-LATER-D3).
+   * Typically from `@uvrn/consensus` `spreadToDriverFacts(reportSpread(...))`.
+   * Non-hashed / render-only.
+   */
+  spreadDriverFacts?: SpreadDriverFactInput[];
 }
 
 const DEFAULT_VERIFY_BASE = 'https://uvrn.org/access/receipt/';
@@ -86,17 +127,71 @@ export function toHumanView(receipt: NetworkReceipt, options: HumanViewOptions =
       plainNote: SOURCE_STATUS_NOTES[s.status],
     }));
 
+  const snapshotOpts: BuildIdeaSnapshotsOptions = {
+    scores: options.scores,
+    enableModelSnapshots: options.enableModelSnapshots,
+  };
+  const ideaSnapshots = buildIdeaSnapshots(receipt, snapshotOpts);
+
+  const qualityInputs = resolveSourceQualityInputs(receipt, options);
+  let sourceQualityDiagnostics: SourceQualityDiagnostic[] | undefined;
+  let gapsOut = gaps;
+  let headlineOut = headline;
+  if (qualityInputs !== undefined) {
+    const assessed = assessSourceQuality(qualityInputs);
+    const theater = assessConfidenceTheaterRisk({
+      diagnostics: assessed,
+      verdictTone: primary.tone,
+      measurementConfidences: measurements.map((m) => m.confidence),
+    });
+    const combined = theater !== undefined ? [...assessed, theater] : assessed;
+    if (combined.length > 0) {
+      sourceQualityDiagnostics = combined;
+      // Document in the gaps path as well — recorded, not hidden; no confidence theater.
+      gapsOut = [
+        ...gaps,
+        ...combined.map((d) => ({
+          what: `Source-quality ${d.kind}: ${d.code} (${d.sourceId})`,
+          plainNote: d.note,
+        })),
+      ];
+      if (theater !== undefined) {
+        headlineOut = `${headline} · source-quality caveats apply`;
+      }
+    }
+  }
+
+  const actionableExplanation = buildActionableExplanation({
+    measurements,
+    verdictTone: primary.tone,
+    ...(stanceSummary !== undefined ? { stanceSummary } : {}),
+    ...(sourceQualityDiagnostics !== undefined
+      ? { sourceQualityDiagnostics }
+      : {}),
+    gaps: gapsOut,
+    ...(options.spreadDriverFacts !== undefined
+      ? { spreadDriverFacts: options.spreadDriverFacts }
+      : {}),
+  });
+
   return {
-    headline,
+    headline: headlineOut,
     verdictLabel: primary.label,
     verdictTone: primary.tone,
     claim: receipt.claim.text,
     scoreCard: scoreCard(options),
     sources,
     measurements,
-    gaps,
+    gaps: gapsOut,
     ...(stanceSummary !== undefined ? { stanceSummary } : {}),
     ...(descriptor !== undefined ? { verdictDescriptor: descriptor } : {}),
+    ...(ideaSnapshots.length > 0 ? { ideaSnapshots } : {}),
+    ...(sourceQualityDiagnostics !== undefined
+      ? { sourceQualityDiagnostics }
+      : {}),
+    ...(actionableExplanation !== undefined
+      ? { actionableExplanation }
+      : {}),
     provenance: {
       hash: receipt.receiptHash,
       signed: receipt.signature !== undefined,
@@ -106,6 +201,20 @@ export function toHumanView(receipt: NetworkReceipt, options: HumanViewOptions =
     },
     howToVerify: howToVerify(receipt),
   };
+}
+
+function resolveSourceQualityInputs(
+  receipt: NetworkReceipt,
+  options: HumanViewOptions
+): SourceQualityInput[] | undefined {
+  if (options.sourceQualityInputs !== undefined) {
+    return options.sourceQualityInputs;
+  }
+  const fromEnvelope = receipt.sourceQualityInputs;
+  if (Array.isArray(fromEnvelope) && fromEnvelope.length > 0) {
+    return fromEnvelope;
+  }
+  return undefined;
 }
 
 function readStanceSummary(
@@ -154,11 +263,17 @@ function scoreCard(options: HumanViewOptions): HumanScoreCard {
     completeness: options.scores?.completeness,
     parity: options.scores?.parity,
     freshness: options.scores?.freshness,
+    ...(options.scores?.absoluteConsensusValue !== undefined
+      ? { absoluteConsensusValue: options.scores.absoluteConsensusValue }
+      : {}),
     plainMeaning: {
       vScore: SCORE_PLAIN_MEANING.vScore,
       completeness: SCORE_PLAIN_MEANING.completeness,
       parity: SCORE_PLAIN_MEANING.parity,
       freshness: SCORE_PLAIN_MEANING.freshness,
+      ...(options.scores?.absoluteConsensusValue !== undefined
+        ? { absoluteConsensusValue: SCORE_PLAIN_MEANING.absoluteConsensusValue }
+        : {}),
     },
   };
 }

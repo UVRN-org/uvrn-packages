@@ -16,6 +16,9 @@ dashboard.
 | `SqliteAgentStateStore` | `AgentStateStore` (`@uvrn/agent`, v4) | agent claims, last snapshots, failure counts |
 | `SqliteReceiptStore` | — (this package) | local NetworkReceipt outbox + `pushToNetwork()` |
 
+`SqliteTrackRecordStore` lives on the **optional** subpath `@uvrn/store-sqlite/track-record`
+(requires peer `@uvrn/track-record`). It is **not** re-exported from the main entry.
+
 Storage stays an **injected interface** — protocol packages ship no storage of their own
 (house rule); this package is one reference implementation. In-memory mocks remain the
 zero-dependency default everywhere.

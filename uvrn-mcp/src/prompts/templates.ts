@@ -18,9 +18,9 @@ export interface PromptTemplate {
  */
 export const verifyDataPrompt: PromptTemplate = {
   name: 'verify_data',
-  description: 'Template for verifying data across UVRN MCP tools',
+  description: 'Template for measuring a claim across UVRN MCP tools',
   parameters: ['claim', 'sources'],
-  template: `I need to verify the following claim using Delta Engine:
+  template: `I need to measure the following claim using Delta Engine:
 
 Claim: {{claim}}
 
@@ -28,7 +28,7 @@ Please help me use the UVRN 23-package protocol surface:
 1. Create a DeltaBundle with data from these sources: {{sources}}
 2. Run delta_validate_bundle before execution
 3. Run delta_run_engine to process the bundle
-4. Use delta_verify_receipt to check the hash
+4. Use delta_verify_receipt to recompute the receipt hash (integrity only — it checks no signature)
 5. If I already have scored/enriched inputs, use delta_score_drift or delta_compare as appropriate
 6. If live connectors are configured, consider delta_score_claim for a MasterReceipt
 7. Analyze the receipt and explain:
@@ -48,7 +48,7 @@ export const createBundlePrompt: PromptTemplate = {
   name: 'create_bundle',
   description: 'Guide user through creating a DeltaBundle',
   parameters: ['claim'],
-  template: `I want to create a DeltaBundle to verify: {{claim}}
+  template: `I want to create a DeltaBundle to measure: {{claim}}
 
 Please guide me through:
 1. What data sources should I include? (minimum 2 required)
@@ -56,7 +56,7 @@ Please guide me through:
 3. What threshold percentage should I use?
 4. Help me structure the bundle JSON with:
    - bundleId: unique identifier
-   - claim: the verification claim
+   - claim: the claim being measured
    - dataSpecs: array of at least 2 data specifications
    - thresholdPct: acceptable variance (0.0 to 1.0)
    - maxRounds: optional, defaults to 5
@@ -77,17 +77,17 @@ export const analyzeReceiptPrompt: PromptTemplate = {
 {{receipt_json}}
 
 Help me understand:
-1. What was being verified? (bundleId and sources)
+1. What was being measured? (bundleId and sources)
 2. What was the outcome? (consensus or indeterminate)
 3. What was the final delta between sources?
 4. How many rounds were needed?
 5. For each round, what were the deltas by metric?
-6. Is the receipt hash valid? (use delta_verify_receipt to check)
+6. Does the receipt hash recompute? (delta_verify_receipt reports integrityOk — integrity only; full verification needs a producer signature via verifyReceiptFull in @uvrn/receipt)
 7. What does this tell us about data agreement across sources?
 8. If this is a MasterReceipt, what measurements ran and which nodes were off or unavailable?
 9. If canon tools are relevant, use delta_canon_qualify for read-only candidacy assessment; do not canonize automatically.
 
-Provide a clear explanation of the verification results.`,
+Provide a clear explanation of the measurement results.`,
 };
 
 /**

@@ -5,6 +5,7 @@ import {
   EngineOpts,
   Outcome
 } from '../types';
+import { checkMetricsComparability } from './comparability';
 import { validateBundle } from './validation';
 import { hashReceipt } from './serialization';
 
@@ -20,10 +21,23 @@ function roundDet(num: number): number {
  * Formula: |a - b| / ((a + b)/2)
  *
  * Rules:
+ * - If absoluteEpsilon is set and |a − b| ≤ absoluteEpsilon -> 0
  * - If both 0 -> 0
  * - If one 0, other != 0 -> 1.0 (Max Variance for this context)
+ *
+ * absoluteEpsilon is an explicit parameter (no module state / mutable closure).
+ * When undefined, behavior is identical to the frozen base engine.
  */
-function computeDelta(a: number, b: number): number {
+function computeDelta(a: number, b: number, absoluteEpsilon?: number): number {
+  // Absolute near-zero check MUST run before the zero short-circuit so
+  // pairs like (0, 0.01) can reach consensus when the caller opts in.
+  if (
+    absoluteEpsilon !== undefined &&
+    Math.abs(a - b) <= absoluteEpsilon
+  ) {
+    return 0;
+  }
+
   if (a === 0 && b === 0) return 0;
   if (a === 0 || b === 0) return 1.0;
 
@@ -53,15 +67,27 @@ export function runDeltaEngine(bundle: DeltaBundle, opts?: EngineOpts): DeltaRec
   const sortedKeys = Array.from(allKeys).sort(); // Lexicographical sort
 
   const comparableKeys: string[] = [];
-  
+  const refusedKeys = new Map<string, string>();
+
   for (const key of sortedKeys) {
-    let count = 0;
+    const metricsForKey = [];
+    const sourceIdsForKey = [];
     for (const spec of sortedSpecs) {
-      if (spec.metrics.some(m => m.key === key)) count++;
+      const m = spec.metrics.find((x) => x.key === key);
+      if (m) {
+        metricsForKey.push(m);
+        sourceIdsForKey.push(spec.id);
+      }
     }
-    if (count >= 2) {
-      comparableKeys.push(key);
+    if (metricsForKey.length < 2) {
+      continue;
     }
+    const refusal = checkMetricsComparability(metricsForKey, sourceIdsForKey);
+    if (refusal) {
+      refusedKeys.set(key, refusal.reason);
+      continue; // refuse — no delta for this key
+    }
+    comparableKeys.push(key);
   }
 
   const maxRounds = bundle.maxRounds || 5;
@@ -87,7 +113,7 @@ export function runDeltaEngine(bundle: DeltaBundle, opts?: EngineOpts): DeltaRec
       const min = Math.min(...values);
       const max = Math.max(...values);
       
-      const d = computeDelta(max, min);
+      const d = computeDelta(max, min, bundle.absoluteEpsilon);
       deltasByMetric[key] = d;
       if (d > maxDeltaInRound) {
         maxDeltaInRound = d;
@@ -103,6 +129,14 @@ export function runDeltaEngine(bundle: DeltaBundle, opts?: EngineOpts): DeltaRec
       withinThreshold: within,
       witnessRequired: !within && currentRound === maxRounds,
     };
+
+    // Additive notes only when typed refusals occurred — absent on legacy bundles
+    // so golden-vector hashes stay byte-identical.
+    if (refusedKeys.size > 0) {
+      roundData.notes = [...refusedKeys.entries()].map(
+        ([metricKey, reason]) => `comparability-refusal:${metricKey}:${reason}`
+      );
+    }
 
     rounds.push(roundData);
 

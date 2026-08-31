@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- **BP-v2.1-LATER-D7:** thin measure→rank bridge — `measurementResultsToCandidates` + `rankMeasurementResults` (maps measurement-result-like rows into existing `rankSignals`; ordering only — not verification / market outcome). Zero new runtime deps.
+- `reportRankStability` — baseline ranking plus survive/reorder report across declared weight variants (ordering stability only; not verification or market outcome). Exports `DEFAULT_RANK_STABILITY_VARIANTS` (N=3 implementer PREP proposal) and related types.
+
 ## [4.0.0] - 2026-06-10 (unreleased, v4 / fable-refactor-1)
 
 - Version aligned to the v4 generation; internal `@uvrn/*` peer ranges moved to `^4.0.0`.

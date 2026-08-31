@@ -31,6 +31,9 @@ export function bridgeFromDomainSignals(
     .map((signal) =>
       tagger.tag({
         source: signal.source,
+        ...(typeof signal.originId === 'string' && signal.originId.trim().length > 0
+          ? { originId: signal.originId.trim() }
+          : {}),
         key: signal.key,
         ts: signal.ts,
         explanation: signal.explanation,

@@ -173,6 +173,13 @@ Validation rules (enforced by the `@uvrn/receipt` JSON Schema and by the worker 
 **Compatibility:** registries MUST continue to accept `drvc3-receipt-1` submissions unchanged.
 `uvrn-receipt-4` is additive alongside it, not a replacement.
 
+> **Additive cross-reference (BP-19):** Typed observations (`quantityKind`, UCUM, three dates,
+> SDMX `CL_OBS_STATUS`, W3C PROV, stake, code-list versions) are specified in
+> `SPEC/uvrn-typed-observation-v1.md`. They MUST NOT reshape `DeltaReceipt` (§2.1 closed-world).
+> They are **not** members of the frozen §2.3 / §2.4 hash field lists. JSON-LD `@context` /
+> framing is a projection outside those lists (see typed-observation §11). `NetworkReceipt.kind`
+> remains the receipt-type enum and MUST NOT be overloaded as a quantity dimension.
+
 ### 3.1 Wrapping a v3 DeltaReceipt (worked contract)
 
 Given an existing, verified v3 `DeltaReceipt d`:

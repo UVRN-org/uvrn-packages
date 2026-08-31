@@ -46,6 +46,8 @@ export interface DomainSignal {
   value: number;
   unit?: string;
   source: string;
+  /** Optional host-declared origin; forwarded onto bridged EvidenceItem when present. */
+  originId?: string;
   ts: string;
   explanation: string;
 }

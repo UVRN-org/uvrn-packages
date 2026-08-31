@@ -30,8 +30,15 @@ packages:
   - 'uvrn-embed'
   # v4 / fable-refactor-1 additions
   - 'uvrn-receipt'
+  - 'uvrn-meta-readout'
+  - 'uvrn-validate'
+  - 'uvrn-pattern'
   - 'uvrn-store-sqlite'
+  - 'uvrn-visual'
+  - 'uvrn-chart-memory'
   - 'uvrn-protocol'
+  - 'uvrn-jsonld'
+  - 'uvrn-track-record'
 # Approve install/build scripts: esbuild (@uvrn/embed UMD bundle) and better-sqlite3
 # (@uvrn/store-sqlite native driver). pnpm 11 otherwise exits non-zero on a fresh
 # install with ERR_PNPM_IGNORED_BUILDS.

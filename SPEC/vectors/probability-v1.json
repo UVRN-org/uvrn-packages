@@ -1,0 +1,2319 @@
+{
+  "spec": "uvrn-probability-v1 §8 (golden vectors)",
+  "notes": [
+    "Synthetic fixtures (example.org citations). Not research; no real market or docket data.",
+    "expected.canonicalResultSha256 = hex SHA-256 of JCS(runProbability(input, options)). Byte identity of the whole output.",
+    "options.signer.privateKey \"$keys.privateKeySeed\" means: substitute keys.privateKeySeed (the SPEC test key from network-receipt.json).",
+    "Regenerate only deliberately with uvrn-probability/scripts/generate-vectors.ts."
+  ],
+  "keys": {
+    "privateKeySeed": "dXZybi1zcGVjLXZlY3Rvci1zZWVkLTAwMDAwMDAwMDE=",
+    "publicKey": "w3IQVOJs6tNyvvcVJSUT1pPJIorT3V+eFIrCschFyV4=",
+    "publicKeyRef": "uvrn-spec-pk-2026-v1"
+  },
+  "cases": [
+    {
+      "id": "sportsbook-two-way",
+      "description": "American -150/+130; power de-vig default; multiplicative/power/Shin spread is the band",
+      "input": {
+        "specVersion": "uvrn-probability-input-1",
+        "outcome": {
+          "outcomeHash": "sha256:abababababababababababababababababababababababababababababababab"
+        },
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "market": {
+          "kind": "sportsbook",
+          "venue": "Example Book",
+          "domain": "sports/baseball",
+          "resolvesAt": "2026-10-30",
+          "targetOutcome": "Home",
+          "source": {
+            "url": "https://example.org/book/market-1",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          },
+          "outcomes": [
+            {
+              "label": "Home",
+              "odds": {
+                "format": "american",
+                "value": -150
+              },
+              "quotedAt": "2026-09-26T10:30:00-07:00",
+              "source": {
+                "url": "https://example.org/book/market-1/home",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            },
+            {
+              "label": "Away",
+              "odds": {
+                "format": "american",
+                "value": 130
+              },
+              "quotedAt": "2026-09-26T10:30:00-07:00",
+              "source": {
+                "url": "https://example.org/book/market-1/away",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "method": "market",
+        "p": 0.583983,
+        "low": 0.579832,
+        "high": 0.583983,
+        "refusalCodes": [],
+        "probabilityHash": "sha256:b3f5690acd3347105babbf708eaaa88f31d83a120d7c3910c14b576a8cea836f",
+        "receiptHash": "sha256:60a16f31e053a84ae97725962d68e03f75772f6d0b7597a3d8f8008c68309f8b",
+        "canonicalResultSha256": "883f5f46a07c53694182afe47a90d098cc1b25b22b8aeecb36b872b60a6adbba"
+      }
+    },
+    {
+      "id": "sportsbook-multi-outcome",
+      "description": "Four-outcome futures in mixed decimal/fractional/american formats",
+      "input": {
+        "specVersion": "uvrn-probability-input-1",
+        "outcome": {
+          "outcomeHash": "sha256:abababababababababababababababababababababababababababababababab"
+        },
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "market": {
+          "kind": "sportsbook",
+          "venue": "Example Book",
+          "domain": "sports/baseball",
+          "resolvesAt": "2026-11-05",
+          "targetOutcome": "Team A",
+          "source": {
+            "url": "https://example.org/book/futures-1",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          },
+          "outcomes": [
+            {
+              "label": "Team A",
+              "odds": {
+                "format": "decimal",
+                "value": 2.2
+              },
+              "quotedAt": "2026-09-26T10:30:00-07:00",
+              "source": {
+                "url": "https://example.org/book/futures-1/a",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            },
+            {
+              "label": "Team B",
+              "odds": {
+                "format": "fractional",
+                "numerator": 11,
+                "denominator": 5
+              },
+              "quotedAt": "2026-09-26T10:30:00-07:00",
+              "source": {
+                "url": "https://example.org/book/futures-1/b",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            },
+            {
+              "label": "Team C",
+              "odds": {
+                "format": "american",
+                "value": 350
+              },
+              "quotedAt": "2026-09-26T10:30:00-07:00",
+              "source": {
+                "url": "https://example.org/book/futures-1/c",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            },
+            {
+              "label": "Team D",
+              "odds": {
+                "format": "decimal",
+                "value": 7
+              },
+              "quotedAt": "2026-09-26T10:30:00-07:00",
+              "source": {
+                "url": "https://example.org/book/futures-1/d",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "method": "market",
+        "p": 0.418085,
+        "low": 0.401498,
+        "high": 0.418085,
+        "refusalCodes": [],
+        "probabilityHash": "sha256:4b1cb8ab8e5b0dc5da3311e34ccbd1eda48369ed39174e08956c4ee97e5c5b1c",
+        "receiptHash": "sha256:7a7a1b6c55275d5ca19673beaba6c0ccc1557e7cbdef2df625d452dfbfdfc209",
+        "canonicalResultSha256": "8aa905aacd6cc3f2441855c16e755eaff4a4bb8cabed0cb5799a47c5353d651d"
+      }
+    },
+    {
+      "id": "exchange-binary",
+      "description": "Single YES contract, bid 0.61 / ask 0.63: midpoint with the spread as band",
+      "input": {
+        "specVersion": "uvrn-probability-input-1",
+        "outcome": {
+          "outcomeHash": "sha256:abababababababababababababababababababababababababababababababab"
+        },
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "market": {
+          "kind": "exchange",
+          "venue": "Example Exchange",
+          "domain": "politics/us",
+          "resolvesAt": "2026-11-04T00:00:00Z",
+          "targetOutcome": "Yes",
+          "source": {
+            "url": "https://example.org/exchange/contract-1",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          },
+          "outcomes": [
+            {
+              "label": "Yes",
+              "bid": 0.61,
+              "ask": 0.63,
+              "depthUsd": 5000,
+              "quotedAt": "2026-09-26T10:30:00-07:00",
+              "source": {
+                "url": "https://example.org/exchange/contract-1/book",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "method": "market",
+        "p": 0.62,
+        "low": 0.61,
+        "high": 0.63,
+        "refusalCodes": [],
+        "probabilityHash": "sha256:cfe4a69521b022461aad895a8e03d4dd7ad6e87ee67f9ce448ce101f5577e261",
+        "receiptHash": "sha256:76fcbd4bbedd2443d94c80bb2aa8ea79db0955bff2b6cbad4c15e72eeb746cce",
+        "canonicalResultSha256": "32e31e8b06171f45595775dd33cb3d33ec0d631ac055dfd4b7c9ec1c1ecf25e0"
+      }
+    },
+    {
+      "id": "exchange-multi-outcome",
+      "description": "Three exclusive contracts; midpoints normalized to sum to 1",
+      "input": {
+        "specVersion": "uvrn-probability-input-1",
+        "outcome": {
+          "outcomeHash": "sha256:abababababababababababababababababababababababababababababababab"
+        },
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "market": {
+          "kind": "exchange",
+          "venue": "Example Exchange",
+          "domain": "politics/us",
+          "resolvesAt": "2026-11-04T00:00:00Z",
+          "targetOutcome": "Candidate B",
+          "source": {
+            "url": "https://example.org/exchange/event-2",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          },
+          "outcomes": [
+            {
+              "label": "Candidate A",
+              "bid": 0.47,
+              "ask": 0.49,
+              "depthUsd": 9000,
+              "quotedAt": "2026-09-26T10:30:00-07:00",
+              "source": {
+                "url": "https://example.org/exchange/event-2/a",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            },
+            {
+              "label": "Candidate B",
+              "bid": 0.4,
+              "ask": 0.42,
+              "depthUsd": 7000,
+              "quotedAt": "2026-09-26T10:30:00-07:00",
+              "source": {
+                "url": "https://example.org/exchange/event-2/b",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            },
+            {
+              "label": "Candidate C",
+              "bid": 0.12,
+              "ask": 0.14,
+              "depthUsd": 2500,
+              "quotedAt": "2026-09-26T10:30:00-07:00",
+              "source": {
+                "url": "https://example.org/exchange/event-2/c",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "method": "market",
+        "p": 0.401961,
+        "low": 0.392157,
+        "high": 0.411765,
+        "refusalCodes": [],
+        "probabilityHash": "sha256:15fdf1eb54698376272e9e395af79417a8c5906ee168d89a2e683aa0458037e2",
+        "receiptHash": "sha256:8213093375faaab69b1ca96f4058e809806cfd2356878bdc0c580a557fe8ce7b",
+        "canonicalResultSha256": "52ea05bba2cca52b0d78bfc989a2c864e2af726b993066245ee89da9d581af95"
+      }
+    },
+    {
+      "id": "market-stale-refusal",
+      "description": "Quote 30h before asOf exceeds the 24h staleness limit; no base rate → insufficient_basis",
+      "input": {
+        "specVersion": "uvrn-probability-input-1",
+        "outcome": {
+          "outcomeHash": "sha256:abababababababababababababababababababababababababababababababab"
+        },
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "market": {
+          "kind": "exchange",
+          "venue": "Example Exchange",
+          "domain": "politics/us",
+          "resolvesAt": "2026-11-04T00:00:00Z",
+          "targetOutcome": "Yes",
+          "source": {
+            "url": "https://example.org/exchange/contract-1",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          },
+          "outcomes": [
+            {
+              "label": "Yes",
+              "bid": 0.61,
+              "ask": 0.63,
+              "depthUsd": 5000,
+              "quotedAt": "2026-09-25T06:00:00-07:00",
+              "source": {
+                "url": "https://example.org/exchange/contract-1/book",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "method": "insufficient_basis",
+        "p": null,
+        "low": null,
+        "high": null,
+        "refusalCodes": [
+          "market_quote_stale"
+        ],
+        "probabilityHash": "sha256:43d13cc2f7c59691ccae15d796ff1653b401135c40ee4e35483203ab453d1c5b",
+        "receiptHash": "sha256:9c74c351fcf556ad20f64679c504495b55f7de1c1e8f49a0b1b3f6469ea223d5",
+        "canonicalResultSha256": "cdfacb8cf17cef4fa8f4bce271747feaca4feedd4e16119c1e68edb191f566cb"
+      }
+    },
+    {
+      "id": "stale-market-falls-back-to-baserate",
+      "description": "Stale market is refused and reported; the base rate is selected by precedence",
+      "input": {
+        "specVersion": "uvrn-probability-input-1",
+        "outcome": {
+          "outcomeHash": "sha256:abababababababababababababababababababababababababababababababab"
+        },
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "market": {
+          "kind": "exchange",
+          "venue": "Example Exchange",
+          "domain": "politics/us",
+          "resolvesAt": "2026-11-04T00:00:00Z",
+          "targetOutcome": "Yes",
+          "source": {
+            "url": "https://example.org/exchange/contract-1",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          },
+          "outcomes": [
+            {
+              "label": "Yes",
+              "bid": 0.61,
+              "ask": 0.63,
+              "depthUsd": 5000,
+              "quotedAt": "2026-09-25T06:00:00-07:00",
+              "source": {
+                "url": "https://example.org/exchange/contract-1/book",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            }
+          ]
+        },
+        "baserate": {
+          "mode": "proportion",
+          "referenceClass": {
+            "id": "example-transmission-cpcn",
+            "description": "Synthetic reference class: state-commission CPCN applications for transmission lines",
+            "source": {
+              "url": "https://example.org/reference-class/definition",
+              "accessedAt": "2026-09-26T11:00:00-07:00"
+            },
+            "criteria": [
+              {
+                "id": "commission",
+                "text": "Decided by the state utilities commission",
+                "source": {
+                  "url": "https://example.org/criteria/commission",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              },
+              {
+                "id": "cpcn-transmission",
+                "text": "CPCN application for a transmission line",
+                "source": {
+                  "url": "https://example.org/criteria/cpcn",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              }
+            ]
+          },
+          "cases": [
+            {
+              "id": "case-01",
+              "source": {
+                "url": "https://example.org/cases/1",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2021-01-01"
+            },
+            {
+              "id": "case-02",
+              "source": {
+                "url": "https://example.org/cases/2",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2021-01-31"
+            },
+            {
+              "id": "case-03",
+              "source": {
+                "url": "https://example.org/cases/3",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2021-03-02"
+            },
+            {
+              "id": "case-04",
+              "source": {
+                "url": "https://example.org/cases/4",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-04-01"
+            },
+            {
+              "id": "case-05",
+              "source": {
+                "url": "https://example.org/cases/5",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-05-01"
+            },
+            {
+              "id": "case-06",
+              "source": {
+                "url": "https://example.org/cases/6",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-05-31"
+            },
+            {
+              "id": "case-07",
+              "source": {
+                "url": "https://example.org/cases/7",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-06-30"
+            },
+            {
+              "id": "case-08",
+              "source": {
+                "url": "https://example.org/cases/8",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-07-30"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "method": "baserate",
+        "p": 0.388889,
+        "low": 0.119039,
+        "high": 0.705177,
+        "refusalCodes": [
+          "market_quote_stale"
+        ],
+        "probabilityHash": "sha256:6070bd5e5dab1498b6ed8649f5407ff26411b270b619f04981888e9c6cf8677b",
+        "receiptHash": "sha256:a4ac7ff5ca9b4360ffd59990825373d53f5256f106ba8fc5840d7ec4f3829e13",
+        "canonicalResultSha256": "c7d2a6ec3de520e3cabb321c3a69e81e75b7867dc575c90ada30a583a2e3ea02"
+      }
+    },
+    {
+      "id": "market-wins-over-baserate",
+      "description": "Both candidates usable: market selected, base rate reported as not-selected",
+      "input": {
+        "specVersion": "uvrn-probability-input-1",
+        "outcome": {
+          "outcomeHash": "sha256:abababababababababababababababababababababababababababababababab"
+        },
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "market": {
+          "kind": "exchange",
+          "venue": "Example Exchange",
+          "domain": "politics/us",
+          "resolvesAt": "2026-11-04T00:00:00Z",
+          "targetOutcome": "Yes",
+          "source": {
+            "url": "https://example.org/exchange/contract-1",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          },
+          "outcomes": [
+            {
+              "label": "Yes",
+              "bid": 0.61,
+              "ask": 0.63,
+              "depthUsd": 5000,
+              "quotedAt": "2026-09-26T10:30:00-07:00",
+              "source": {
+                "url": "https://example.org/exchange/contract-1/book",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            }
+          ]
+        },
+        "baserate": {
+          "mode": "proportion",
+          "referenceClass": {
+            "id": "example-transmission-cpcn",
+            "description": "Synthetic reference class: state-commission CPCN applications for transmission lines",
+            "source": {
+              "url": "https://example.org/reference-class/definition",
+              "accessedAt": "2026-09-26T11:00:00-07:00"
+            },
+            "criteria": [
+              {
+                "id": "commission",
+                "text": "Decided by the state utilities commission",
+                "source": {
+                  "url": "https://example.org/criteria/commission",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              },
+              {
+                "id": "cpcn-transmission",
+                "text": "CPCN application for a transmission line",
+                "source": {
+                  "url": "https://example.org/criteria/cpcn",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              }
+            ]
+          },
+          "cases": [
+            {
+              "id": "case-01",
+              "source": {
+                "url": "https://example.org/cases/1",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2021-01-01"
+            },
+            {
+              "id": "case-02",
+              "source": {
+                "url": "https://example.org/cases/2",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2021-01-31"
+            },
+            {
+              "id": "case-03",
+              "source": {
+                "url": "https://example.org/cases/3",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2021-03-02"
+            },
+            {
+              "id": "case-04",
+              "source": {
+                "url": "https://example.org/cases/4",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-04-01"
+            },
+            {
+              "id": "case-05",
+              "source": {
+                "url": "https://example.org/cases/5",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-05-01"
+            },
+            {
+              "id": "case-06",
+              "source": {
+                "url": "https://example.org/cases/6",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-05-31"
+            },
+            {
+              "id": "case-07",
+              "source": {
+                "url": "https://example.org/cases/7",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-06-30"
+            },
+            {
+              "id": "case-08",
+              "source": {
+                "url": "https://example.org/cases/8",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-07-30"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "method": "market",
+        "p": 0.62,
+        "low": 0.61,
+        "high": 0.63,
+        "refusalCodes": [],
+        "probabilityHash": "sha256:03e9fce14d5556c37724003c027f5de28ab5ca47a20f897b437a6cb02d854904",
+        "receiptHash": "sha256:6727c6e518ba8cfbee033611cc64b1b63aa0a1d2f8579fa0e98cabdcee83ba8e",
+        "canonicalResultSha256": "c848d0c198ebc50ee1f62e395bd391da4b8ae4098e01567f43b60c11380eefed"
+      }
+    },
+    {
+      "id": "baserate-small-n",
+      "description": "x = 3 of n = 8 (two cases excluded by the criteria gate): Jeffreys 0.119039–0.705177",
+      "input": {
+        "specVersion": "uvrn-probability-input-1",
+        "outcome": {
+          "outcomeHash": "sha256:abababababababababababababababababababababababababababababababab"
+        },
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "baserate": {
+          "mode": "proportion",
+          "referenceClass": {
+            "id": "example-transmission-cpcn",
+            "description": "Synthetic reference class: state-commission CPCN applications for transmission lines",
+            "source": {
+              "url": "https://example.org/reference-class/definition",
+              "accessedAt": "2026-09-26T11:00:00-07:00"
+            },
+            "criteria": [
+              {
+                "id": "commission",
+                "text": "Decided by the state utilities commission",
+                "source": {
+                  "url": "https://example.org/criteria/commission",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              },
+              {
+                "id": "cpcn-transmission",
+                "text": "CPCN application for a transmission line",
+                "source": {
+                  "url": "https://example.org/criteria/cpcn",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              }
+            ]
+          },
+          "cases": [
+            {
+              "id": "case-01",
+              "source": {
+                "url": "https://example.org/cases/1",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2021-01-01"
+            },
+            {
+              "id": "case-02",
+              "source": {
+                "url": "https://example.org/cases/2",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2021-01-31"
+            },
+            {
+              "id": "case-03",
+              "source": {
+                "url": "https://example.org/cases/3",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2021-03-02"
+            },
+            {
+              "id": "case-04",
+              "source": {
+                "url": "https://example.org/cases/4",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-04-01"
+            },
+            {
+              "id": "case-05",
+              "source": {
+                "url": "https://example.org/cases/5",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-05-01"
+            },
+            {
+              "id": "case-06",
+              "source": {
+                "url": "https://example.org/cases/6",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-05-31"
+            },
+            {
+              "id": "case-07",
+              "source": {
+                "url": "https://example.org/cases/7",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-06-30"
+            },
+            {
+              "id": "case-08",
+              "source": {
+                "url": "https://example.org/cases/8",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-07-30"
+            },
+            {
+              "id": "excluded-1",
+              "source": {
+                "url": "https://example.org/cases/excluded-1",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2022-01-01"
+            },
+            {
+              "id": "excluded-2",
+              "source": {
+                "url": "https://example.org/cases/excluded-2",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2022-01-31"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "method": "baserate",
+        "p": 0.388889,
+        "low": 0.119039,
+        "high": 0.705177,
+        "refusalCodes": [],
+        "probabilityHash": "sha256:e6bb0054c06b6c4da9e37313b6c8e7c8cee00ac825230990521e48ee4a34ca69",
+        "receiptHash": "sha256:c1f54586fe534524b895a220e4e262b8862dc615a0e12a3630081290c2dc09d9",
+        "canonicalResultSha256": "b8bbc896b555a27831666192df1de8bc8251e5bd7f8832c17a69725b0bfa93a2"
+      }
+    },
+    {
+      "id": "baserate-x-zero",
+      "description": "x = 0 of n = 10: lower bound pinned to 0; point estimate 0.5/11",
+      "input": {
+        "specVersion": "uvrn-probability-input-1",
+        "outcome": {
+          "outcomeHash": "sha256:abababababababababababababababababababababababababababababababab"
+        },
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "baserate": {
+          "mode": "proportion",
+          "referenceClass": {
+            "id": "example-transmission-cpcn",
+            "description": "Synthetic reference class: state-commission CPCN applications for transmission lines",
+            "source": {
+              "url": "https://example.org/reference-class/definition",
+              "accessedAt": "2026-09-26T11:00:00-07:00"
+            },
+            "criteria": [
+              {
+                "id": "commission",
+                "text": "Decided by the state utilities commission",
+                "source": {
+                  "url": "https://example.org/criteria/commission",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              },
+              {
+                "id": "cpcn-transmission",
+                "text": "CPCN application for a transmission line",
+                "source": {
+                  "url": "https://example.org/criteria/cpcn",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              }
+            ]
+          },
+          "cases": [
+            {
+              "id": "case-01",
+              "source": {
+                "url": "https://example.org/cases/1",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-01-01"
+            },
+            {
+              "id": "case-02",
+              "source": {
+                "url": "https://example.org/cases/2",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-01-31"
+            },
+            {
+              "id": "case-03",
+              "source": {
+                "url": "https://example.org/cases/3",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-03-02"
+            },
+            {
+              "id": "case-04",
+              "source": {
+                "url": "https://example.org/cases/4",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-04-01"
+            },
+            {
+              "id": "case-05",
+              "source": {
+                "url": "https://example.org/cases/5",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-05-01"
+            },
+            {
+              "id": "case-06",
+              "source": {
+                "url": "https://example.org/cases/6",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-05-31"
+            },
+            {
+              "id": "case-07",
+              "source": {
+                "url": "https://example.org/cases/7",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-06-30"
+            },
+            {
+              "id": "case-08",
+              "source": {
+                "url": "https://example.org/cases/8",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-07-30"
+            },
+            {
+              "id": "case-09",
+              "source": {
+                "url": "https://example.org/cases/9",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-08-29"
+            },
+            {
+              "id": "case-10",
+              "source": {
+                "url": "https://example.org/cases/10",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-09-28"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "method": "baserate",
+        "p": 0.045455,
+        "low": 0,
+        "high": 0.217196,
+        "refusalCodes": [],
+        "probabilityHash": "sha256:f4e23878786e3e88c27bde003c3e22b0f87a2e37a7a61829dbf4981bc226f414",
+        "receiptHash": "sha256:a0953378eb5d3eb5a354b6f76c03b3de03b8914bcf1265c3d2b7c508e6f3a306",
+        "canonicalResultSha256": "ec2f9dfdfe7cb0ada6b8823305ca87f1fb5ad65d8abdf8045f2e2d460f72662c"
+      }
+    },
+    {
+      "id": "baserate-x-equals-n",
+      "description": "x = n = 10: upper bound pinned to 1; point estimate 10.5/11",
+      "input": {
+        "specVersion": "uvrn-probability-input-1",
+        "outcome": {
+          "outcomeHash": "sha256:abababababababababababababababababababababababababababababababab"
+        },
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "baserate": {
+          "mode": "proportion",
+          "referenceClass": {
+            "id": "example-transmission-cpcn",
+            "description": "Synthetic reference class: state-commission CPCN applications for transmission lines",
+            "source": {
+              "url": "https://example.org/reference-class/definition",
+              "accessedAt": "2026-09-26T11:00:00-07:00"
+            },
+            "criteria": [
+              {
+                "id": "commission",
+                "text": "Decided by the state utilities commission",
+                "source": {
+                  "url": "https://example.org/criteria/commission",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              },
+              {
+                "id": "cpcn-transmission",
+                "text": "CPCN application for a transmission line",
+                "source": {
+                  "url": "https://example.org/criteria/cpcn",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              }
+            ]
+          },
+          "cases": [
+            {
+              "id": "case-01",
+              "source": {
+                "url": "https://example.org/cases/1",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2021-01-01"
+            },
+            {
+              "id": "case-02",
+              "source": {
+                "url": "https://example.org/cases/2",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2021-01-31"
+            },
+            {
+              "id": "case-03",
+              "source": {
+                "url": "https://example.org/cases/3",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2021-03-02"
+            },
+            {
+              "id": "case-04",
+              "source": {
+                "url": "https://example.org/cases/4",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2021-04-01"
+            },
+            {
+              "id": "case-05",
+              "source": {
+                "url": "https://example.org/cases/5",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2021-05-01"
+            },
+            {
+              "id": "case-06",
+              "source": {
+                "url": "https://example.org/cases/6",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2021-05-31"
+            },
+            {
+              "id": "case-07",
+              "source": {
+                "url": "https://example.org/cases/7",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2021-06-30"
+            },
+            {
+              "id": "case-08",
+              "source": {
+                "url": "https://example.org/cases/8",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2021-07-30"
+            },
+            {
+              "id": "case-09",
+              "source": {
+                "url": "https://example.org/cases/9",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2021-08-29"
+            },
+            {
+              "id": "case-10",
+              "source": {
+                "url": "https://example.org/cases/10",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2021-09-28"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "method": "baserate",
+        "p": 0.954545,
+        "low": 0.782804,
+        "high": 1,
+        "refusalCodes": [],
+        "probabilityHash": "sha256:0aa7b1931bf41825ea696efd266145a5fc8d5ef11631ea381499044f20184ce2",
+        "receiptHash": "sha256:4e0dc0b58f9c3688f67c89beab51528ac9d75ac28feecbac0dfef73bbe1804c2",
+        "canonicalResultSha256": "356ce9e092139e0b84aecaebfe41ab3f254d8a118bddd3523f494c8f24dfdfb3"
+      }
+    },
+    {
+      "id": "baserate-censored-competing",
+      "description": "Aalen-Johansen with competing (denied/withdrawn) and censored (pending) cases; approved by day 450 = 0.44",
+      "input": {
+        "specVersion": "uvrn-probability-input-1",
+        "outcome": {
+          "outcomeHash": "sha256:abababababababababababababababababababababababababababababababab"
+        },
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "baserate": {
+          "mode": "time-to-event",
+          "referenceClass": {
+            "id": "example-transmission-cpcn",
+            "description": "Synthetic reference class: state-commission CPCN applications for transmission lines",
+            "source": {
+              "url": "https://example.org/reference-class/definition",
+              "accessedAt": "2026-09-26T11:00:00-07:00"
+            },
+            "criteria": [
+              {
+                "id": "commission",
+                "text": "Decided by the state utilities commission",
+                "source": {
+                  "url": "https://example.org/criteria/commission",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              },
+              {
+                "id": "cpcn-transmission",
+                "text": "CPCN application for a transmission line",
+                "source": {
+                  "url": "https://example.org/criteria/cpcn",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              }
+            ]
+          },
+          "cases": [
+            {
+              "id": "docket-01",
+              "source": {
+                "url": "https://example.org/dockets/1",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "approved",
+              "statusAt": "2020-04-10"
+            },
+            {
+              "id": "docket-02",
+              "source": {
+                "url": "https://example.org/dockets/2",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "denied",
+              "statusAt": "2020-05-30"
+            },
+            {
+              "id": "docket-03",
+              "source": {
+                "url": "https://example.org/dockets/3",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "approved",
+              "statusAt": "2020-07-19"
+            },
+            {
+              "id": "docket-04",
+              "source": {
+                "url": "https://example.org/dockets/4",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "withdrawn",
+              "statusAt": "2020-07-19"
+            },
+            {
+              "id": "docket-05",
+              "source": {
+                "url": "https://example.org/dockets/5",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "pending",
+              "statusAt": "2020-09-07"
+            },
+            {
+              "id": "docket-06",
+              "source": {
+                "url": "https://example.org/dockets/6",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "approved",
+              "statusAt": "2020-10-27"
+            },
+            {
+              "id": "docket-07",
+              "source": {
+                "url": "https://example.org/dockets/7",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "denied",
+              "statusAt": "2020-12-16"
+            },
+            {
+              "id": "docket-08",
+              "source": {
+                "url": "https://example.org/dockets/8",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "approved",
+              "statusAt": "2021-02-04"
+            },
+            {
+              "id": "docket-09",
+              "source": {
+                "url": "https://example.org/dockets/9",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "pending",
+              "statusAt": "2021-03-26"
+            },
+            {
+              "id": "docket-10",
+              "source": {
+                "url": "https://example.org/dockets/10",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "approved",
+              "statusAt": "2021-05-15"
+            }
+          ],
+          "subject": {
+            "id": "subject-application",
+            "filedAt": "2026-09-26",
+            "source": {
+              "url": "https://example.org/dockets/subject",
+              "accessedAt": "2026-09-26T11:00:00-07:00"
+            }
+          },
+          "horizon": {
+            "by": "2027-12-20"
+          },
+          "targetEvent": "approved"
+        }
+      },
+      "expected": {
+        "method": "baserate",
+        "p": 0.44,
+        "low": 0.132726,
+        "high": 0.716229,
+        "refusalCodes": [],
+        "probabilityHash": "sha256:d3f61ab5e3984522ad6f79191361f68906a025d8e2534a381a60fb42c8117551",
+        "receiptHash": "sha256:6e3a41ce611b8cde276272277c9a6505199c6f475814ed2fd48d1cba2547840b",
+        "canonicalResultSha256": "cfa9560c08dc6b86f2656cb44fec0d2a6d2f8752dc52c3182dc4c735eeec7e90"
+      }
+    },
+    {
+      "id": "baserate-conditional",
+      "description": "Pending ~220 days at asOf; P(approved by day 420 | pending) = (0.44 − 0.2)/0.6 = 0.4",
+      "input": {
+        "specVersion": "uvrn-probability-input-1",
+        "outcome": {
+          "outcomeHash": "sha256:abababababababababababababababababababababababababababababababab"
+        },
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "baserate": {
+          "mode": "time-to-event",
+          "referenceClass": {
+            "id": "example-transmission-cpcn",
+            "description": "Synthetic reference class: state-commission CPCN applications for transmission lines",
+            "source": {
+              "url": "https://example.org/reference-class/definition",
+              "accessedAt": "2026-09-26T11:00:00-07:00"
+            },
+            "criteria": [
+              {
+                "id": "commission",
+                "text": "Decided by the state utilities commission",
+                "source": {
+                  "url": "https://example.org/criteria/commission",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              },
+              {
+                "id": "cpcn-transmission",
+                "text": "CPCN application for a transmission line",
+                "source": {
+                  "url": "https://example.org/criteria/cpcn",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              }
+            ]
+          },
+          "cases": [
+            {
+              "id": "docket-01",
+              "source": {
+                "url": "https://example.org/dockets/1",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "approved",
+              "statusAt": "2020-04-10"
+            },
+            {
+              "id": "docket-02",
+              "source": {
+                "url": "https://example.org/dockets/2",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "denied",
+              "statusAt": "2020-05-30"
+            },
+            {
+              "id": "docket-03",
+              "source": {
+                "url": "https://example.org/dockets/3",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "approved",
+              "statusAt": "2020-07-19"
+            },
+            {
+              "id": "docket-04",
+              "source": {
+                "url": "https://example.org/dockets/4",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "withdrawn",
+              "statusAt": "2020-07-19"
+            },
+            {
+              "id": "docket-05",
+              "source": {
+                "url": "https://example.org/dockets/5",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "pending",
+              "statusAt": "2020-09-07"
+            },
+            {
+              "id": "docket-06",
+              "source": {
+                "url": "https://example.org/dockets/6",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "approved",
+              "statusAt": "2020-10-27"
+            },
+            {
+              "id": "docket-07",
+              "source": {
+                "url": "https://example.org/dockets/7",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "denied",
+              "statusAt": "2020-12-16"
+            },
+            {
+              "id": "docket-08",
+              "source": {
+                "url": "https://example.org/dockets/8",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "approved",
+              "statusAt": "2021-02-04"
+            },
+            {
+              "id": "docket-09",
+              "source": {
+                "url": "https://example.org/dockets/9",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "pending",
+              "statusAt": "2021-03-26"
+            },
+            {
+              "id": "docket-10",
+              "source": {
+                "url": "https://example.org/dockets/10",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "approved",
+              "statusAt": "2021-05-15"
+            }
+          ],
+          "subject": {
+            "id": "subject-application",
+            "filedAt": "2026-02-18",
+            "source": {
+              "url": "https://example.org/dockets/subject",
+              "accessedAt": "2026-09-26T11:00:00-07:00"
+            }
+          },
+          "horizon": {
+            "by": "2027-04-14"
+          },
+          "targetEvent": "approved"
+        }
+      },
+      "expected": {
+        "method": "baserate",
+        "p": 0.4,
+        "low": 0.051976,
+        "high": 0.752816,
+        "refusalCodes": [],
+        "probabilityHash": "sha256:349eba1c4a848ea11eec590b7a0aef121606c02752b8ebc30d21885d56ecf3d5",
+        "receiptHash": "sha256:eec1fbe6ac9a04dbfaa809b6a030de2a7a06bd55ecceea9dc6e69911a72b3a5e",
+        "canonicalResultSha256": "a0400b34311137cc278ebc4823c984afc54dcaba17bea7552e321e4aa1e2cbe1"
+      }
+    },
+    {
+      "id": "baserate-below-min-cases",
+      "description": "Only 7 cases meet every declared criterion (minCases = 8) → refusal",
+      "input": {
+        "specVersion": "uvrn-probability-input-1",
+        "outcome": {
+          "outcomeHash": "sha256:abababababababababababababababababababababababababababababababab"
+        },
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "baserate": {
+          "mode": "proportion",
+          "referenceClass": {
+            "id": "example-transmission-cpcn",
+            "description": "Synthetic reference class: state-commission CPCN applications for transmission lines",
+            "source": {
+              "url": "https://example.org/reference-class/definition",
+              "accessedAt": "2026-09-26T11:00:00-07:00"
+            },
+            "criteria": [
+              {
+                "id": "commission",
+                "text": "Decided by the state utilities commission",
+                "source": {
+                  "url": "https://example.org/criteria/commission",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              },
+              {
+                "id": "cpcn-transmission",
+                "text": "CPCN application for a transmission line",
+                "source": {
+                  "url": "https://example.org/criteria/cpcn",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              }
+            ]
+          },
+          "cases": [
+            {
+              "id": "case-01",
+              "source": {
+                "url": "https://example.org/cases/1",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2021-01-01"
+            },
+            {
+              "id": "case-02",
+              "source": {
+                "url": "https://example.org/cases/2",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2021-01-31"
+            },
+            {
+              "id": "case-03",
+              "source": {
+                "url": "https://example.org/cases/3",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2021-03-02"
+            },
+            {
+              "id": "case-04",
+              "source": {
+                "url": "https://example.org/cases/4",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2021-04-01"
+            },
+            {
+              "id": "case-05",
+              "source": {
+                "url": "https://example.org/cases/5",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-05-01"
+            },
+            {
+              "id": "case-06",
+              "source": {
+                "url": "https://example.org/cases/6",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-05-31"
+            },
+            {
+              "id": "case-07",
+              "source": {
+                "url": "https://example.org/cases/7",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-06-30"
+            },
+            {
+              "id": "excluded-1",
+              "source": {
+                "url": "https://example.org/cases/excluded-1",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2022-01-01"
+            },
+            {
+              "id": "excluded-2",
+              "source": {
+                "url": "https://example.org/cases/excluded-2",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2022-01-31"
+            },
+            {
+              "id": "excluded-3",
+              "source": {
+                "url": "https://example.org/cases/excluded-3",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2022-03-02"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "method": "insufficient_basis",
+        "p": null,
+        "low": null,
+        "high": null,
+        "refusalCodes": [
+          "baserate_below_min_cases"
+        ],
+        "probabilityHash": "sha256:b6eea400f6a206548909755bdd18825325b7ee9d810aca9797ffff9fb0054e94",
+        "receiptHash": "sha256:c4f135fd174dfac3aecb585e44a66d304e9753e2c9b6c131b84062404323a9f5",
+        "canonicalResultSha256": "d089f4df1e61fee3843b8a05494e9dd60589bff9bb554f11f87123665920972a"
+      }
+    },
+    {
+      "id": "baserate-horizon-beyond-followup",
+      "description": "Last case is still pending at day 450; a day-600 horizon is outside the data → refusal",
+      "input": {
+        "specVersion": "uvrn-probability-input-1",
+        "outcome": {
+          "outcomeHash": "sha256:abababababababababababababababababababababababababababababababab"
+        },
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "baserate": {
+          "mode": "time-to-event",
+          "referenceClass": {
+            "id": "example-transmission-cpcn",
+            "description": "Synthetic reference class: state-commission CPCN applications for transmission lines",
+            "source": {
+              "url": "https://example.org/reference-class/definition",
+              "accessedAt": "2026-09-26T11:00:00-07:00"
+            },
+            "criteria": [
+              {
+                "id": "commission",
+                "text": "Decided by the state utilities commission",
+                "source": {
+                  "url": "https://example.org/criteria/commission",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              },
+              {
+                "id": "cpcn-transmission",
+                "text": "CPCN application for a transmission line",
+                "source": {
+                  "url": "https://example.org/criteria/cpcn",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              }
+            ]
+          },
+          "cases": [
+            {
+              "id": "docket-01",
+              "source": {
+                "url": "https://example.org/dockets/1",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "approved",
+              "statusAt": "2020-04-10"
+            },
+            {
+              "id": "docket-02",
+              "source": {
+                "url": "https://example.org/dockets/2",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "denied",
+              "statusAt": "2020-05-30"
+            },
+            {
+              "id": "docket-03",
+              "source": {
+                "url": "https://example.org/dockets/3",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "approved",
+              "statusAt": "2020-07-19"
+            },
+            {
+              "id": "docket-04",
+              "source": {
+                "url": "https://example.org/dockets/4",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "withdrawn",
+              "statusAt": "2020-07-19"
+            },
+            {
+              "id": "docket-05",
+              "source": {
+                "url": "https://example.org/dockets/5",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "pending",
+              "statusAt": "2020-09-07"
+            },
+            {
+              "id": "docket-06",
+              "source": {
+                "url": "https://example.org/dockets/6",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "approved",
+              "statusAt": "2020-10-27"
+            },
+            {
+              "id": "docket-07",
+              "source": {
+                "url": "https://example.org/dockets/7",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "denied",
+              "statusAt": "2020-12-16"
+            },
+            {
+              "id": "docket-08",
+              "source": {
+                "url": "https://example.org/dockets/8",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "approved",
+              "statusAt": "2021-02-04"
+            },
+            {
+              "id": "docket-09",
+              "source": {
+                "url": "https://example.org/dockets/9",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "pending",
+              "statusAt": "2021-03-26"
+            }
+          ],
+          "subject": {
+            "id": "subject-application",
+            "filedAt": "2026-09-26",
+            "source": {
+              "url": "https://example.org/dockets/subject",
+              "accessedAt": "2026-09-26T11:00:00-07:00"
+            }
+          },
+          "horizon": {
+            "by": "2028-05-18"
+          },
+          "targetEvent": "approved"
+        }
+      },
+      "expected": {
+        "method": "insufficient_basis",
+        "p": null,
+        "low": null,
+        "high": null,
+        "refusalCodes": [
+          "baserate_horizon_beyond_followup"
+        ],
+        "probabilityHash": "sha256:2c7eb061b70d7bc11f9e8c4e06641cb095b15676671073f2ed334f87aefc63c9",
+        "receiptHash": "sha256:aeb940b5d3b91c1b950d5f1569b7c98265f8d34be9b5d9ec484655affd03143e",
+        "canonicalResultSha256": "f5c49af576a9183310ca70fa8a2e0bb8f027543376d93a88ea3fe9731ebf2fed"
+      }
+    },
+    {
+      "id": "no-candidate",
+      "description": "Neither market nor base rate supplied → insufficient_basis with no_candidate",
+      "input": {
+        "specVersion": "uvrn-probability-input-1",
+        "outcome": {
+          "outcomeHash": "sha256:abababababababababababababababababababababababababababababababab"
+        },
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        }
+      },
+      "expected": {
+        "method": "insufficient_basis",
+        "p": null,
+        "low": null,
+        "high": null,
+        "refusalCodes": [
+          "no_candidate"
+        ],
+        "probabilityHash": "sha256:eae6b5817fb555e6c06575d02e70ac37dce6914dfdbed21ee4fdb12f5327a4f1",
+        "receiptHash": "sha256:22fa299ccf856de454080b57f4a58d467f37f2b10f6280a4c14908a7798bab24",
+        "canonicalResultSha256": "00c33b76632febbfdbedd12996634f13a6c3220dbbb29ac209f1807d153bc4df"
+      }
+    },
+    {
+      "id": "signed-exchange-binary",
+      "description": "exchange-binary signed with the SPEC test key (Ed25519 is deterministic)",
+      "input": {
+        "specVersion": "uvrn-probability-input-1",
+        "outcome": {
+          "outcomeHash": "sha256:abababababababababababababababababababababababababababababababab"
+        },
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "market": {
+          "kind": "exchange",
+          "venue": "Example Exchange",
+          "domain": "politics/us",
+          "resolvesAt": "2026-11-04T00:00:00Z",
+          "targetOutcome": "Yes",
+          "source": {
+            "url": "https://example.org/exchange/contract-1",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          },
+          "outcomes": [
+            {
+              "label": "Yes",
+              "bid": 0.61,
+              "ask": 0.63,
+              "depthUsd": 5000,
+              "quotedAt": "2026-09-26T10:30:00-07:00",
+              "source": {
+                "url": "https://example.org/exchange/contract-1/book",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            }
+          ]
+        }
+      },
+      "options": {
+        "signer": {
+          "privateKey": "$keys.privateKeySeed",
+          "publicKeyRef": "uvrn-spec-pk-2026-v1",
+          "signedAt": "2026-09-26T19:00:00.000Z"
+        }
+      },
+      "expected": {
+        "method": "market",
+        "p": 0.62,
+        "low": 0.61,
+        "high": 0.63,
+        "refusalCodes": [],
+        "probabilityHash": "sha256:cfe4a69521b022461aad895a8e03d4dd7ad6e87ee67f9ce448ce101f5577e261",
+        "receiptHash": "sha256:76fcbd4bbedd2443d94c80bb2aa8ea79db0955bff2b6cbad4c15e72eeb746cce",
+        "canonicalResultSha256": "c2651f2612233f42e647181cf12187d1ab10d833486e0ed019224530ddf6e1c7",
+        "signature": {
+          "alg": "ed25519",
+          "publicKeyRef": "uvrn-spec-pk-2026-v1",
+          "sig": "e7za4SpikFu+sY9JuszCmywDtQUE0zJ1jY6nv01S8WrmvkWhPiMgLL+bgqzYBYn4br4wIhQSy622NjWMQBEyBA==",
+          "signedAt": "2026-09-26T19:00:00.000Z"
+        }
+      }
+    }
+  ],
+  "unit": {
+    "impliedProbability": [
+      {
+        "odds": {
+          "format": "american",
+          "value": -150
+        },
+        "expected": 0.6
+      },
+      {
+        "odds": {
+          "format": "american",
+          "value": 130
+        },
+        "expected": 0.434783
+      },
+      {
+        "odds": {
+          "format": "american",
+          "value": 100
+        },
+        "expected": 0.5
+      },
+      {
+        "odds": {
+          "format": "decimal",
+          "value": 2.5
+        },
+        "expected": 0.4
+      },
+      {
+        "odds": {
+          "format": "fractional",
+          "numerator": 3,
+          "denominator": 2
+        },
+        "expected": 0.4
+      },
+      {
+        "odds": {
+          "format": "american",
+          "value": 99
+        },
+        "expected": null
+      },
+      {
+        "odds": {
+          "format": "decimal",
+          "value": 1
+        },
+        "expected": null
+      }
+    ],
+    "jeffreys": [
+      {
+        "x": 0,
+        "n": 10,
+        "p": 0.045455,
+        "low": 0,
+        "high": 0.217196
+      },
+      {
+        "x": 5,
+        "n": 10,
+        "p": 0.5,
+        "low": 0.223529,
+        "high": 0.776471
+      },
+      {
+        "x": 10,
+        "n": 10,
+        "p": 0.954545,
+        "low": 0.782804,
+        "high": 1
+      },
+      {
+        "x": 3,
+        "n": 8,
+        "p": 0.388889,
+        "low": 0.119039,
+        "high": 0.705177
+      },
+      {
+        "x": 1,
+        "n": 20,
+        "p": 0.071429,
+        "low": 0.005449,
+        "high": 0.210819
+      }
+    ],
+    "aalenJohansenVsNaiveKm": {
+      "note": "Competing events treated as censored (1 − KM) overstate the approval probability.",
+      "events": [
+        {
+          "time": 100,
+          "status": "approved"
+        },
+        {
+          "time": 150,
+          "status": "denied"
+        },
+        {
+          "time": 200,
+          "status": "approved"
+        },
+        {
+          "time": 200,
+          "status": "withdrawn"
+        },
+        {
+          "time": 250,
+          "status": "pending"
+        },
+        {
+          "time": 300,
+          "status": "approved"
+        },
+        {
+          "time": 350,
+          "status": "denied"
+        },
+        {
+          "time": 400,
+          "status": "approved"
+        },
+        {
+          "time": 450,
+          "status": "pending"
+        },
+        {
+          "time": 500,
+          "status": "approved"
+        }
+      ],
+      "horizonDays": 450,
+      "aalenJohansen": 0.44,
+      "naiveOneMinusKaplanMeier": 0.58
+    }
+  }
+}

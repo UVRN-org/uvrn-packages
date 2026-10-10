@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "uvrn": {
+      "command": "npx",
+      "args": ["-y", "@uvrn/mcp"],
+      "env": {
+        "LOG_LEVEL": "info"
+      }
+    }
+  }
+}

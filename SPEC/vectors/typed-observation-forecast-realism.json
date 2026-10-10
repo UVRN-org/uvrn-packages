@@ -1,0 +1,331 @@
+{
+  "spec": "uvrn-typed-observation-v1 (diagnostic goldens — not a receipt hash contract)",
+  "unit": "BP-v2.1-LATER-D5",
+  "n": 8,
+  "notes": [
+    "Additive diagnostic cases for messy short-horizon market forecasts.",
+    "Host-declared typed observations only — title/prose scrape MUST NOT supply values.",
+    "Does not retune agree/divergence thresholds. Does not mutate CaseBank frozen baseline."
+  ],
+  "cases": [
+    {
+      "id": "FR01",
+      "name": "near-agree-money-short-horizon",
+      "mess": "Two host-declared USD spot forecasts for the same short appliesTo window sit close but not identical.",
+      "claim": "BTC 7-day spot closes near 64000 USD",
+      "sources": [
+        {
+          "id": "fr01-a",
+          "kind": "numeric",
+          "value": 63800,
+          "label": "Desk A typed forecast",
+          "typed": {
+            "quantityKind": "money",
+            "unit": "[USD]",
+            "unitSource": "declared",
+            "field": "btc_7d_spot",
+            "measuredAt": "2026-08-01T12:00:00.000Z",
+            "appliesTo": "2026-08-08T00:00:00.000Z",
+            "obsStatus": "F"
+          }
+        },
+        {
+          "id": "fr01-b",
+          "kind": "numeric",
+          "value": 64200,
+          "label": "Desk B typed forecast",
+          "typed": {
+            "quantityKind": "money",
+            "unit": "[USD]",
+            "unitSource": "declared",
+            "field": "btc_7d_spot",
+            "measuredAt": "2026-08-01T15:00:00.000Z",
+            "appliesTo": "2026-08-08T00:00:00.000Z",
+            "obsStatus": "F"
+          }
+        }
+      ],
+      "expect": {
+        "measure": "agree-pair-runnable",
+        "scrape": "titles-unused"
+      }
+    },
+    {
+      "id": "FR02",
+      "name": "messy-percentage-short-horizon-spread",
+      "mess": "Short-horizon % move forecasts diverge materially with declared percentage units.",
+      "claim": "ETH 48h move is about 3 percent",
+      "sources": [
+        {
+          "id": "fr02-a",
+          "kind": "numeric",
+          "value": 2.1,
+          "label": "Desk A % forecast",
+          "typed": {
+            "quantityKind": "percentage",
+            "unit": "%",
+            "unitSource": "declared",
+            "field": "eth_48h_move_pct",
+            "measuredAt": "2026-08-02T00:00:00.000Z",
+            "appliesTo": "2026-08-04T00:00:00.000Z",
+            "obsStatus": "F"
+          }
+        },
+        {
+          "id": "fr02-b",
+          "kind": "numeric",
+          "value": 5.8,
+          "label": "Desk B % forecast",
+          "typed": {
+            "quantityKind": "percentage",
+            "unit": "%",
+            "unitSource": "declared",
+            "field": "eth_48h_move_pct",
+            "measuredAt": "2026-08-02T01:00:00.000Z",
+            "appliesTo": "2026-08-04T00:00:00.000Z",
+            "obsStatus": "F"
+          }
+        }
+      ],
+      "expect": {
+        "measure": "disagree-or-no-agreement-at-default",
+        "scrape": "titles-unused"
+      }
+    },
+    {
+      "id": "FR03",
+      "name": "tempting-title-scrape-off",
+      "mess": "Headline contains a large number that must not become evidence when scrape is off; only declared typed value counts.",
+      "claim": "SOL 24h close near 160 USD",
+      "sources": [
+        {
+          "id": "fr03-a",
+          "kind": "numeric",
+          "value": 158,
+          "label": "SOL rockets to 999999 overnight — typed desk note",
+          "typed": {
+            "quantityKind": "money",
+            "unit": "[USD]",
+            "unitSource": "declared",
+            "field": "sol_24h_close",
+            "measuredAt": "2026-08-03T08:00:00.000Z",
+            "appliesTo": "2026-08-04T08:00:00.000Z",
+            "obsStatus": "F"
+          }
+        },
+        {
+          "id": "fr03-b",
+          "kind": "numeric",
+          "value": 161,
+          "label": "Target 88888 ignored — host typed 161",
+          "typed": {
+            "quantityKind": "money",
+            "unit": "[USD]",
+            "unitSource": "declared",
+            "field": "sol_24h_close",
+            "measuredAt": "2026-08-03T09:00:00.000Z",
+            "appliesTo": "2026-08-04T08:00:00.000Z",
+            "obsStatus": "F"
+          }
+        }
+      ],
+      "expect": {
+        "measure": "agree-pair-runnable",
+        "scrape": "title-numbers-must-not-become-evidence"
+      }
+    },
+    {
+      "id": "FR04",
+      "name": "cross-dimension-money-vs-percentage",
+      "mess": "Same short horizon, but money and percentage quantityKinds must not silently compare.",
+      "claim": "Mixed desk notes on BTC short move",
+      "sources": [
+        {
+          "id": "fr04-a",
+          "kind": "numeric",
+          "value": 64000,
+          "label": "USD level",
+          "typed": {
+            "quantityKind": "money",
+            "unit": "[USD]",
+            "unitSource": "declared",
+            "field": "btc_level",
+            "appliesTo": "2026-08-07T00:00:00.000Z",
+            "obsStatus": "F"
+          }
+        },
+        {
+          "id": "fr04-b",
+          "kind": "numeric",
+          "value": 2.5,
+          "label": "Percent move",
+          "typed": {
+            "quantityKind": "percentage",
+            "unit": "%",
+            "unitSource": "declared",
+            "field": "btc_move_pct",
+            "appliesTo": "2026-08-07T00:00:00.000Z",
+            "obsStatus": "F"
+          }
+        }
+      ],
+      "expect": {
+        "measure": "typed-axes-preserved-distinct",
+        "consensus": "declared-units-retained"
+      }
+    },
+    {
+      "id": "FR05",
+      "name": "three-date-honesty-short-horizon",
+      "mess": "publishedAt, measuredAt, and appliesTo all present and distinct — one date must not carry three meanings.",
+      "claim": "Oil 5-day print near 78 USD",
+      "sources": [
+        {
+          "id": "fr05-a",
+          "kind": "numeric",
+          "value": 77.5,
+          "label": "Wire desk",
+          "typed": {
+            "quantityKind": "money",
+            "unit": "[USD]",
+            "unitSource": "declared",
+            "field": "wti_5d",
+            "measuredAt": "2026-08-01T18:00:00.000Z",
+            "appliesTo": "2026-08-06T00:00:00.000Z",
+            "obsStatus": "F"
+          },
+          "publishedAt": "2026-07-30T12:00:00.000Z"
+        },
+        {
+          "id": "fr05-b",
+          "kind": "numeric",
+          "value": 78.2,
+          "label": "Second desk",
+          "typed": {
+            "quantityKind": "money",
+            "unit": "[USD]",
+            "unitSource": "declared",
+            "field": "wti_5d",
+            "measuredAt": "2026-08-02T06:00:00.000Z",
+            "appliesTo": "2026-08-06T00:00:00.000Z",
+            "obsStatus": "F"
+          },
+          "publishedAt": "2026-07-31T09:00:00.000Z"
+        }
+      ],
+      "expect": {
+        "measure": "dates-preserved-on-attributes",
+        "scrape": "titles-unused"
+      }
+    },
+    {
+      "id": "FR06",
+      "name": "provisional-vs-final-same-horizon",
+      "mess": "Provisional (P) and normal (A) observations for the same short horizon stay host-declared; no threshold retune.",
+      "claim": "Equity index 3-day close near 5200",
+      "sources": [
+        {
+          "id": "fr06-a",
+          "kind": "numeric",
+          "value": 5195,
+          "label": "Provisional tape",
+          "typed": {
+            "quantityKind": "quantity",
+            "unit": "1",
+            "unitSource": "declared",
+            "field": "idx_3d",
+            "measuredAt": "2026-08-04T20:00:00.000Z",
+            "appliesTo": "2026-08-07T20:00:00.000Z",
+            "obsStatus": "P"
+          }
+        },
+        {
+          "id": "fr06-b",
+          "kind": "numeric",
+          "value": 5205,
+          "label": "Final print",
+          "typed": {
+            "quantityKind": "quantity",
+            "unit": "1",
+            "unitSource": "declared",
+            "field": "idx_3d",
+            "measuredAt": "2026-08-04T21:00:00.000Z",
+            "appliesTo": "2026-08-07T20:00:00.000Z",
+            "obsStatus": "A"
+          }
+        }
+      ],
+      "expect": {
+        "measure": "obsStatus-preserved",
+        "scrape": "titles-unused"
+      }
+    },
+    {
+      "id": "FR07",
+      "name": "future-F-excluded-from-observation-pool",
+      "mess": "Future-period F forecasts must not pool with A observations (SPEC §6.1).",
+      "claim": "Mixed observation + future forecast on FX",
+      "sources": [
+        {
+          "url": "https://fixture.uvrn.example/FR07/obs",
+          "title": "EURUSD print 1.08",
+          "snippet": "Observed print.",
+          "evidenceScore": 1.08,
+          "obsStatus": "A",
+          "measuredAt": "2026-08-01T00:00:00.000Z",
+          "unit": "1",
+          "quantityKind": "quantity"
+        },
+        {
+          "url": "https://fixture.uvrn.example/FR07/fc",
+          "title": "EURUSD rockets to 9.99 next week (tempting)",
+          "snippet": "Forecast prose.",
+          "evidenceScore": 1.09,
+          "obsStatus": "F",
+          "appliesTo": "2026-08-15T00:00:00.000Z",
+          "unit": "1",
+          "quantityKind": "quantity"
+        }
+      ],
+      "expect": {
+        "consensus": {
+          "evalTime": "2026-08-06T00:00:00.000Z",
+          "excludedForecastCount": 1,
+          "observationSourceCount": 1
+        },
+        "scrape": "title-9.99-unused-under-scrape-off"
+      }
+    },
+    {
+      "id": "FR08",
+      "name": "missing-unit-vs-declared-unit",
+      "mess": "One desk declares UCUM; the other omits unit — scrape-off title must not invent the missing unit.",
+      "claim": "Gold 10-day near 2400 USD",
+      "sources": [
+        {
+          "url": "https://fixture.uvrn.example/FR08/a",
+          "title": "Gold 9999 USD scream headline",
+          "snippet": "No declared unit on this row.",
+          "evidenceScore": 2390,
+          "obsStatus": "F",
+          "appliesTo": "2026-08-16T00:00:00.000Z",
+          "quantityKind": "money"
+        },
+        {
+          "url": "https://fixture.uvrn.example/FR08/b",
+          "title": "Desk B typed gold",
+          "snippet": "Host-declared.",
+          "evidenceScore": 2410,
+          "obsStatus": "F",
+          "appliesTo": "2026-08-16T00:00:00.000Z",
+          "quantityKind": "money",
+          "unit": "[USD]"
+        }
+      ],
+      "expect": {
+        "consensus": "scrape-off-unusable-or-declared-only",
+        "scrape": "title-9999-must-not-become-value-or-unit"
+      }
+    }
+  ]
+}

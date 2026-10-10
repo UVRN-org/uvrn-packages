@@ -1,0 +1,216 @@
+{
+  "spec": "uvrn-receipt-v1 §2.2, plan B4/B5",
+  "master": {
+    "envelopeVersion": 1,
+    "claim": "BTC traded above 100k on 2026-06-09",
+    "base": {
+      "bundleId": "bundle-vector-1",
+      "deltaFinal": 0.042,
+      "sources": [
+        "Source A",
+        "Source B",
+        "Source C"
+      ],
+      "rounds": [
+        {
+          "round": 1,
+          "deltasByMetric": {
+            "price": 0.042
+          },
+          "withinThreshold": true,
+          "witnessRequired": false
+        }
+      ],
+      "suggestedFixes": [],
+      "outcome": "consensus",
+      "ts": "2026-06-10T12:00:00.000Z",
+      "hash": "08df288978275f48e78bf36e56546e904622a6f40f5b5df9c804a1a624a0e160"
+    },
+    "measurements": [
+      {
+        "type": "agree",
+        "verdict": "agree",
+        "confidence": 0.96,
+        "explanation": "Sources converge with agreement score 0.960 at threshold 0.9.",
+        "evidenceRefs": [
+          "source-a",
+          "source-b"
+        ]
+      },
+      {
+        "type": "disagree",
+        "verdict": "none",
+        "confidence": 0.96,
+        "explanation": "Numeric spread 0.040 does not exceed disagreement threshold 0.1.",
+        "evidenceRefs": [
+          "source-a",
+          "source-b"
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "id": "source-a",
+        "status": "on"
+      },
+      {
+        "id": "source-b",
+        "status": "on"
+      },
+      {
+        "id": "source-c",
+        "status": "unavailable",
+        "detail": "timeout after 5s"
+      }
+    ],
+    "ts": "2026-06-10T12:05:00.000Z",
+    "masterHash": "9cd82f54281edd7464adb15e1c3427058d70694940193485fdfc492674c63dc1"
+  },
+  "expect": {
+    "masterHash": "9cd82f54281edd7464adb15e1c3427058d70694940193485fdfc492674c63dc1"
+  },
+  "networkReceipt": {
+    "schemaVersion": "uvrn-receipt-4",
+    "receiptHash": "sha256:9301e04783e3ee14e35039c61def042d74589d19da30a775b8cc21006e2cbcb7",
+    "kind": "master",
+    "claim": {
+      "id": "btc-traded-above-100k-on-2026-06-09-0f91343d",
+      "text": "BTC traded above 100k on 2026-06-09"
+    },
+    "source": "uvrn-sdk",
+    "action": "master.measured",
+    "occurredAt": "2026-06-10T12:05:00.000Z",
+    "payload": {
+      "envelopeVersion": 1,
+      "claim": "BTC traded above 100k on 2026-06-09",
+      "base": {
+        "bundleId": "bundle-vector-1",
+        "deltaFinal": 0.042,
+        "sources": [
+          "Source A",
+          "Source B",
+          "Source C"
+        ],
+        "rounds": [
+          {
+            "round": 1,
+            "deltasByMetric": {
+              "price": 0.042
+            },
+            "withinThreshold": true,
+            "witnessRequired": false
+          }
+        ],
+        "suggestedFixes": [],
+        "outcome": "consensus",
+        "ts": "2026-06-10T12:00:00.000Z",
+        "hash": "08df288978275f48e78bf36e56546e904622a6f40f5b5df9c804a1a624a0e160"
+      },
+      "measurements": [
+        {
+          "type": "agree",
+          "verdict": "agree",
+          "confidence": 0.96,
+          "explanation": "Sources converge with agreement score 0.960 at threshold 0.9.",
+          "evidenceRefs": [
+            "source-a",
+            "source-b"
+          ]
+        },
+        {
+          "type": "disagree",
+          "verdict": "none",
+          "confidence": 0.96,
+          "explanation": "Numeric spread 0.040 does not exceed disagreement threshold 0.1.",
+          "evidenceRefs": [
+            "source-a",
+            "source-b"
+          ]
+        }
+      ],
+      "nodes": [
+        {
+          "id": "source-a",
+          "status": "on"
+        },
+        {
+          "id": "source-b",
+          "status": "on"
+        },
+        {
+          "id": "source-c",
+          "status": "unavailable",
+          "detail": "timeout after 5s"
+        }
+      ],
+      "ts": "2026-06-10T12:05:00.000Z",
+      "masterHash": "9cd82f54281edd7464adb15e1c3427058d70694940193485fdfc492674c63dc1"
+    },
+    "topic": "markets/crypto/BTC",
+    "narrative": "Sources align: 2 of 3 sources weighed in on \"BTC traded above 100k on 2026-06-09\". Independent sources are telling the same story. 1 of 3 sources was unreachable — recorded, not hidden."
+  },
+  "humanView": {
+    "headline": "2 of 3 sources weighed in — sources align",
+    "verdictLabel": "Sources align",
+    "verdictTone": "aligned",
+    "claim": "BTC traded above 100k on 2026-06-09",
+    "scoreCard": {
+      "vScore": 85.5,
+      "completeness": 0.67,
+      "parity": 0.96,
+      "freshness": 1,
+      "plainMeaning": {
+        "vScore": "A 0–100 blend of the three. It scores the evidence quality, not whether the claim is true.",
+        "completeness": "How many of the sources we asked actually answered.",
+        "parity": "How closely the answering sources agree with each other.",
+        "freshness": "How recent the evidence is."
+      }
+    },
+    "sources": [
+      {
+        "name": "source-a",
+        "status": "on",
+        "plainNote": "Responded and contributed evidence."
+      },
+      {
+        "name": "source-b",
+        "status": "on",
+        "plainNote": "Responded and contributed evidence."
+      },
+      {
+        "name": "source-c",
+        "status": "unavailable",
+        "contribution": "timeout after 5s",
+        "plainNote": "Unreachable when asked — this lowers completeness; it is not hidden."
+      }
+    ],
+    "measurements": [
+      {
+        "type": "agree",
+        "verdict": "agree",
+        "confidence": 0.96,
+        "plainExplanation": "Sources converge with agreement score 0.960 at threshold 0.9.",
+        "whyItMatters": "Independent sources are telling the same story."
+      },
+      {
+        "type": "disagree",
+        "verdict": "none",
+        "confidence": 0.96,
+        "plainExplanation": "Numeric spread 0.040 does not exceed disagreement threshold 0.1.",
+        "whyItMatters": "This check ran and found nothing notable."
+      }
+    ],
+    "gaps": [
+      {
+        "what": "Source source-c was unreachable",
+        "plainNote": "Unreachable when asked — this lowers completeness; it is not hidden."
+      }
+    ],
+    "provenance": {
+      "hash": "sha256:9301e04783e3ee14e35039c61def042d74589d19da30a775b8cc21006e2cbcb7",
+      "signed": false,
+      "verifyUrl": "https://uvrn.org/access/receipt/sha256:9301e04783e3ee14e35039c61def042d74589d19da30a775b8cc21006e2cbcb7"
+    },
+    "howToVerify": "Recompute the SHA-256 hash over the declared field list (SPEC/uvrn-receipt-v1.md §2.4) and compare it to sha256:9301e04783e3ee14e35039c61def042d74589d19da30a775b8cc21006e2cbcb7; this receipt is integrity-checked only (no producer signature), so the hash check is the whole story. CLI: npx @uvrn/cli verify-receipt receipt.json"
+  }
+}

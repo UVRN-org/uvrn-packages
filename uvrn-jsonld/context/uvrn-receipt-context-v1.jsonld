@@ -1,0 +1,78 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "uvrn": "https://uvrn.org/ns#",
+    "prov": "http://www.w3.org/ns/prov#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "sdmx": "https://sdmx.org/ns#",
+    "schemaVersion": "uvrn:schemaVersion",
+    "receiptHash": {
+      "@id": "uvrn:receiptHash",
+      "@type": "@id"
+    },
+    "kind": "uvrn:receiptKind",
+    "claim": "uvrn:claim",
+    "source": "uvrn:source",
+    "action": "uvrn:action",
+    "occurredAt": {
+      "@id": "uvrn:occurredAt",
+      "@type": "xsd:dateTime"
+    },
+    "topic": "uvrn:topic",
+    "tags": "uvrn:tag",
+    "narrative": "uvrn:narrative",
+    "quantityKind": "uvrn:quantityKind",
+    "unit": "uvrn:ucumUnit",
+    "value": {
+      "@id": "uvrn:observationValue",
+      "@type": "xsd:double"
+    },
+    "publishedAt": {
+      "@id": "uvrn:publishedAt",
+      "@type": "xsd:dateTime"
+    },
+    "measuredAt": {
+      "@id": "uvrn:measuredAt",
+      "@type": "xsd:dateTime"
+    },
+    "appliesTo": "uvrn:appliesTo",
+    "obsStatus": {
+      "@id": "sdmx:obsStatus",
+      "@type": "@vocab"
+    },
+    "stake": "uvrn:stake",
+    "codeLists": "uvrn:codeLists",
+    "wasDerivedFrom": {
+      "@id": "prov:wasDerivedFrom",
+      "@type": "@id"
+    },
+    "hadPrimarySource": {
+      "@id": "prov:hadPrimarySource",
+      "@type": "@id"
+    },
+    "wasQuotedFrom": {
+      "@id": "prov:wasQuotedFrom",
+      "@type": "@id"
+    },
+    "wasRevisionOf": {
+      "@id": "prov:wasRevisionOf",
+      "@type": "@id"
+    },
+    "wasAttributedTo": {
+      "@id": "prov:wasAttributedTo",
+      "@type": "@id"
+    },
+    "observations": {
+      "@id": "uvrn:observation",
+      "@container": "@set"
+    },
+    "omittedFields": {
+      "@id": "uvrn:omittedField",
+      "@container": "@set"
+    },
+    "projectionOf": {
+      "@id": "uvrn:projectionOf",
+      "@type": "@id"
+    }
+  }
+}

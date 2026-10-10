@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "uvrn": {
+      "command": "node",
+      "args": ["uvrn-mcp/dist/index.js"],
+      "env": {
+        "LOG_LEVEL": "info"
+      }
+    }
+  }
+}

@@ -1,0 +1,1803 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://uvrn.org/spec/schemas/uvrn-probability-result-3.schema.json",
+  "title": "uvrn-probability-3 result",
+  "description": "Output of a uvrn-probability-v3 forecast (SPEC/uvrn-probability-v3.md; version 2 §4 otherwise applies). Probability is never a V-Score and shares no field with one. A receipt proves integrity and, when signed, the signing key — not accuracy. Date and instant patterns here are shape checks only: JSON Schema cannot enforce days-in-month or leap years, so schema validation alone does not prove a record's dates are real (runForecast only emits real ones).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "specVersion",
+    "origin",
+    "forecastId",
+    "question",
+    "questionHash",
+    "asOf",
+    "producer",
+    "mode",
+    "status",
+    "basis",
+    "probabilities",
+    "unit",
+    "quantityKind",
+    "band",
+    "inputs",
+    "limitations",
+    "refusals",
+    "revision",
+    "probabilityHash",
+    "receipt"
+  ],
+  "properties": {
+    "specVersion": {
+      "const": "uvrn-probability-3"
+    },
+    "origin": {
+      "type": "string",
+      "pattern": "^model:@uvrn/probability@\\d+\\.\\d+\\.\\d+"
+    },
+    "forecastId": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "question": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "text",
+        "resolveBy",
+        "resolutionRule",
+        "kind",
+        "outcomes",
+        "partitionConfirmed",
+        "resolveByOffset"
+      ],
+      "properties": {
+        "text": {
+          "type": "string"
+        },
+        "resolveBy": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "resolutionRule": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "binary",
+            "categorical"
+          ]
+        },
+        "partitionConfirmed": {
+          "const": true
+        },
+        "outcomes": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "label",
+              "definition",
+              "outcomeDeclaration"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "definition": {
+                "type": "string"
+              },
+              "outcomeDeclaration": {
+                "oneOf": [
+                  {
+                    "type": "null"
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": [
+                      "specVersion",
+                      "entryId",
+                      "predictedOutcome",
+                      "outcomeMetric",
+                      "resolveBy",
+                      "declaredAt",
+                      "outcomeHash"
+                    ],
+                    "properties": {
+                      "specVersion": {
+                        "const": "uvrn-outcome-1"
+                      },
+                      "entryId": {
+                        "type": "string"
+                      },
+                      "predictedOutcome": {
+                        "type": "string"
+                      },
+                      "outcomeMetric": {
+                        "type": "string"
+                      },
+                      "resolveBy": {
+                        "type": "string"
+                      },
+                      "declaredAt": {
+                        "type": "string"
+                      },
+                      "outcomeHash": {
+                        "$ref": "#/$defs/prefixedHash"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "resolveByOffset": {
+          "$ref": "#/$defs/utcOffset"
+        }
+      }
+    },
+    "questionHash": {
+      "$ref": "#/$defs/prefixedHash"
+    },
+    "asOf": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+    },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "model"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "agent",
+            "human"
+          ]
+        },
+        "model": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "mode": {
+      "enum": [
+        "market",
+        "baserate",
+        "judgment"
+      ]
+    },
+    "status": {
+      "enum": [
+        "forecast",
+        "insufficient_basis"
+      ]
+    },
+    "basis": {
+      "enum": [
+        "market-implied",
+        "reference-class",
+        "agent-judgment",
+        null
+      ]
+    },
+    "probabilities": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "outcomeId",
+              "p"
+            ],
+            "properties": {
+              "outcomeId": {
+                "type": "string"
+              },
+              "p": {
+                "type": "number",
+                "minimum": 0,
+                "maximum": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "unit": {
+      "const": "1"
+    },
+    "quantityKind": {
+      "const": "probability"
+    },
+    "band": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "outcomeId",
+            "low",
+            "high",
+            "kind",
+            "confidence"
+          ],
+          "properties": {
+            "outcomeId": {
+              "const": "yes"
+            },
+            "low": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "high": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "kind": {
+              "enum": [
+                "method-spread",
+                "bid-ask",
+                "statistical",
+                "subjective"
+              ]
+            },
+            "confidence": {
+              "enum": [
+                0.95,
+                null
+              ]
+            }
+          },
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "statistical"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "confidence": {
+                "const": 0.95
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "confidence": {
+                "const": null
+              }
+            }
+          }
+        }
+      ]
+    },
+    "inputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "asOf",
+        "thresholds",
+        "market",
+        "baserate",
+        "judgment",
+        "deadline"
+      ],
+      "properties": {
+        "asOf": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "at",
+            "atUtc",
+            "source"
+          ],
+          "properties": {
+            "at": {
+              "type": "string"
+            },
+            "atUtc": {
+              "$ref": "#/$defs/utcInstant"
+            },
+            "source": {
+              "$ref": "#/$defs/citation"
+            }
+          }
+        },
+        "thresholds": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "provisional",
+                "values",
+                "overridden"
+              ],
+              "properties": {
+                "provisional": {
+                  "const": true
+                },
+                "values": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "minCases",
+                    "maxQuoteStalenessMs",
+                    "maxExchangeSpread",
+                    "minExchangeDepthUsd",
+                    "maxSportsbookOverround"
+                  ],
+                  "properties": {
+                    "minCases": {
+                      "type": "integer",
+                      "minimum": 1
+                    },
+                    "maxQuoteStalenessMs": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "maxExchangeSpread": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "minExchangeDepthUsd": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "maxSportsbookOverround": {
+                      "type": "number",
+                      "minimum": 0
+                    }
+                  }
+                },
+                "overridden": {
+                  "type": "array",
+                  "uniqueItems": true,
+                  "items": {
+                    "enum": [
+                      "maxExchangeSpread",
+                      "maxQuoteStalenessMs",
+                      "maxSportsbookOverround",
+                      "minCases",
+                      "minExchangeDepthUsd"
+                    ]
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "market": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/marketRecord"
+            }
+          ]
+        },
+        "baserate": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/proportionRecord"
+            },
+            {
+              "$ref": "#/$defs/timeToEventRecord"
+            }
+          ]
+        },
+        "judgment": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/judgmentRecord"
+            },
+            {
+              "$ref": "#/$defs/abstentionRecord"
+            }
+          ]
+        },
+        "deadline": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "resolveBy",
+            "offset",
+            "startInstantUtc",
+            "endInstantUtcExclusive"
+          ],
+          "description": "The local deadline day [startInstantUtc, endInstantUtcExclusive) at the question offset (SPEC v3 §3.2). Hashed; verification recomputes it from question.resolveBy and question.resolveByOffset and requires an exact match (SPEC v3 §6).",
+          "properties": {
+            "resolveBy": {
+              "$ref": "#/$defs/calendarDate"
+            },
+            "offset": {
+              "$ref": "#/$defs/utcOffset"
+            },
+            "startInstantUtc": {
+              "$ref": "#/$defs/utcInstant"
+            },
+            "endInstantUtcExclusive": {
+              "$ref": "#/$defs/utcInstant"
+            }
+          }
+        }
+      }
+    },
+    "limitations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string"
+      }
+    },
+    "refusals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "scope",
+          "message"
+        ],
+        "properties": {
+          "code": {
+            "enum": [
+              "market_invalid_odds",
+              "market_quote_after_asof",
+              "market_quote_stale",
+              "market_resolves_before_asof",
+              "market_overround_out_of_range",
+              "market_spread_too_wide",
+              "market_depth_too_thin",
+              "devig_nonconvergence",
+              "baserate_unknown_criterion",
+              "baserate_invalid_case",
+              "baserate_event_after_asof",
+              "baserate_below_min_cases",
+              "baserate_no_risk_set_at_elapsed",
+              "baserate_horizon_not_after_elapsed",
+              "baserate_horizon_beyond_followup",
+              "baserate_nonconvergence",
+              "baserate_below_min_at_risk",
+              "baserate_interval_unavailable",
+              "deadline_mismatch",
+              "judgment_abstained"
+            ]
+          },
+          "scope": {
+            "enum": [
+              "market",
+              "baserate",
+              "judgment"
+            ]
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "revision": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "previousProbabilityHash",
+            "reason"
+          ],
+          "properties": {
+            "previousProbabilityHash": {
+              "$ref": "#/$defs/prefixedHash"
+            },
+            "reason": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "profile": {
+      "description": "Present only when a rule profile was supplied (§8.1); covered by probabilityHash when present, absent (never null) otherwise.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "specVersion",
+        "id",
+        "version",
+        "hash"
+      ],
+      "properties": {
+        "specVersion": {
+          "const": "uvrn-probability-profile-1"
+        },
+        "id": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "hash": {
+          "$ref": "#/$defs/prefixedHash"
+        }
+      }
+    },
+    "probabilityHash": {
+      "$ref": "#/$defs/prefixedHash"
+    },
+    "receipt": {
+      "type": "object",
+      "required": [
+        "schemaVersion",
+        "receiptHash",
+        "kind",
+        "payload"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": "uvrn-receipt-4"
+        },
+        "kind": {
+          "const": "probability"
+        },
+        "receiptHash": {
+          "$ref": "#/$defs/prefixedHash"
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "forecast"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "basis": {
+            "enum": [
+              "market-implied",
+              "reference-class",
+              "agent-judgment"
+            ]
+          },
+          "probabilities": {
+            "type": "array"
+          },
+          "refusals": {
+            "maxItems": 0
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "basis": {
+            "const": null
+          },
+          "probabilities": {
+            "const": null
+          },
+          "band": {
+            "const": null
+          },
+          "refusals": {
+            "minItems": 1
+          }
+        }
+      }
+    },
+    {
+      "description": "Mode coupling (§4.1): the selected mode's record is non-null, the others are null; thresholds are null only in judgment mode; basis, band kind, and refusal scope follow the mode.",
+      "if": {
+        "properties": {
+          "mode": {
+            "const": "market"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "basis": {
+            "enum": [
+              "market-implied",
+              null
+            ]
+          },
+          "band": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "enum": [
+                      "method-spread",
+                      "bid-ask"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          "refusals": {
+            "items": {
+              "properties": {
+                "scope": {
+                  "const": "market"
+                }
+              }
+            }
+          },
+          "inputs": {
+            "properties": {
+              "thresholds": {
+                "type": "object"
+              },
+              "market": {
+                "type": "object"
+              },
+              "baserate": {
+                "type": "null"
+              },
+              "judgment": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "mode": {
+            "const": "baserate"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "basis": {
+            "enum": [
+              "reference-class",
+              null
+            ]
+          },
+          "band": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "const": "statistical"
+                  }
+                }
+              }
+            ]
+          },
+          "refusals": {
+            "items": {
+              "properties": {
+                "scope": {
+                  "const": "baserate"
+                }
+              }
+            }
+          },
+          "inputs": {
+            "properties": {
+              "thresholds": {
+                "type": "object"
+              },
+              "market": {
+                "type": "null"
+              },
+              "baserate": {
+                "type": "object"
+              },
+              "judgment": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "mode": {
+            "const": "judgment"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "basis": {
+            "enum": [
+              "agent-judgment",
+              null
+            ]
+          },
+          "band": {
+            "anyOf": [
+              {
+                "type": "null"
+              },
+              {
+                "properties": {
+                  "kind": {
+                    "const": "subjective"
+                  }
+                }
+              }
+            ]
+          },
+          "refusals": {
+            "items": {
+              "properties": {
+                "scope": {
+                  "const": "judgment"
+                },
+                "code": {
+                  "const": "judgment_abstained"
+                }
+              }
+            }
+          },
+          "inputs": {
+            "properties": {
+              "thresholds": {
+                "type": "null"
+              },
+              "market": {
+                "type": "null"
+              },
+              "baserate": {
+                "type": "null"
+              },
+              "judgment": {
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "A judgment forecast carries an allocation record; judgment insufficient_basis is always an abstention (§5.3).",
+      "if": {
+        "properties": {
+          "mode": {
+            "const": "judgment"
+          },
+          "status": {
+            "const": "forecast"
+          }
+        },
+        "required": [
+          "mode",
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "inputs": {
+            "properties": {
+              "judgment": {
+                "$ref": "#/$defs/judgmentRecord"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "mode": {
+            "const": "judgment"
+          },
+          "status": {
+            "const": "insufficient_basis"
+          }
+        },
+        "required": [
+          "mode",
+          "status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "inputs": {
+            "properties": {
+              "judgment": {
+                "$ref": "#/$defs/abstentionRecord"
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "prefixedHash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "utcInstant": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$"
+    },
+    "calendarDate": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "text": {
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "citation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "url",
+        "accessedAt"
+      ],
+      "properties": {
+        "url": {
+          "type": "string",
+          "pattern": "^https?://\\S+$"
+        },
+        "accessedAt": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    },
+    "numberOrNull": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "numbersOrNull": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        }
+      ]
+    },
+    "odds": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "format",
+            "value"
+          ],
+          "properties": {
+            "format": {
+              "enum": [
+                "american",
+                "decimal"
+              ]
+            },
+            "value": {
+              "type": "number"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "format",
+            "numerator",
+            "denominator"
+          ],
+          "properties": {
+            "format": {
+              "const": "fractional"
+            },
+            "numerator": {
+              "type": "number"
+            },
+            "denominator": {
+              "type": "number"
+            }
+          }
+        }
+      ]
+    },
+    "marketOutcomeRecord": {
+      "description": "Submitted prices (odds, or bid/ask/depthUsd) are recorded even when refused; impliedP and mid appear only for a valid price.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "quotedAt",
+        "ageHours",
+        "source"
+      ],
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "quotedAt": {
+          "type": "string"
+        },
+        "ageHours": {
+          "$ref": "#/$defs/numberOrNull"
+        },
+        "source": {
+          "$ref": "#/$defs/citation"
+        },
+        "odds": {
+          "$ref": "#/$defs/odds"
+        },
+        "impliedP": {
+          "type": "number"
+        },
+        "bid": {
+          "type": "number"
+        },
+        "ask": {
+          "type": "number"
+        },
+        "mid": {
+          "type": "number"
+        },
+        "depthUsd": {
+          "type": "number"
+        }
+      }
+    },
+    "marketRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "venue",
+        "domain",
+        "priceLabel",
+        "biasCorrection",
+        "resolvesAt",
+        "resolvesAtMeaning",
+        "eventCutoffUtcDate",
+        "eventCutoffInstantUtc",
+        "settlesAt",
+        "deadlineMatched",
+        "timeToEventCutoffDays",
+        "targetOutcome",
+        "targetOutcomeId",
+        "source",
+        "outcomes",
+        "eventCutoffDeadlineDate"
+      ],
+      "properties": {
+        "kind": {
+          "enum": [
+            "sportsbook",
+            "exchange"
+          ]
+        },
+        "venue": {
+          "type": "string"
+        },
+        "domain": {
+          "type": "string"
+        },
+        "priceLabel": {
+          "const": "market-implied"
+        },
+        "biasCorrection": {
+          "const": "none"
+        },
+        "resolvesAt": {
+          "type": "string"
+        },
+        "resolvesAtMeaning": {
+          "const": "event-cutoff"
+        },
+        "eventCutoffUtcDate": {
+          "$ref": "#/$defs/calendarDate"
+        },
+        "eventCutoffInstantUtc": {
+          "$ref": "#/$defs/utcInstant",
+          "description": "The instant resolvesAt was read as: a date-only resolvesAt resolves to local 23:59:59.999 of that day at the question offset (SPEC v3 §3.4)."
+        },
+        "settlesAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "deadlineMatched": {
+          "type": "boolean"
+        },
+        "timeToEventCutoffDays": {
+          "$ref": "#/$defs/numberOrNull"
+        },
+        "targetOutcome": {
+          "type": "string"
+        },
+        "targetOutcomeId": {
+          "const": "yes"
+        },
+        "source": {
+          "$ref": "#/$defs/citation"
+        },
+        "outcomes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/marketOutcomeRecord"
+          }
+        },
+        "sportsbook": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "overround",
+            "defaultMethod",
+            "multiplicative",
+            "power",
+            "shin",
+            "powerK",
+            "shinZ",
+            "methodSpread"
+          ],
+          "properties": {
+            "overround": {
+              "type": "number"
+            },
+            "defaultMethod": {
+              "enum": [
+                "multiplicative",
+                "power",
+                "shin"
+              ]
+            },
+            "multiplicative": {
+              "$ref": "#/$defs/numbersOrNull"
+            },
+            "power": {
+              "$ref": "#/$defs/numbersOrNull"
+            },
+            "shin": {
+              "$ref": "#/$defs/numbersOrNull"
+            },
+            "powerK": {
+              "$ref": "#/$defs/numberOrNull"
+            },
+            "shinZ": {
+              "$ref": "#/$defs/numberOrNull"
+            },
+            "methodSpread": {
+              "$ref": "#/$defs/numberOrNull"
+            }
+          }
+        },
+        "exchange": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "spread",
+            "depthUsd",
+            "normalizationSum"
+          ],
+          "properties": {
+            "spread": {
+              "type": "number"
+            },
+            "depthUsd": {
+              "type": "number"
+            },
+            "normalizationSum": {
+              "$ref": "#/$defs/numberOrNull"
+            }
+          }
+        },
+        "eventCutoffDeadlineDate": {
+          "$ref": "#/$defs/calendarDate",
+          "description": "Calendar date of eventCutoffInstantUtc at the question offset (SPEC v3 §3.3)."
+        }
+      },
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "sportsbook"
+          }
+        }
+      },
+      "then": {
+        "not": {
+          "required": [
+            "exchange"
+          ]
+        },
+        "properties": {
+          "outcomes": {
+            "minItems": 2,
+            "items": {
+              "required": [
+                "odds"
+              ],
+              "not": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "bid"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "ask"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "mid"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "depthUsd"
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "else": {
+        "not": {
+          "required": [
+            "sportsbook"
+          ]
+        },
+        "properties": {
+          "outcomes": {
+            "items": {
+              "required": [
+                "bid",
+                "ask",
+                "depthUsd"
+              ],
+              "not": {
+                "anyOf": [
+                  {
+                    "required": [
+                      "odds"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "impliedP"
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "referenceClassRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "description",
+        "criteria",
+        "source"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/citation"
+        },
+        "criteria": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "text",
+              "source"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              },
+              "source": {
+                "$ref": "#/$defs/citation"
+              }
+            }
+          }
+        }
+      }
+    },
+    "excludedCases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "missingCriteria"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "missingCriteria": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "proportionRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "mode",
+        "referenceClass",
+        "minCases",
+        "casesDeclared",
+        "casesIncluded",
+        "cases",
+        "excluded",
+        "proportion",
+        "targetOutcomeId",
+        "horizonUtcDate",
+        "deadlineMatched",
+        "horizonDeadlineDate"
+      ],
+      "properties": {
+        "role": {
+          "const": "baserate"
+        },
+        "mode": {
+          "const": "proportion"
+        },
+        "referenceClass": {
+          "$ref": "#/$defs/referenceClassRecord"
+        },
+        "minCases": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "casesDeclared": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "casesIncluded": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "source",
+              "meetsCriteria",
+              "outcome",
+              "resolvedAt"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "source": {
+                "$ref": "#/$defs/citation"
+              },
+              "meetsCriteria": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "outcome": {
+                "enum": [
+                  "yes",
+                  "no"
+                ]
+              },
+              "resolvedAt": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "excluded": {
+          "$ref": "#/$defs/excludedCases"
+        },
+        "proportion": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "x",
+            "n",
+            "pointEstimate",
+            "interval",
+            "confidence"
+          ],
+          "properties": {
+            "x": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "n": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "pointEstimate": {
+              "const": "posterior-mean"
+            },
+            "interval": {
+              "const": "jeffreys-equal-tailed"
+            },
+            "confidence": {
+              "const": 0.95
+            }
+          }
+        },
+        "targetOutcomeId": {
+          "const": "yes"
+        },
+        "horizonUtcDate": {
+          "type": "null"
+        },
+        "deadlineMatched": {
+          "type": "null"
+        },
+        "horizonDeadlineDate": {
+          "type": "null"
+        }
+      }
+    },
+    "timeToEventRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "role",
+        "mode",
+        "referenceClass",
+        "minCases",
+        "casesDeclared",
+        "casesIncluded",
+        "cases",
+        "excluded",
+        "timeToEvent",
+        "targetOutcomeId",
+        "horizonUtcDate",
+        "horizonInstantUtc",
+        "deadlineMatched",
+        "minAtRiskRequired",
+        "horizonDeadlineDate"
+      ],
+      "properties": {
+        "role": {
+          "const": "baserate"
+        },
+        "mode": {
+          "const": "time-to-event"
+        },
+        "referenceClass": {
+          "$ref": "#/$defs/referenceClassRecord"
+        },
+        "minCases": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "casesDeclared": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "casesIncluded": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "source",
+              "meetsCriteria",
+              "filedAt",
+              "status",
+              "statusAt"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "source": {
+                "$ref": "#/$defs/citation"
+              },
+              "meetsCriteria": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "timeDays": {
+                "type": "number",
+                "minimum": 0
+              },
+              "filedAt": {
+                "type": "string"
+              },
+              "status": {
+                "enum": [
+                  "approved",
+                  "denied",
+                  "withdrawn",
+                  "pending"
+                ]
+              },
+              "statusAt": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "excluded": {
+          "$ref": "#/$defs/excludedCases"
+        },
+        "timeToEvent": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "estimator",
+            "targetEvent",
+            "competingEvents",
+            "censored",
+            "subject",
+            "horizonBy",
+            "elapsedDays",
+            "horizonDays",
+            "atRiskAtElapsed",
+            "survivalAtElapsed",
+            "cifAtElapsed",
+            "cifAtHorizon",
+            "standardError",
+            "interval",
+            "confidence"
+          ],
+          "properties": {
+            "estimator": {
+              "const": "aalen-johansen-conditional"
+            },
+            "targetEvent": {
+              "const": "approved"
+            },
+            "competingEvents": {
+              "const": [
+                "denied",
+                "withdrawn"
+              ]
+            },
+            "censored": {
+              "const": [
+                "pending"
+              ]
+            },
+            "subject": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "filedAt",
+                "source"
+              ],
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "filedAt": {
+                  "type": "string"
+                },
+                "source": {
+                  "$ref": "#/$defs/citation"
+                }
+              }
+            },
+            "horizonBy": {
+              "type": "string"
+            },
+            "elapsedDays": {
+              "type": "number"
+            },
+            "horizonDays": {
+              "type": "number"
+            },
+            "atRiskAtElapsed": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "survivalAtElapsed": {
+              "$ref": "#/$defs/numberOrNull"
+            },
+            "cifAtElapsed": {
+              "$ref": "#/$defs/numberOrNull"
+            },
+            "cifAtHorizon": {
+              "$ref": "#/$defs/numberOrNull"
+            },
+            "standardError": {
+              "$ref": "#/$defs/numberOrNull"
+            },
+            "interval": {
+              "enum": [
+                "log-log",
+                null
+              ],
+              "description": "Version 2 never uses the v1 Jeffreys degenerate fallback (§6.2)."
+            },
+            "confidence": {
+              "const": 0.95
+            }
+          }
+        },
+        "targetOutcomeId": {
+          "const": "yes"
+        },
+        "horizonUtcDate": {
+          "$ref": "#/$defs/calendarDate"
+        },
+        "horizonInstantUtc": {
+          "$ref": "#/$defs/utcInstant",
+          "description": "The instant the horizon was evaluated at: a date-only horizon.by resolves to local 23:59:59.999 of that day at the question offset (SPEC v3 §3.4)."
+        },
+        "deadlineMatched": {
+          "type": "boolean"
+        },
+        "minAtRiskRequired": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "horizonDeadlineDate": {
+          "$ref": "#/$defs/calendarDate",
+          "description": "Calendar date of horizonInstantUtc at the question offset (SPEC v3 §3.3)."
+        }
+      }
+    },
+    "judgmentRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "basisLabel",
+        "evidence",
+        "assumptions",
+        "rationale",
+        "counterarguments",
+        "uncertainty",
+        "range"
+      ],
+      "properties": {
+        "basisLabel": {
+          "enum": [
+            "assumption-only",
+            "cited-evidence-and-judgment"
+          ]
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "statement",
+              "source"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/text"
+              },
+              "statement": {
+                "$ref": "#/$defs/text"
+              },
+              "source": {
+                "$ref": "#/$defs/citation"
+              }
+            }
+          }
+        },
+        "assumptions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "id",
+              "statement"
+            ],
+            "properties": {
+              "id": {
+                "$ref": "#/$defs/text"
+              },
+              "statement": {
+                "$ref": "#/$defs/text"
+              }
+            }
+          }
+        },
+        "rationale": {
+          "$ref": "#/$defs/text"
+        },
+        "counterarguments": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/text"
+          }
+        },
+        "uncertainty": {
+          "$ref": "#/$defs/text"
+        },
+        "range": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "low",
+                "high",
+                "rationale"
+              ],
+              "properties": {
+                "low": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "high": {
+                  "type": "number",
+                  "minimum": 0,
+                  "maximum": 1
+                },
+                "rationale": {
+                  "$ref": "#/$defs/text"
+                }
+              }
+            }
+          ]
+        }
+      },
+      "if": {
+        "properties": {
+          "basisLabel": {
+            "const": "assumption-only"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "evidence": {
+            "maxItems": 0
+          },
+          "assumptions": {
+            "minItems": 1
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "evidence": {
+            "minItems": 1
+          }
+        }
+      }
+    },
+    "abstentionRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "abstain",
+        "reason"
+      ],
+      "properties": {
+        "abstain": {
+          "const": true
+        },
+        "reason": {
+          "$ref": "#/$defs/text"
+        }
+      }
+    },
+    "utcOffset": {
+      "type": "string",
+      "pattern": "^(?!-00:00$)(?:\\+(?:0\\d|1[0-3]):[0-5]\\d|\\+14:00|-(?:0\\d|1[01]):[0-5]\\d|-12:00)$",
+      "description": "Fixed UTC offset ±hh:mm for the deadline day (SPEC/uvrn-probability-v3.md §3.1): minutes 00–59, combined value -12:00 … +14:00, and -00:00 rejected (UTC is +00:00). Matches parseOffsetMinutes exactly (conformance-tested)."
+    }
+  }
+}

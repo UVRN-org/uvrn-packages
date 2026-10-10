@@ -1,0 +1,26 @@
+# UVRN connector for Hermes (Nous Research)
+# Merge this under the `mcp_servers` key of ~/.hermes/config.yaml
+#
+# Tools surface with a per-server prefix: mcp_uvrn_<tool>
+#   e.g. mcp_uvrn_delta_run_engine, mcp_uvrn_delta_score_claim
+# After editing the config, reload inside Hermes with:  /reload-mcp
+
+mcp_servers:
+  uvrn:
+    command: "npx"
+    args: ["-y", "@uvrn/mcp"]
+    env:
+      LOG_LEVEL: "info"
+    # Optional: restrict which UVRN tools Hermes may call.
+    # tools:
+    #   include: [delta_run_engine, delta_verify_receipt, delta_score_claim]
+
+# --- Local-build variant (pre-publish / repo checkout) ---
+# The npx block above fetches the published package. To test a local checkout,
+# build dist/ first, then uncomment this and substitute your absolute repo path:
+# mcp_servers:
+#   uvrn:
+#     command: "node"
+#     args: ["<ABSOLUTE_PATH_TO_REPO>/uvrn-mcp/dist/index.js"]
+#     env:
+#       LOG_LEVEL: "info"

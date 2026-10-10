@@ -1,0 +1,87 @@
+{
+  "spec": "uvrn-receipt-v1 §1 (uvrn-jcs-1)",
+  "cases": [
+    {
+      "name": "key-sorting",
+      "value": {
+        "b": 2,
+        "a": 1,
+        "c": {
+          "z": 1,
+          "y": 2
+        }
+      },
+      "canonical": "{\"a\":1,\"b\":2,\"c\":{\"y\":2,\"z\":1}}",
+      "sha256Hex": "68502ff8fb4921bec2ebc3a69e16c5576d297982dc1c17438e5119ac18687560"
+    },
+    {
+      "name": "unicode-string",
+      "value": {
+        "text": "héllo \"quoted\" é—"
+      },
+      "canonical": "{\"text\":\"héllo \\\"quoted\\\" é—\"}",
+      "sha256Hex": "0ddf645e8bc0dcf770dfef73f5f457b62c1e82253b62526361233f881d717652"
+    },
+    {
+      "name": "numbers",
+      "value": {
+        "tiny": 0.000001,
+        "big": 1e+21,
+        "negative": -0.5,
+        "zero": 0,
+        "int": 42
+      },
+      "canonical": "{\"big\":1e+21,\"int\":42,\"negative\":-0.5,\"tiny\":0.000001,\"zero\":0}",
+      "sha256Hex": "9bcceb6831b919f5efb8462dea0a69e9e07ad2b3f17f060161f12bc08691321a"
+    },
+    {
+      "name": "arrays-and-null",
+      "value": {
+        "list": [
+          1,
+          "two",
+          null,
+          [
+            3
+          ]
+        ],
+        "empty": [],
+        "nul": null
+      },
+      "canonical": "{\"empty\":[],\"list\":[1,\"two\",null,[3]],\"nul\":null}",
+      "sha256Hex": "b8834463e144cf8409b4c9e51f4f5a703df2dc8eb6f7ab2e1483e03aa3ee338e"
+    },
+    {
+      "name": "empty-object",
+      "value": {},
+      "canonical": "{}",
+      "sha256Hex": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+    },
+    {
+      "name": "delta-receipt-shape",
+      "value": {
+        "bundleId": "bundle-vector-1",
+        "deltaFinal": 0.042,
+        "outcome": "consensus",
+        "rounds": [
+          {
+            "round": 1,
+            "deltasByMetric": {
+              "price": 0.042
+            },
+            "withinThreshold": true,
+            "witnessRequired": false
+          }
+        ],
+        "sources": [
+          "Source A",
+          "Source B"
+        ],
+        "suggestedFixes": [],
+        "ts": "2026-06-10T12:00:00.000Z"
+      },
+      "canonical": "{\"bundleId\":\"bundle-vector-1\",\"deltaFinal\":0.042,\"outcome\":\"consensus\",\"rounds\":[{\"deltasByMetric\":{\"price\":0.042},\"round\":1,\"withinThreshold\":true,\"witnessRequired\":false}],\"sources\":[\"Source A\",\"Source B\"],\"suggestedFixes\":[],\"ts\":\"2026-06-10T12:00:00.000Z\"}",
+      "sha256Hex": "86e53b961ca459de1c250665623ae7609347f2f7a0e641e3ee54c8e74211daa3"
+    }
+  ]
+}

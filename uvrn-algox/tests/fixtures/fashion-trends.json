@@ -1,0 +1,10 @@
+[
+  { "label": "oversized blazers", "url": "https://vogue.com/a", "source": "vogue.com", "prominence": 90, "observedAt": "2026-05-20", "signals": { "mentions": 1200 } },
+  { "label": "oversized blazers", "url": "https://vogue.com/a/", "source": "vogue.com", "prominence": 88, "observedAt": "2026-05-19", "signals": { "mentions": 1100 } },
+  { "label": "quiet luxury", "url": "https://vogue.com/b", "source": "vogue.com", "prominence": 85, "observedAt": "2026-05-21", "signals": { "mentions": 1500 } },
+  { "label": "cargo skirts", "url": "https://vogue.com/c", "source": "vogue.com", "prominence": 70, "observedAt": "2026-05-18", "signals": { "mentions": 600 } },
+  { "label": "ballet flats", "url": "https://elle.com/d", "source": "elle.com", "prominence": 80, "observedAt": "2026-05-22", "signals": { "mentions": 900 } },
+  { "label": "metallic denim", "url": "https://hypebeast.com/e", "source": "hypebeast.com", "prominence": 65, "observedAt": "2026-05-15", "signals": { "mentions": 400 } },
+  { "label": "y2k revival", "url": "https://oldsite.com/f", "source": "oldsite.com", "prominence": 95, "observedAt": "2026-01-01", "signals": { "mentions": 2000 } },
+  { "label": "", "url": "https://broken.com/g", "source": "broken.com", "prominence": 50 }
+]

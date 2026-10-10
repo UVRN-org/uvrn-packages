@@ -1,0 +1,36 @@
+# Source files
+src/
+tests/
+*.test.ts
+
+# Build configs
+tsconfig.json
+jest.config.js
+.eslintrc.js
+
+# Git
+.git/
+.gitignore
+
+# Docs (include only README in package)
+docs/
+
+# CI/CD
+.github/
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+logs/
+
+# Coverage
+coverage/
+
+# Examples (keep in repo, exclude from package)
+examples/
+
+# Build logs
+build-logs/

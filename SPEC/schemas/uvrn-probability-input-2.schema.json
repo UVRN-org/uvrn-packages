@@ -1,0 +1,436 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://uvrn.org/spec/schemas/uvrn-probability-input-2.schema.json",
+  "title": "uvrn-probability-input-2",
+  "description": "Input to a uvrn-probability-v2 forecast (SPEC/uvrn-probability-v2.md §2). Closed at every level. Structural only: the judgment sum and precision rules (§5.3), outcome-id uniqueness, range enclosure, outcome-declaration recomputation (§3.3), and deadline-after-asOf (§3.1) are enforced by the implementation as typed validation errors; staleness, gates, and deadline matching are refusals. JSON Schema patterns cannot enforce days-in-month or leap years, so a document that passes this schema may still be rejected by runForecast: schema-only validation is insufficient.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["specVersion", "forecastId", "mode", "question", "asOf", "producer"],
+  "properties": {
+    "specVersion": { "const": "uvrn-probability-input-2" },
+    "forecastId": { "$ref": "#/$defs/text" },
+    "mode": { "enum": ["market", "baserate", "judgment"] },
+    "question": { "$ref": "#/$defs/question" },
+    "asOf": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["at", "source"],
+      "properties": {
+        "at": { "$ref": "#/$defs/zonedTimestamp" },
+        "source": { "$ref": "#/$defs/citation" }
+      }
+    },
+    "producer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind"],
+      "properties": {
+        "id": { "$ref": "#/$defs/text" },
+        "kind": { "enum": ["agent", "human"] },
+        "model": { "$ref": "#/$defs/text" }
+      }
+    },
+    "market": { "$ref": "#/$defs/market" },
+    "baserate": {
+      "oneOf": [{ "$ref": "#/$defs/proportionBaseRate" }, { "$ref": "#/$defs/timeToEventBaseRate" }]
+    },
+    "judgment": {
+      "oneOf": [{ "$ref": "#/$defs/judgment" }, { "$ref": "#/$defs/abstention" }]
+    },
+    "thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "minCases": { "type": "integer", "minimum": 1 },
+        "maxQuoteStalenessMs": { "type": "number", "minimum": 0 },
+        "maxExchangeSpread": { "type": "number", "minimum": 0 },
+        "minExchangeDepthUsd": { "type": "number", "minimum": 0 },
+        "maxSportsbookOverround": { "type": "number", "minimum": 0 }
+      }
+    },
+    "revision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["previousProbabilityHash", "reason"],
+      "properties": {
+        "previousProbabilityHash": { "$ref": "#/$defs/prefixedHash" },
+        "reason": { "$ref": "#/$defs/text" }
+      }
+    },
+    "profile": { "$ref": "#/$defs/profile" }
+  },
+  "oneOf": [
+    {
+      "properties": { "mode": { "const": "market" } },
+      "required": ["market"],
+      "not": { "anyOf": [{ "required": ["baserate"] }, { "required": ["judgment"] }] }
+    },
+    {
+      "properties": { "mode": { "const": "baserate" } },
+      "required": ["baserate"],
+      "not": { "anyOf": [{ "required": ["market"] }, { "required": ["judgment"] }] }
+    },
+    {
+      "properties": { "mode": { "const": "judgment" } },
+      "required": ["judgment"],
+      "not": { "anyOf": [{ "required": ["market"] }, { "required": ["baserate"] }, { "required": ["thresholds"] }] }
+    }
+  ],
+  "$defs": {
+    "text": { "type": "string", "pattern": "\\S" },
+    "profile": {
+      "description": "uvrn-probability-profile-1 (SPEC §8.1): data-only, tighten-only rule profile. Threshold bounds below are the PROVISIONAL defaults; a looser value fails with invalid_profile. A disallowed mode or unmet requirement fails with profile_violation.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["specVersion", "id", "version"],
+      "properties": {
+        "specVersion": { "const": "uvrn-probability-profile-1" },
+        "id": { "$ref": "#/$defs/text" },
+        "version": { "$ref": "#/$defs/text" },
+        "allowedModes": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "enum": ["market", "baserate", "judgment"] }
+        },
+        "thresholds": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "minCases": { "type": "integer", "minimum": 8 },
+            "maxQuoteStalenessMs": { "type": "number", "minimum": 0, "maximum": 86400000 },
+            "maxExchangeSpread": { "type": "number", "minimum": 0, "maximum": 0.05 },
+            "minExchangeDepthUsd": { "type": "number", "minimum": 1000 },
+            "maxSportsbookOverround": { "type": "number", "minimum": 0, "maximum": 0.5 }
+          }
+        },
+        "require": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "zonedTimestamps": { "type": "boolean" },
+            "judgmentRange": { "type": "boolean" },
+            "citedEvidence": { "type": "boolean" }
+          }
+        }
+      }
+    },
+    "prefixedHash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "probability6": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "At most six decimal places (Math.round(p·1e6)/1e6 === p); enforced by the implementation because JSON Schema multipleOf is float-unsafe."
+    },
+    "calendarDate": {
+      "type": "string",
+      "pattern": "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+      "description": "A calendar date YYYY-MM-DD. This pattern cannot enforce days-in-month or leap years (it admits 2026-02-30); runForecast enforces them (invalid_input, or invalid_question for question.resolveBy), so schema-only validation is insufficient. An impossible date never rolls over."
+    },
+    "zonedTimestamp": {
+      "type": "string",
+      "pattern": "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])T([01]\\d|2[0-3]):[0-5]\\d(:[0-5]\\d(\\.\\d{1,3})?)?(Z|[+-]([01]\\d|2[0-3]):[0-5]\\d)$",
+      "description": "Zoned ISO 8601: hour 00-23, minute and second 00-59, at most 3 fractional-second digits (milliseconds), offset hours 00-23 and minutes 00-59. This pattern cannot enforce days-in-month or leap years; runForecast enforces them (invalid_input, or missing_citation for a citation accessedAt), so schema-only validation is insufficient."
+    },
+    "dateOrZoned": {
+      "type": "string",
+      "pattern": "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])(T([01]\\d|2[0-3]):[0-5]\\d(:[0-5]\\d(\\.\\d{1,3})?)?(Z|[+-]([01]\\d|2[0-3]):[0-5]\\d))?$",
+      "description": "A calendar date or a zoned timestamp, as above (at most 3 fractional-second digits). This pattern cannot enforce days-in-month or leap years; runForecast enforces them (invalid_input), so schema-only validation is insufficient."
+    },
+    "citation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["url", "accessedAt"],
+      "properties": {
+        "url": { "type": "string", "pattern": "^https?://\\S+$" },
+        "accessedAt": { "$ref": "#/$defs/zonedTimestamp" },
+        "label": { "type": "string" }
+      }
+    },
+    "outcomeDeclaration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["specVersion", "entryId", "predictedOutcome", "outcomeMetric", "resolveBy", "declaredAt", "outcomeHash"],
+      "properties": {
+        "specVersion": { "const": "uvrn-outcome-1" },
+        "entryId": { "$ref": "#/$defs/text" },
+        "predictedOutcome": { "$ref": "#/$defs/text" },
+        "outcomeMetric": { "$ref": "#/$defs/text" },
+        "resolveBy": { "$ref": "#/$defs/calendarDate" },
+        "declaredAt": { "$ref": "#/$defs/zonedTimestamp" },
+        "outcomeHash": { "$ref": "#/$defs/prefixedHash" }
+      }
+    },
+    "question": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text", "resolveBy", "resolutionRule", "kind", "outcomes", "partitionConfirmed"],
+      "properties": {
+        "text": { "$ref": "#/$defs/text" },
+        "resolveBy": { "$ref": "#/$defs/calendarDate" },
+        "resolutionRule": { "$ref": "#/$defs/text" },
+        "kind": { "enum": ["binary", "categorical"] },
+        "partitionConfirmed": { "const": true },
+        "outcomes": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "label", "definition"],
+            "properties": {
+              "id": { "$ref": "#/$defs/text" },
+              "label": { "$ref": "#/$defs/text" },
+              "definition": { "$ref": "#/$defs/text" },
+              "outcomeDeclaration": { "$ref": "#/$defs/outcomeDeclaration" }
+            }
+          }
+        }
+      },
+      "if": { "properties": { "kind": { "const": "binary" } } },
+      "then": {
+        "properties": {
+          "outcomes": {
+            "maxItems": 2,
+            "prefixItems": [
+              { "properties": { "id": { "const": "yes" } } },
+              { "properties": { "id": { "const": "no" } } }
+            ]
+          }
+        }
+      }
+    },
+    "odds": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["format", "value"],
+          "properties": { "format": { "enum": ["american", "decimal"] }, "value": { "type": "number" } }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["format", "numerator", "denominator"],
+          "properties": {
+            "format": { "const": "fractional" },
+            "numerator": { "type": "number" },
+            "denominator": { "type": "number" }
+          }
+        }
+      ]
+    },
+    "sportsbookOutcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "odds", "quotedAt", "source"],
+      "properties": {
+        "label": { "$ref": "#/$defs/text" },
+        "odds": { "$ref": "#/$defs/odds" },
+        "quotedAt": { "$ref": "#/$defs/zonedTimestamp" },
+        "source": { "$ref": "#/$defs/citation" }
+      }
+    },
+    "exchangeOutcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "bid", "ask", "depthUsd", "quotedAt", "source"],
+      "properties": {
+        "label": { "$ref": "#/$defs/text" },
+        "bid": { "type": "number" },
+        "ask": { "type": "number" },
+        "depthUsd": { "type": "number" },
+        "quotedAt": { "$ref": "#/$defs/zonedTimestamp" },
+        "source": { "$ref": "#/$defs/citation" }
+      }
+    },
+    "market": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "venue", "domain", "resolvesAt", "targetOutcome", "outcomes", "source"],
+      "properties": {
+        "kind": { "enum": ["sportsbook", "exchange"] },
+        "venue": { "$ref": "#/$defs/text" },
+        "domain": { "$ref": "#/$defs/text" },
+        "resolvesAt": {
+          "$ref": "#/$defs/dateOrZoned",
+          "description": "The market's underlying EVENT CUTOFF (not settlement). Must fall on the same UTC date as question.resolveBy or the forecast refuses with deadline_mismatch."
+        },
+        "settlesAt": {
+          "$ref": "#/$defs/dateOrZoned",
+          "description": "Optional administrative settlement time. Recorded only; never matched."
+        },
+        "targetOutcome": { "$ref": "#/$defs/text" },
+        "source": { "$ref": "#/$defs/citation" },
+        "outcomes": { "type": "array", "minItems": 1 }
+      },
+      "if": { "properties": { "kind": { "const": "sportsbook" } } },
+      "then": {
+        "properties": { "outcomes": { "minItems": 2, "items": { "$ref": "#/$defs/sportsbookOutcome" } } }
+      },
+      "else": { "properties": { "outcomes": { "items": { "$ref": "#/$defs/exchangeOutcome" } } } }
+    },
+    "referenceClass": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "description", "criteria", "source"],
+      "properties": {
+        "id": { "$ref": "#/$defs/text" },
+        "description": { "type": "string" },
+        "source": { "$ref": "#/$defs/citation" },
+        "criteria": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "text", "source"],
+            "properties": {
+              "id": { "$ref": "#/$defs/text" },
+              "text": { "$ref": "#/$defs/text" },
+              "source": { "$ref": "#/$defs/citation" }
+            }
+          }
+        }
+      }
+    },
+    "meetsCriteria": { "type": "array", "items": { "$ref": "#/$defs/text" } },
+    "proportionBaseRate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "referenceClass", "cases"],
+      "properties": {
+        "mode": { "const": "proportion" },
+        "referenceClass": { "$ref": "#/$defs/referenceClass" },
+        "cases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "source", "meetsCriteria", "outcome", "resolvedAt"],
+            "properties": {
+              "id": { "$ref": "#/$defs/text" },
+              "source": { "$ref": "#/$defs/citation" },
+              "meetsCriteria": { "$ref": "#/$defs/meetsCriteria" },
+              "outcome": { "enum": ["yes", "no"] },
+              "resolvedAt": { "$ref": "#/$defs/dateOrZoned" }
+            }
+          }
+        }
+      }
+    },
+    "timeToEventBaseRate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "referenceClass", "cases", "subject", "horizon", "targetEvent"],
+      "properties": {
+        "mode": { "const": "time-to-event" },
+        "referenceClass": { "$ref": "#/$defs/referenceClass" },
+        "targetEvent": { "const": "approved" },
+        "subject": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["filedAt", "source"],
+          "properties": {
+            "id": { "$ref": "#/$defs/text" },
+            "filedAt": { "$ref": "#/$defs/dateOrZoned" },
+            "source": { "$ref": "#/$defs/citation" }
+          }
+        },
+        "horizon": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["by"],
+          "properties": { "by": { "$ref": "#/$defs/dateOrZoned" } }
+        },
+        "cases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "source", "meetsCriteria", "filedAt", "status", "statusAt"],
+            "properties": {
+              "id": { "$ref": "#/$defs/text" },
+              "source": { "$ref": "#/$defs/citation" },
+              "meetsCriteria": { "$ref": "#/$defs/meetsCriteria" },
+              "filedAt": { "$ref": "#/$defs/dateOrZoned" },
+              "status": { "enum": ["approved", "denied", "withdrawn", "pending"] },
+              "statusAt": { "$ref": "#/$defs/dateOrZoned" }
+            }
+          }
+        }
+      }
+    },
+    "judgment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["probabilities", "rationale", "counterarguments", "uncertainty"],
+      "properties": {
+        "probabilities": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["outcomeId", "p"],
+            "properties": {
+              "outcomeId": { "$ref": "#/$defs/text" },
+              "p": { "$ref": "#/$defs/probability6" }
+            }
+          }
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "statement", "source"],
+            "properties": {
+              "id": { "$ref": "#/$defs/text" },
+              "statement": { "$ref": "#/$defs/text" },
+              "source": { "$ref": "#/$defs/citation" }
+            }
+          }
+        },
+        "assumptions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "statement"],
+            "properties": {
+              "id": { "$ref": "#/$defs/text" },
+              "statement": { "$ref": "#/$defs/text" }
+            }
+          }
+        },
+        "rationale": { "$ref": "#/$defs/text" },
+        "counterarguments": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/text" } },
+        "uncertainty": { "$ref": "#/$defs/text" },
+        "range": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["low", "high", "rationale"],
+          "properties": {
+            "low": { "$ref": "#/$defs/probability6" },
+            "high": { "$ref": "#/$defs/probability6" },
+            "rationale": { "$ref": "#/$defs/text" }
+          }
+        }
+      },
+      "anyOf": [
+        { "required": ["evidence"], "properties": { "evidence": { "minItems": 1 } } },
+        { "required": ["assumptions"], "properties": { "assumptions": { "minItems": 1 } } }
+      ]
+    },
+    "abstention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["abstain", "reason"],
+      "properties": {
+        "abstain": { "const": true },
+        "reason": { "$ref": "#/$defs/text" }
+      }
+    }
+  }
+}

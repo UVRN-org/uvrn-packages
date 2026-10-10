@@ -1,0 +1,49 @@
+# @uvrn/protocol
+
+The single-install UVRN production research path. One dependency gives you
+normalization + ranking and the whole claim → measurement → master receipt →
+signed network receipt flow: `@uvrn/core` + `@uvrn/receipt` + `@uvrn/measure` +
+`@uvrn/consensus` + `@uvrn/normalize` + `@uvrn/score` + `@uvrn/algox` +
+`@uvrn/signal`, re-exported.
+
+Install the individual packages instead when you want a smaller surface — everything here is
+also published separately. This package adds no logic of its own.
+
+## The 10-line quickstart: claim → signed MasterReceipt
+
+```ts
+import { runDeltaEngine, buildMasterReceipt, agreeMeasurement, enrichMeasurements,
+         wrapMasterReceipt, signReceipt, verifyReceiptFull, generateReceiptKeyPair } from '@uvrn/protocol';
+
+const claim = 'BTC traded above 100k on 2026-06-09';
+const base = runDeltaEngine({ bundleId: 'demo-1', claim, thresholdPct: 0.05, dataSpecs: [/* your evidence */] });
+const measurements = enrichMeasurements([agreeMeasurement.evaluate({ claim, sources: [/* evidence */] })]);
+const master = buildMasterReceipt({ base, claim, measurements, nodes: [/* source roster */] });
+const keys = generateReceiptKeyPair();
+const signed = signReceipt(wrapMasterReceipt(master, { claim, source: 'my-host', action: 'master.measured' }),
+                           { privateKey: keys.privateKey, publicKeyRef: 'my-pk-2026-v1' });
+verifyReceiptFull(signed, { keys: { 'my-pk-2026-v1': keys.publicKey } }); // → { verified: true, ... }
+```
+
+This exact flow runs in `tests/quickstart.test.ts`.
+
+## Shape
+
+- **Flat exports** — the quickstart names above plus `toHumanView`, `verifyReceipt`,
+  `verifyMasterReceipt`, `VSCORE_WEIGHTS`, `ConsensusEngine`, the four starter measurements,
+  and the common types.
+- **Namespaced exports** — `core`, `receipt`, `measure`, `consensus`, `normalize`, `score`,
+  `algox`, and `signal` for everything else
+  (`import { normalize, algox } from '@uvrn/protocol'; normalize.normalize(...); algox.rankSignals(...)`).
+
+The executed quickstart suite also normalizes research sources and ranks the resulting signals
+through these umbrella namespaces.
+
+## Honest vocabulary
+
+`verifyReceipt`/`verifyMasterReceipt` are integrity checks (checksums). Only
+`verifyReceiptFull` — hash recompute **and** Ed25519 signature — earns the word *verified*.
+
+## License
+
+Apache License 2.0 — see [LICENSE](LICENSE). If you redistribute this package or a work derived from it, include the attribution notices from [NOTICE](NOTICE) (in short: "Built on UVRN"). Versions published before the 5.1 release were MIT-licensed and stay MIT.

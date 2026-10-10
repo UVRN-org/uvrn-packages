@@ -1,0 +1,25 @@
+node_modules/
+dist/
+*.log
+.DS_Store
+.env
+.env.*
+!.env.example
+
+# Local / tooling — do not commit
+.git/
+**/.git
+.claude/
+.codex/
+.codex-staging/
+
+
+# TypeScript incremental build info — do not commit (causes non-reproducible builds)
+**/tsconfig.tsbuildinfo
+
+# Generated validation artifact — host-evidence trend report (machine-local)
+pod-trends-report.html
+
+
+# Local-only (maintainers ops archive — never committed to the public repo)
+admin/

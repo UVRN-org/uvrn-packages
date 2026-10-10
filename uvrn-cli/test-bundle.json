@@ -1,0 +1,25 @@
+{
+  "bundleId": "cli-test-001",
+  "claim": "Test bundle for CLI verification",
+  "thresholdPct": 0.05,
+  "dataSpecs": [
+    {
+      "id": "source-a",
+      "label": "Source A",
+      "sourceKind": "metric",
+      "originDocIds": ["doc-a"],
+      "metrics": [
+        { "key": "value", "value": 100, "unit": "count" }
+      ]
+    },
+    {
+      "id": "source-b",
+      "label": "Source B",
+      "sourceKind": "metric",
+      "originDocIds": ["doc-b"],
+      "metrics": [
+        { "key": "value", "value": 102, "unit": "count" }
+      ]
+    }
+  ]
+}

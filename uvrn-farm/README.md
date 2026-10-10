@@ -1,0 +1,128 @@
+# @uvrn/farm
+
+`@uvrn/farm` is the UVRN protocol's provider-agnostic ingestion layer. It defines the connector contract used by `@uvrn/agent`, gives you a reusable base class for retry and timeout handling, and includes a few reference connectors that demonstrate the pattern without locking you to any specific third-party service.
+
+## Minimal install
+
+```bash
+npm install @uvrn/farm @uvrn/core @uvrn/agent
+```
+
+`@uvrn/core` and `@uvrn/agent` are peer dependencies. No other UVRN package is required to implement your own connector.
+
+## Bring Your Own Provider
+
+`FarmConnector` is the contract. `BaseConnector` is the reusable scaffold. This is the primary use case.
+
+```ts
+import { BaseConnector } from '@uvrn/farm';
+import type { ClaimRegistration, FarmResult } from '@uvrn/farm';
+
+class MyConnector extends BaseConnector {
+  readonly name = 'MyConnector';
+
+  async fetch(claim: ClaimRegistration): Promise<FarmResult> {
+    return {
+      claimId: claim.id,
+      sources: [
+        {
+          url: 'https://example.com/data',
+          title: `${claim.label} evidence`,
+          snippet: 'Your custom provider result goes here.',
+          publishedAt: new Date().toISOString(),
+          credibility: 0.8,
+        },
+      ],
+      fetchedAt: new Date().toISOString(),
+      durationMs: 10,
+    };
+  }
+}
+```
+
+Concrete connectors may also expose a convenience `fetch(claim: string)` overload for standalone use.
+
+## Reference Implementations
+
+These classes are examples, not requirements:
+
+- `CoinGeckoFarm`: public crypto search metadata, no API key required
+- `CoinbaseFarm`: public currency catalog data, no API key required
+- `PerplexityFarm`: research synthesis via Perplexity, API key required
+- `NewsApiFarm`: news article search via NewsAPI, API key required
+
+You can import them from the package root or from `@uvrn/farm/connectors`.
+
+```ts
+import { MultiFarm } from '@uvrn/farm';
+import { CoinGeckoFarm, CoinbaseFarm } from '@uvrn/farm/connectors';
+
+const farm = new MultiFarm([
+  new CoinGeckoFarm(),
+  new CoinbaseFarm(),
+]);
+```
+
+## MultiFarm
+
+`MultiFarm` runs multiple connectors in parallel with `Promise.allSettled()`, merges successful sources, and returns partial results if one connector fails. Set `failFast: true` if you want the first connector error to abort the run.
+
+## Connector Registry
+
+`ConnectorRegistry` stores named connectors and can assemble a `MultiFarm` instance from all registered connectors or a named subset.
+
+## Rate limiting and circuit breaker
+
+Every `BaseConnector` request made through `requestJson()` (or the protected `withGuards()` helper) is guarded by an in-process rate limiter and a circuit breaker. Both are configured per connector instance via `ConnectorConfig`:
+
+| Option | Default | Behavior |
+|---|---|---|
+| `rateLimitPerMinute` | unset (no limit) | Sliding 60-second window. A request that would exceed the limit rejects with `RateLimitError` before any network I/O. |
+| `circuitBreakerThreshold` | `5` | Consecutive request failures before the circuit opens. |
+| `circuitBreakerResetMs` | `30_000` | Time the circuit stays open. After it elapses, one half-open probe is admitted — success closes the circuit, failure reopens it. |
+| `now` | `Date.now` | Injectable clock (epoch ms) so tests can advance time without sleeping. |
+
+While the circuit is open, requests reject fast with `CircuitOpenError`. Both error types extend `FarmConnectorError` and carry a `retryAfterMs` hint.
+
+```ts
+import { CoinGeckoFarm, RateLimitError, CircuitOpenError } from '@uvrn/farm';
+
+const connector = new CoinGeckoFarm({
+  rateLimitPerMinute: 30,
+  circuitBreakerThreshold: 5,
+  circuitBreakerResetMs: 30_000,
+});
+```
+
+**Zero-config note:** connectors constructed without these options behave exactly as before, except that 5 consecutive failures now open the breaker for 30 seconds (previously failures never tripped anything). There is no default rate limit.
+
+Custom connectors that bypass `requestJson()` can opt in by wrapping their own I/O in `this.withGuards(fn)`.
+
+## Public API
+
+- `BaseConnector`
+- `CoinGeckoFarm`
+- `CoinbaseFarm`
+- `PerplexityFarm`
+- `NewsApiFarm`
+- `MultiFarm`
+- `ConnectorRegistry`
+- `registry`
+- `FarmConnector`
+- `FarmResult`
+- `FarmSource`
+- `ClaimRegistration`
+- `ConnectorConfig`
+- `MultiFarmOptions`
+- `FarmConnectorError`
+- `RateLimitError`
+- `CircuitOpenError`
+
+## Dependencies
+
+- Peer dependencies: `@uvrn/core`, `@uvrn/agent`
+- Runtime dependencies: none
+
+## License
+
+Apache License 2.0 — see [LICENSE](LICENSE). If you redistribute this package or a work derived from it, include the attribution notices from [NOTICE](NOTICE) (in short: "Built on UVRN"). Versions published before the 5.1 release were MIT-licensed and stay MIT.

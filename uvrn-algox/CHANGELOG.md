@@ -1,0 +1,59 @@
+# Changelog
+
+## [5.1.0] - 2026-10-10
+
+### Changed
+- Version aligned to the UVRN 5.1 line (5.0.1 → 5.1.0): every public `@uvrn/*` package now ships on 5.1.x, with `@uvrn/probability` on 0.3.x. No API or behaviour changes in this entry.
+
+## [5.0.1] - 2026-10-06
+
+### Fixed
+- Republished from the public repository `UVRN-org/uvrn-packages`: package metadata (repository URL) now points at the public repo.
+
+## Unreleased
+
+### Added
+- **BP-v2.1-LATER-D7:** thin measure→rank bridge — `measurementResultsToCandidates` + `rankMeasurementResults` (maps measurement-result-like rows into existing `rankSignals`; ordering only — not verification / market outcome). Zero new runtime deps.
+- `reportRankStability` — baseline ranking plus survive/reorder report across declared weight variants (ordering stability only; not verification or market outcome). Exports `DEFAULT_RANK_STABILITY_VARIANTS` (N=3 implementer PREP proposal) and related types.
+
+### Changed
+- **License:** MIT → **Apache-2.0** with a NOTICE file ("Built on UVRN" attribution; no rights to the UVRN name). Earlier published versions stay MIT.
+
+## [4.0.0] - 2026-06-10 (unreleased, v4 / fable-refactor-1)
+
+- Version aligned to the v4 generation; internal `@uvrn/*` peer ranges moved to `^4.0.0`.
+  No behavioral changes in this package beyond the generation-wide hardening documented in
+  the root CHANGELOG.
+- **Added `NOTICE` file with Apache-2.0 attribution** for the ranking approach adapted from
+  [`xai-org/x-algorithm`](https://github.com/xai-org/x-algorithm) (X's open-sourced "For You"
+  algorithm); `NOTICE` added to the npm `files` array so it ships in the tarball; README gained
+  an Attribution section. No code changes — documentation/licensing hygiene before the first
+  public 4.0.0 release.
+
+## [3.0.0] - 2026-06-09
+
+### Changed
+- **UVRN Packages v3 — canonical 23-package protocol generation.** All packages aligned to `3.0.0`; internal `@uvrn/*` peer ranges moved to `^3.0.0` so v3 packages resolve only against v3 peers. This release is the canonical source of truth and supersedes prior npm/official versions.
+
+## 2.0.0
+
+- Integrated `@uvrn/algox` into the LIVE UVRN workspace package system.
+- Applied v2 remediation for invalid dates, non-finite numeric fields, partial
+  weight defaults, strongest-wins URL deduplication, hostname source fallback,
+  host prefix normalization, whitespace label validation, and unsafe knob guards.
+- Added focused edge-case coverage for remediation behavior.
+- Updated docs and package metadata for the promoted v2 package.
+
+## 1.0.0-draft.1
+
+First draft of `@uvrn/algox`.
+
+- Typed pipeline engine (`runPipeline`, stage contracts) generalized from the
+  Expanse pipeline and x-algo's candidate-pipeline pattern.
+- Reusable stages: `dropMissing`, `dedupByKey`, `capPerGroup`, `freshnessFilter`,
+  `weightedScorer`, `topK`.
+- `signals` preset: `rankSignals` / `buildSignalStages` with tunable `topK`,
+  `capPerSource`, `maxAgeDays`, `weights`.
+- Dashboard-agnostic: pure data in, ranked data out.
+
+Not yet registered in the monorepo workspace or published to npm.

@@ -1,0 +1,114 @@
+# Changelog
+
+## [5.1.0] - 2026-10-10
+
+### Changed
+- Version aligned to the UVRN 5.1 line (5.0.1 → 5.1.0): every public `@uvrn/*` package now ships on 5.1.x, with `@uvrn/probability` on 0.3.x. No API or behaviour changes in this entry.
+- Peer ranges raised from `^5.0.0` to `^5.1.0`: `@uvrn/core`.
+
+## [5.0.1] - 2026-10-06
+
+### Fixed
+- ESM `import('@uvrn/sdk')` works (`exports` gained a `default` condition).
+- `VERSION` follows package.json (was hard-coded "1.0.2").
+- Docs: `verifyReceipt` is described as an integrity check (hash recompute); `verified` is the legacy field name, not signature verification.
+- Republished from the public repository `UVRN-org/uvrn-packages`: package metadata (repository URL) now points at the public repo.
+
+### Changed
+- **License:** MIT → **Apache-2.0** with a NOTICE file ("Built on UVRN" attribution; no rights to the UVRN name). Earlier published versions stay MIT.
+
+## [4.0.0] - 2026-06-10 (unreleased, v4 / fable-refactor-1)
+
+- Version aligned to the v4 generation; internal `@uvrn/*` peer ranges moved to `^4.0.0`.
+  No behavioral changes in this package beyond the generation-wide hardening documented in
+  the root CHANGELOG.
+
+## [3.0.0] - 2026-06-09
+
+### Changed
+- **UVRN Packages v3 — canonical 23-package protocol generation.** All packages aligned to `3.0.0`; internal `@uvrn/*` peer ranges moved to `^3.0.0` so v3 packages resolve only against v3 peers. This release is the canonical source of truth and supersedes prior npm/official versions.
+
+All notable changes to the Delta Engine SDK will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [1.0.2] - 2026-03-16
+
+### Changed
+- `verifyReceiptHash()` now uses `hashReceipt` from `@uvrn/core` for canonical serialization, ensuring hash verification matches core and canon.
+- `validateBundle()` aligned with `@uvrn/core`: `thresholdPct` must be > 0 (rejects 0), and at least 2 DataSpecs required.
+
+---
+
+## [1.0.0] - 2026-01-15
+
+First public npm release under `@uvrn/sdk` (2026-03-08).
+
+### Added
+- Initial release of Delta Engine SDK
+- `DeltaEngineClient` with three execution modes:
+  - CLI mode for process-based execution
+  - HTTP mode for API-based execution
+  - Local mode for direct execution
+- `BundleBuilder` fluent API for bundle construction
+- Comprehensive validation functions:
+  - `validateBundle()` - Bundle structure validation
+  - `validateReceipt()` - Receipt structure validation
+  - `verifyReceiptHash()` - Hash integrity verification
+  - `replayReceipt()` - Determinism verification (stub)
+- Custom error classes:
+  - `DeltaEngineError` - Base error
+  - `ValidationError` - Validation failures
+  - `ExecutionError` - Execution failures
+  - `NetworkError` - Network/HTTP failures
+  - `ConfigurationError` - Configuration errors
+- Full TypeScript type definitions
+- Comprehensive documentation:
+  - README with quick start
+  - Complete SDK Guide
+  - TypeScript examples
+- ESM and CommonJS support
+
+### Features
+- Automatic retry logic for HTTP mode
+- Configurable timeouts and retry counts
+- Detailed validation error messages
+- Receipt hash verification
+- IDE autocomplete support
+- >90% code coverage (unit tests)
+
+### Dependencies
+- Peer dependency on `@uvrn/core` ^1.0.0
+- Node.js >= 18.0.0
+
+---
+
+## Future Releases
+
+### Planned for 1.1.0
+- Full replay/determinism verification implementation
+- Bundle compression for large data sets
+- Streaming support for large receipts
+- Browser compatibility (if needed)
+- Performance optimizations
+
+### Planned for 1.2.0
+- Advanced retry strategies
+- Circuit breaker pattern for HTTP mode
+- Metrics and telemetry hooks
+- Receipt caching layer
+- Batch execution optimizations
+
+---
+
+## Version Support
+
+| Version | Release Date | Support Status | End of Life |
+|---------|--------------|----------------|-------------|
+| 1.0.2   | 2026-03-16   | ✅ Active      | TBD         |
+| 1.0.0   | 2026-01-15   | ✅ Active      | TBD         |
+
+---
+
+For upgrade guides and migration information, see [SDK_GUIDE.md](./docs/SDK_GUIDE.md).

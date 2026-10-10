@@ -1,0 +1,26 @@
+{
+  "schema": "uvrn-identity-fixture-continuity-1",
+  "reputations": [
+    {
+      "signerAddress": "d6FixturePublicKeyBase64Placeholder________________",
+      "score": 80.2,
+      "receipts": 1,
+      "accuracy": 1,
+      "canonRate": 1,
+      "since": "2026-08-07T00:00:00.000Z",
+      "lastSeen": "2026-08-07T00:00:00.000Z",
+      "level": "new",
+      "attestedReceipts": 1
+    }
+  ],
+  "activities": [
+    {
+      "signerAddress": "d6FixturePublicKeyBase64Placeholder________________",
+      "receiptId": "rec_d6_fixture_001",
+      "vScore": 91,
+      "consensusVScore": 90,
+      "canonized": true,
+      "timestamp": 1754524800000
+    }
+  ]
+}

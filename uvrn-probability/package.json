@@ -1,0 +1,97 @@
+{
+  "name": "@uvrn/probability",
+  "version": "0.3.1",
+  "description": "Deterministic, receipted forecasts: caller-selected market, reference-class base-rate, or attributed-judgment mode over a standalone question definition (uvrn-probability-2 with UTC deadlines; uvrn-probability-3 with fixed-offset local deadlines), plus the legacy uvrn-probability-1 emitter. Refuses rather than guesses.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./odds": {
+      "types": "./dist/odds/index.d.ts",
+      "default": "./dist/odds/index.js"
+    },
+    "./baserate": {
+      "types": "./dist/baserate/index.d.ts",
+      "default": "./dist/baserate/index.js"
+    },
+    "./judgment": {
+      "types": "./dist/judgment/index.d.ts",
+      "default": "./dist/judgment/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "odds": [
+        "dist/odds/index.d.ts"
+      ],
+      "baserate": [
+        "dist/baserate/index.d.ts"
+      ],
+      "judgment": [
+        "dist/judgment/index.d.ts"
+      ]
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "AGENT-GUIDE.md",
+    "LICENSE",
+    "NOTICE",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "clean": "rm -rf dist",
+    "vectors": "tsx scripts/generate-vectors.ts",
+    "vectors:v2": "tsx scripts/generate-vectors-v2.ts",
+    "vectors:v3": "tsx scripts/generate-vectors-v3.ts",
+    "prepublishOnly": "node ../scripts/guard-pnpm-publish.mjs"
+  },
+  "peerDependencies": {
+    "@uvrn/receipt": "^5.1.0"
+  },
+  "devDependencies": {
+    "@uvrn/receipt": "workspace:^",
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "ajv": "^8.12.0",
+    "jest": "^29.5.0",
+    "oddsmith": "^0.3.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "license": "Apache-2.0",
+  "keywords": [
+    "uvrn",
+    "probability",
+    "forecast",
+    "de-vig",
+    "base-rate",
+    "jeffreys",
+    "aalen-johansen",
+    "receipt",
+    "judgment"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UVRN-org/uvrn-packages.git",
+    "directory": "uvrn-probability"
+  },
+  "homepage": "https://github.com/UVRN-org/uvrn-packages/tree/main/uvrn-probability#readme",
+  "bugs": {
+    "url": "https://github.com/UVRN-org/uvrn-packages/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

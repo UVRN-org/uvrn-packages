@@ -1,0 +1,205 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://uvrn.org/spec/schemas/uvrn-probability-input-1.schema.json",
+  "title": "uvrn-probability-input-1",
+  "description": "Input to a uvrn-probability-v1 run (SPEC/uvrn-probability-v1.md §3). Structural only: semantic checks (staleness, criteria gate, minCases) are refusals, not schema errors.",
+  "type": "object",
+  "required": ["specVersion", "outcome", "asOf"],
+  "properties": {
+    "specVersion": { "const": "uvrn-probability-input-1" },
+    "outcome": {
+      "type": "object",
+      "required": ["outcomeHash"],
+      "properties": {
+        "outcomeHash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+      }
+    },
+    "asOf": {
+      "type": "object",
+      "required": ["at", "source"],
+      "properties": {
+        "at": { "$ref": "#/$defs/zonedTimestamp" },
+        "source": { "$ref": "#/$defs/citation" }
+      }
+    },
+    "market": { "$ref": "#/$defs/market" },
+    "baserate": {
+      "oneOf": [{ "$ref": "#/$defs/proportionBaseRate" }, { "$ref": "#/$defs/timeToEventBaseRate" }]
+    },
+    "thresholds": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "minCases": { "type": "number", "minimum": 0 },
+        "maxQuoteStalenessMs": { "type": "number", "minimum": 0 },
+        "maxExchangeSpread": { "type": "number", "minimum": 0 },
+        "minExchangeDepthUsd": { "type": "number", "minimum": 0 },
+        "maxSportsbookOverround": { "type": "number", "minimum": 0 }
+      }
+    }
+  },
+  "$defs": {
+    "zonedTimestamp": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}(:\\d{2}(\\.\\d{1,9})?)?(Z|[+-]\\d{2}:\\d{2})$"
+    },
+    "dateOrZoned": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}(T\\d{2}:\\d{2}(:\\d{2}(\\.\\d{1,9})?)?(Z|[+-]\\d{2}:\\d{2}))?$"
+    },
+    "citation": {
+      "type": "object",
+      "required": ["url", "accessedAt"],
+      "properties": {
+        "url": { "type": "string", "pattern": "^https?://\\S+$" },
+        "accessedAt": { "$ref": "#/$defs/zonedTimestamp" },
+        "label": { "type": "string" }
+      }
+    },
+    "odds": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["format", "value"],
+          "properties": { "format": { "const": "american" }, "value": { "type": "number" } }
+        },
+        {
+          "type": "object",
+          "required": ["format", "value"],
+          "properties": { "format": { "const": "decimal" }, "value": { "type": "number", "exclusiveMinimum": 1 } }
+        },
+        {
+          "type": "object",
+          "required": ["format", "numerator", "denominator"],
+          "properties": {
+            "format": { "const": "fractional" },
+            "numerator": { "type": "number", "exclusiveMinimum": 0 },
+            "denominator": { "type": "number", "exclusiveMinimum": 0 }
+          }
+        }
+      ]
+    },
+    "sportsbookOutcome": {
+      "type": "object",
+      "required": ["label", "odds", "quotedAt", "source"],
+      "properties": {
+        "label": { "type": "string", "minLength": 1 },
+        "odds": { "$ref": "#/$defs/odds" },
+        "quotedAt": { "$ref": "#/$defs/zonedTimestamp" },
+        "source": { "$ref": "#/$defs/citation" }
+      }
+    },
+    "exchangeOutcome": {
+      "type": "object",
+      "required": ["label", "bid", "ask", "depthUsd", "quotedAt", "source"],
+      "properties": {
+        "label": { "type": "string", "minLength": 1 },
+        "bid": { "type": "number", "minimum": 0, "maximum": 1 },
+        "ask": { "type": "number", "minimum": 0, "maximum": 1 },
+        "depthUsd": { "type": "number", "minimum": 0 },
+        "quotedAt": { "$ref": "#/$defs/zonedTimestamp" },
+        "source": { "$ref": "#/$defs/citation" }
+      }
+    },
+    "market": {
+      "type": "object",
+      "required": ["kind", "venue", "domain", "resolvesAt", "targetOutcome", "outcomes", "source"],
+      "properties": {
+        "kind": { "enum": ["sportsbook", "exchange"] },
+        "venue": { "type": "string", "minLength": 1 },
+        "domain": { "type": "string", "minLength": 1 },
+        "resolvesAt": { "$ref": "#/$defs/dateOrZoned" },
+        "targetOutcome": { "type": "string", "minLength": 1 },
+        "source": { "$ref": "#/$defs/citation" },
+        "outcomes": { "type": "array", "minItems": 1 }
+      },
+      "if": { "properties": { "kind": { "const": "sportsbook" } } },
+      "then": {
+        "properties": { "outcomes": { "minItems": 2, "items": { "$ref": "#/$defs/sportsbookOutcome" } } }
+      },
+      "else": { "properties": { "outcomes": { "items": { "$ref": "#/$defs/exchangeOutcome" } } } }
+    },
+    "referenceClass": {
+      "type": "object",
+      "required": ["id", "description", "criteria", "source"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "source": { "$ref": "#/$defs/citation" },
+        "criteria": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": ["id", "text", "source"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "text": { "type": "string", "minLength": 1 },
+              "source": { "$ref": "#/$defs/citation" }
+            }
+          }
+        }
+      }
+    },
+    "proportionBaseRate": {
+      "type": "object",
+      "required": ["mode", "referenceClass", "cases"],
+      "properties": {
+        "mode": { "const": "proportion" },
+        "referenceClass": { "$ref": "#/$defs/referenceClass" },
+        "cases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "source", "meetsCriteria", "outcome", "resolvedAt"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "source": { "$ref": "#/$defs/citation" },
+              "meetsCriteria": { "type": "array", "items": { "type": "string" } },
+              "outcome": { "enum": ["yes", "no"] },
+              "resolvedAt": { "$ref": "#/$defs/dateOrZoned" }
+            }
+          }
+        }
+      }
+    },
+    "timeToEventBaseRate": {
+      "type": "object",
+      "required": ["mode", "referenceClass", "cases", "subject", "horizon", "targetEvent"],
+      "properties": {
+        "mode": { "const": "time-to-event" },
+        "referenceClass": { "$ref": "#/$defs/referenceClass" },
+        "targetEvent": { "const": "approved" },
+        "subject": {
+          "type": "object",
+          "required": ["filedAt", "source"],
+          "properties": {
+            "id": { "type": "string" },
+            "filedAt": { "$ref": "#/$defs/dateOrZoned" },
+            "source": { "$ref": "#/$defs/citation" }
+          }
+        },
+        "horizon": {
+          "type": "object",
+          "required": ["by"],
+          "properties": { "by": { "$ref": "#/$defs/dateOrZoned" } }
+        },
+        "cases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "source", "meetsCriteria", "filedAt", "status", "statusAt"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "source": { "$ref": "#/$defs/citation" },
+              "meetsCriteria": { "type": "array", "items": { "type": "string" } },
+              "filedAt": { "$ref": "#/$defs/dateOrZoned" },
+              "status": { "enum": ["approved", "denied", "withdrawn", "pending"] },
+              "statusAt": { "$ref": "#/$defs/dateOrZoned" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

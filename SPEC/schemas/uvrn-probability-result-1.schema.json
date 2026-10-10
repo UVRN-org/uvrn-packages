@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://uvrn.org/spec/schemas/uvrn-probability-result-1.schema.json",
+  "title": "uvrn-probability-1 result",
+  "description": "Output of a uvrn-probability-v1 run (SPEC/uvrn-probability-v1.md §5). Probability is never a V-Score and shares no field with one.",
+  "type": "object",
+  "required": [
+    "specVersion",
+    "origin",
+    "outcomeHash",
+    "asOf",
+    "method",
+    "p",
+    "low",
+    "high",
+    "inputs",
+    "refusals",
+    "probabilityHash",
+    "source",
+    "receipt"
+  ],
+  "properties": {
+    "specVersion": { "const": "uvrn-probability-1" },
+    "origin": { "type": "string", "pattern": "^model:@uvrn/probability@\\d+\\.\\d+\\.\\d+" },
+    "outcomeHash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "asOf": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z$" },
+    "method": { "enum": ["market", "baserate", "insufficient_basis"] },
+    "p": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+    "low": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+    "high": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+    "inputs": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["role"],
+        "properties": {
+          "role": { "enum": ["asOf", "thresholds", "market", "baserate"] },
+          "status": { "enum": ["selected", "not-selected", "refused"] }
+        }
+      }
+    },
+    "refusals": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["code", "scope", "message"],
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "enum": [
+              "invalid_input",
+              "missing_citation",
+              "no_candidate",
+              "market_invalid_odds",
+              "market_target_not_found",
+              "market_quote_after_asof",
+              "market_quote_stale",
+              "market_resolves_before_asof",
+              "market_overround_out_of_range",
+              "market_spread_too_wide",
+              "market_depth_too_thin",
+              "devig_nonconvergence",
+              "baserate_unknown_criterion",
+              "baserate_invalid_case",
+              "baserate_event_after_asof",
+              "baserate_below_min_cases",
+              "baserate_no_risk_set_at_elapsed",
+              "baserate_horizon_not_after_elapsed",
+              "baserate_horizon_beyond_followup",
+              "baserate_nonconvergence"
+            ]
+          },
+          "scope": { "enum": ["input", "market", "baserate"] },
+          "message": { "type": "string" }
+        }
+      }
+    },
+    "probabilityHash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "source": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": ["value", "unit", "quantityKind", "origin", "measuredAt", "obsStatus", "codeLists", "receiptHash"],
+          "properties": {
+            "value": { "type": "number", "minimum": 0, "maximum": 1 },
+            "unit": { "const": "1" },
+            "quantityKind": { "const": "probability" },
+            "origin": { "type": "string" },
+            "measuredAt": { "type": "string" },
+            "obsStatus": { "const": "F" },
+            "codeLists": {
+              "type": "object",
+              "required": ["ucum", "clObsStatus"],
+              "properties": {
+                "ucum": { "const": "ucum-2.1" },
+                "clObsStatus": { "const": "sdmx-2.1/CL_OBS_STATUS" }
+              }
+            },
+            "receiptHash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+          }
+        }
+      ]
+    },
+    "receipt": {
+      "type": "object",
+      "required": ["schemaVersion", "receiptHash", "kind", "claim", "source", "action", "occurredAt", "payload"],
+      "properties": {
+        "schemaVersion": { "const": "uvrn-receipt-4" },
+        "kind": { "const": "probability" },
+        "source": { "const": "@uvrn/probability" },
+        "action": { "const": "probability.run" },
+        "receiptHash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "method": { "const": "insufficient_basis" } } },
+      "then": {
+        "properties": { "p": { "type": "null" }, "low": { "type": "null" }, "high": { "type": "null" }, "source": { "type": "null" }, "refusals": { "minItems": 1 } }
+      },
+      "else": {
+        "properties": { "p": { "type": "number" }, "low": { "type": "number" }, "high": { "type": "number" } }
+      }
+    }
+  ]
+}

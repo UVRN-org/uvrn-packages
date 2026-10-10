@@ -1,0 +1,76 @@
+{
+  "name": "@uvrn/cli",
+  "version": "5.1.1",
+  "description": "UVRN CLI — bundle to receipt, receipt integrity and signature checks, and receipted probability (uvrn prob run)",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "uvrn": "dist/cli.js"
+  },
+  "keywords": [
+    "uvrn",
+    "cli",
+    "verification",
+    "receipt",
+    "probability",
+    "forecast"
+  ],
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/UVRN-org/uvrn-packages.git",
+    "directory": "uvrn-cli"
+  },
+  "homepage": "https://github.com/UVRN-org/uvrn-packages/tree/main/uvrn-cli#readme",
+  "bugs": {
+    "url": "https://github.com/UVRN-org/uvrn-packages/issues"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint src/**/*.ts",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "node ../scripts/guard-pnpm-publish.mjs"
+  },
+  "peerDependencies": {
+    "@uvrn/core": "^5.1.0",
+    "@uvrn/probability": "^0.1.0 || ^0.2.0 || ^0.3.0",
+    "@uvrn/receipt": "^5.1.0"
+  },
+  "peerDependenciesMeta": {
+    "@uvrn/probability": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "commander": "^11.1.0"
+  },
+  "devDependencies": {
+    "@uvrn/core": "workspace:^",
+    "@uvrn/probability": "workspace:^",
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.0.0",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.3.0",
+    "@uvrn/receipt": "workspace:^"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "NOTICE",
+    "CHANGELOG.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

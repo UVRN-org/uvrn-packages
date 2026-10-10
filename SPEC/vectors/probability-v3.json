@@ -1,0 +1,3415 @@
+{
+  "spec": "uvrn-probability-v3 §9 (golden vectors)",
+  "notes": [
+    "Synthetic fixtures (example.org citations, invented questions). Not research; the World Series shape is a date/offset shape, not real odds.",
+    "expected.canonicalResultSha256 = hex SHA-256 of JCS(runForecast(input, options)). Byte identity of the whole output.",
+    "expected.deadline = the hashed inputs.deadline record (SPEC v3 §3.2).",
+    "options.signer.privateKey \"$keys.privateKeySeed\" means: substitute keys.privateKeySeed (the SPEC test key from network-receipt.json).",
+    "validationErrors: requests that MUST throw the typed validation error { code, path } and produce no receipt.",
+    "SPEC/vectors/probability-v1.json and probability-v2.json are unchanged and still conformance-tested.",
+    "Regenerate only deliberately with uvrn-probability/scripts/generate-vectors-v3.ts."
+  ],
+  "keys": {
+    "privateKeySeed": "dXZybi1zcGVjLXZlY3Rvci1zZWVkLTAwMDAwMDAwMDE=",
+    "publicKey": "w3IQVOJs6tNyvvcVJSUT1pPJIorT3V+eFIrCschFyV4=",
+    "publicKeyRef": "uvrn-spec-pk-2026-v1"
+  },
+  "cases": [
+    {
+      "id": "v3-market-offset-match",
+      "description": "Evening-Eastern event cutoff 2026-10-31T23:59:59-04:00 (2026-11-01 in UTC) against deadline 2026-10-31 at -04:00 → accepted (v2 refuses this shape)",
+      "input": {
+        "specVersion": "uvrn-probability-input-3",
+        "forecastId": "fx3-market-offset-match",
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "producer": {
+          "id": "fixture-agent-1",
+          "kind": "agent",
+          "model": "fixture-model"
+        },
+        "mode": "market",
+        "question": {
+          "text": "Will the synthetic Example Home team win the fixture series?",
+          "resolveBy": "2026-10-31",
+          "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+          "kind": "binary",
+          "outcomes": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "definition": "Example Home is listed as series winner by the deadline."
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "definition": "Example Home is not listed as series winner by the deadline."
+            }
+          ],
+          "partitionConfirmed": true,
+          "resolveByOffset": "-04:00"
+        },
+        "market": {
+          "kind": "exchange",
+          "venue": "Example Exchange",
+          "domain": "politics/us",
+          "resolvesAt": "2026-10-31T23:59:59-04:00",
+          "targetOutcome": "Yes",
+          "source": {
+            "url": "https://example.org/exchange/contract-1",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          },
+          "outcomes": [
+            {
+              "label": "Yes",
+              "bid": 0.61,
+              "ask": 0.63,
+              "depthUsd": 5000,
+              "quotedAt": "2026-09-26T10:30:00-07:00",
+              "source": {
+                "url": "https://example.org/exchange/contract-1/book",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "status": "forecast",
+        "basis": "market-implied",
+        "probabilities": [
+          {
+            "outcomeId": "yes",
+            "p": 0.62
+          },
+          {
+            "outcomeId": "no",
+            "p": 0.38
+          }
+        ],
+        "band": {
+          "outcomeId": "yes",
+          "low": 0.61,
+          "high": 0.63,
+          "kind": "bid-ask",
+          "confidence": null
+        },
+        "refusalCodes": [],
+        "deadline": {
+          "resolveBy": "2026-10-31",
+          "offset": "-04:00",
+          "startInstantUtc": "2026-10-31T04:00:00.000Z",
+          "endInstantUtcExclusive": "2026-11-01T04:00:00.000Z"
+        },
+        "questionHash": "sha256:c9e5757e5906f15a10928c672a6dcc04d235b62e85e7c6175795d1db67dd0d2d",
+        "probabilityHash": "sha256:a1bc68d854fb81423d02bc5d59704d0ca48a08dfdac583dfb21b3496483b6219",
+        "receiptHash": "sha256:829df7531d791ecd401449bffdf2008893832169cdb7420f50e048809c0efe9f",
+        "canonicalResultSha256": "20a877c876832c32f5b33ba0c36db815ce9527ef5336c59cce83cb3177ed8638"
+      }
+    },
+    {
+      "id": "v3-market-offset-mismatch",
+      "description": "Event cutoff 2026-11-01T00:00:00-04:00 is the first instant after the local deadline day → deadline_mismatch",
+      "input": {
+        "specVersion": "uvrn-probability-input-3",
+        "forecastId": "fx3-market-offset-mismatch",
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "producer": {
+          "id": "fixture-agent-1",
+          "kind": "agent",
+          "model": "fixture-model"
+        },
+        "mode": "market",
+        "question": {
+          "text": "Will the synthetic Example Home team win the fixture series?",
+          "resolveBy": "2026-10-31",
+          "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+          "kind": "binary",
+          "outcomes": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "definition": "Example Home is listed as series winner by the deadline."
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "definition": "Example Home is not listed as series winner by the deadline."
+            }
+          ],
+          "partitionConfirmed": true,
+          "resolveByOffset": "-04:00"
+        },
+        "market": {
+          "kind": "exchange",
+          "venue": "Example Exchange",
+          "domain": "politics/us",
+          "resolvesAt": "2026-11-01T00:00:00-04:00",
+          "targetOutcome": "Yes",
+          "source": {
+            "url": "https://example.org/exchange/contract-1",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          },
+          "outcomes": [
+            {
+              "label": "Yes",
+              "bid": 0.61,
+              "ask": 0.63,
+              "depthUsd": 5000,
+              "quotedAt": "2026-09-26T10:30:00-07:00",
+              "source": {
+                "url": "https://example.org/exchange/contract-1/book",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "status": "insufficient_basis",
+        "basis": null,
+        "probabilities": null,
+        "band": null,
+        "refusalCodes": [
+          "deadline_mismatch"
+        ],
+        "deadline": {
+          "resolveBy": "2026-10-31",
+          "offset": "-04:00",
+          "startInstantUtc": "2026-10-31T04:00:00.000Z",
+          "endInstantUtcExclusive": "2026-11-01T04:00:00.000Z"
+        },
+        "questionHash": "sha256:c9e5757e5906f15a10928c672a6dcc04d235b62e85e7c6175795d1db67dd0d2d",
+        "probabilityHash": "sha256:b7080dc3f829a814dfca590b46949df63e304840df6c450cc78f40d0fea27069",
+        "receiptHash": "sha256:2ac8e5a3ca09eb901eea9c4712a8fd71599b4c1c5a78170d19c807623294f68c",
+        "canonicalResultSha256": "b6fa1def1b100a3819c36cb0ae881f8dd3c239160f3cbeaecb3ada9f0c466628"
+      }
+    },
+    {
+      "id": "v3-market-mismatch-local-differs",
+      "description": "Event cutoff 2026-10-31T03:00:00Z is before the local day starts at -04:00: local date 2026-10-30, UTC date 2026-10-31 → deadline_mismatch naming the local date",
+      "input": {
+        "specVersion": "uvrn-probability-input-3",
+        "forecastId": "fx3-market-local-differs",
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "producer": {
+          "id": "fixture-agent-1",
+          "kind": "agent",
+          "model": "fixture-model"
+        },
+        "mode": "market",
+        "question": {
+          "text": "Will the synthetic Example Home team win the fixture series?",
+          "resolveBy": "2026-10-31",
+          "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+          "kind": "binary",
+          "outcomes": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "definition": "Example Home is listed as series winner by the deadline."
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "definition": "Example Home is not listed as series winner by the deadline."
+            }
+          ],
+          "partitionConfirmed": true,
+          "resolveByOffset": "-04:00"
+        },
+        "market": {
+          "kind": "exchange",
+          "venue": "Example Exchange",
+          "domain": "politics/us",
+          "resolvesAt": "2026-10-31T03:00:00Z",
+          "targetOutcome": "Yes",
+          "source": {
+            "url": "https://example.org/exchange/contract-1",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          },
+          "outcomes": [
+            {
+              "label": "Yes",
+              "bid": 0.61,
+              "ask": 0.63,
+              "depthUsd": 5000,
+              "quotedAt": "2026-09-26T10:30:00-07:00",
+              "source": {
+                "url": "https://example.org/exchange/contract-1/book",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "status": "insufficient_basis",
+        "basis": null,
+        "probabilities": null,
+        "band": null,
+        "refusalCodes": [
+          "deadline_mismatch"
+        ],
+        "deadline": {
+          "resolveBy": "2026-10-31",
+          "offset": "-04:00",
+          "startInstantUtc": "2026-10-31T04:00:00.000Z",
+          "endInstantUtcExclusive": "2026-11-01T04:00:00.000Z"
+        },
+        "questionHash": "sha256:c9e5757e5906f15a10928c672a6dcc04d235b62e85e7c6175795d1db67dd0d2d",
+        "probabilityHash": "sha256:27207dc7d982df72d1a5cae7bdaa23a3956e6ddd7a4422ac4208adcf37b20190",
+        "receiptHash": "sha256:264453f5f5b1e27a84f515292d042e105f88a67c1a990948ec8b326c38b05ff1",
+        "canonicalResultSha256": "c26d5de50398876c433635f73f5adfa91560a0c6f2790b6bcea4423db22c04d6"
+      }
+    },
+    {
+      "id": "v3-market-date-only-local-end",
+      "description": "Date-only resolvesAt 2026-10-31 at -04:00 is read at local 23:59:59.999 (2026-11-01T03:59:59.999Z) → accepted",
+      "input": {
+        "specVersion": "uvrn-probability-input-3",
+        "forecastId": "fx3-market-date-only",
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "producer": {
+          "id": "fixture-agent-1",
+          "kind": "agent",
+          "model": "fixture-model"
+        },
+        "mode": "market",
+        "question": {
+          "text": "Will the synthetic Example Home team win the fixture series?",
+          "resolveBy": "2026-10-31",
+          "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+          "kind": "binary",
+          "outcomes": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "definition": "Example Home is listed as series winner by the deadline."
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "definition": "Example Home is not listed as series winner by the deadline."
+            }
+          ],
+          "partitionConfirmed": true,
+          "resolveByOffset": "-04:00"
+        },
+        "market": {
+          "kind": "exchange",
+          "venue": "Example Exchange",
+          "domain": "politics/us",
+          "resolvesAt": "2026-10-31",
+          "targetOutcome": "Yes",
+          "source": {
+            "url": "https://example.org/exchange/contract-1",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          },
+          "outcomes": [
+            {
+              "label": "Yes",
+              "bid": 0.61,
+              "ask": 0.63,
+              "depthUsd": 5000,
+              "quotedAt": "2026-09-26T10:30:00-07:00",
+              "source": {
+                "url": "https://example.org/exchange/contract-1/book",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "status": "forecast",
+        "basis": "market-implied",
+        "probabilities": [
+          {
+            "outcomeId": "yes",
+            "p": 0.62
+          },
+          {
+            "outcomeId": "no",
+            "p": 0.38
+          }
+        ],
+        "band": {
+          "outcomeId": "yes",
+          "low": 0.61,
+          "high": 0.63,
+          "kind": "bid-ask",
+          "confidence": null
+        },
+        "refusalCodes": [],
+        "deadline": {
+          "resolveBy": "2026-10-31",
+          "offset": "-04:00",
+          "startInstantUtc": "2026-10-31T04:00:00.000Z",
+          "endInstantUtcExclusive": "2026-11-01T04:00:00.000Z"
+        },
+        "questionHash": "sha256:c9e5757e5906f15a10928c672a6dcc04d235b62e85e7c6175795d1db67dd0d2d",
+        "probabilityHash": "sha256:9f6ee0f11cddc72aa8a737b0e0cf50209605365791374cf9b5ea55731423b1e1",
+        "receiptHash": "sha256:18ee202897176b5f1cb901b95b712eab19e175de1e36b6a5e72b2d840bceebf9",
+        "canonicalResultSha256": "a4e096b695b6bd39cd83897f6bfd39ad90995d71731e21a3d1f0c2c00cfcd3d5"
+      }
+    },
+    {
+      "id": "v3-market-offset-plus-0530",
+      "description": "Fractional offset +05:30: sportsbook cutoff 2026-10-30T23:00:00+05:30 on deadline 2026-10-30 → accepted",
+      "input": {
+        "specVersion": "uvrn-probability-input-3",
+        "forecastId": "fx3-plus-0530",
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "producer": {
+          "id": "fixture-agent-1",
+          "kind": "agent",
+          "model": "fixture-model"
+        },
+        "mode": "market",
+        "question": {
+          "text": "Will the synthetic Example Home team win the fixture series?",
+          "resolveBy": "2026-10-30",
+          "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+          "kind": "binary",
+          "outcomes": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "definition": "Example Home is listed as series winner by the deadline."
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "definition": "Example Home is not listed as series winner by the deadline."
+            }
+          ],
+          "partitionConfirmed": true,
+          "resolveByOffset": "+05:30"
+        },
+        "market": {
+          "kind": "sportsbook",
+          "venue": "Example Book",
+          "domain": "sports/baseball",
+          "resolvesAt": "2026-10-30T23:00:00+05:30",
+          "targetOutcome": "Home",
+          "source": {
+            "url": "https://example.org/book/market-1",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          },
+          "outcomes": [
+            {
+              "label": "Home",
+              "odds": {
+                "format": "american",
+                "value": -150
+              },
+              "quotedAt": "2026-09-26T10:30:00-07:00",
+              "source": {
+                "url": "https://example.org/book/market-1/home",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            },
+            {
+              "label": "Away",
+              "odds": {
+                "format": "american",
+                "value": 130
+              },
+              "quotedAt": "2026-09-26T10:30:00-07:00",
+              "source": {
+                "url": "https://example.org/book/market-1/away",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "status": "forecast",
+        "basis": "market-implied",
+        "probabilities": [
+          {
+            "outcomeId": "yes",
+            "p": 0.583983
+          },
+          {
+            "outcomeId": "no",
+            "p": 0.416017
+          }
+        ],
+        "band": {
+          "outcomeId": "yes",
+          "low": 0.579832,
+          "high": 0.583983,
+          "kind": "method-spread",
+          "confidence": null
+        },
+        "refusalCodes": [],
+        "deadline": {
+          "resolveBy": "2026-10-30",
+          "offset": "+05:30",
+          "startInstantUtc": "2026-10-29T18:30:00.000Z",
+          "endInstantUtcExclusive": "2026-10-30T18:30:00.000Z"
+        },
+        "questionHash": "sha256:e2b0bb5ddef861a2bf4fcb000a4593bf45dca1f84269aeb8c360cc06450fb441",
+        "probabilityHash": "sha256:c4619db0f78a6b76475bf937b7b3472f862c518304d35a2788eb2bb6dac52cdd",
+        "receiptHash": "sha256:b73ef206bb8c6cf7e99f21156a33249f981459627e73743bd3cd69bef70ef7f4",
+        "canonicalResultSha256": "b38d67d724d04707c36d72b96086ae157012bcdd89eab1671210e309edd09561"
+      }
+    },
+    {
+      "id": "v3-market-offset-plus-0545",
+      "description": "Fractional offset +05:45 with a date-only cutoff read at local end of day → accepted",
+      "input": {
+        "specVersion": "uvrn-probability-input-3",
+        "forecastId": "fx3-plus-0545",
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "producer": {
+          "id": "fixture-agent-1",
+          "kind": "agent",
+          "model": "fixture-model"
+        },
+        "mode": "market",
+        "question": {
+          "text": "Will the synthetic Example Home team win the fixture series?",
+          "resolveBy": "2026-10-30",
+          "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+          "kind": "binary",
+          "outcomes": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "definition": "Example Home is listed as series winner by the deadline."
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "definition": "Example Home is not listed as series winner by the deadline."
+            }
+          ],
+          "partitionConfirmed": true,
+          "resolveByOffset": "+05:45"
+        },
+        "market": {
+          "kind": "sportsbook",
+          "venue": "Example Book",
+          "domain": "sports/baseball",
+          "resolvesAt": "2026-10-30",
+          "targetOutcome": "Home",
+          "source": {
+            "url": "https://example.org/book/market-1",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          },
+          "outcomes": [
+            {
+              "label": "Home",
+              "odds": {
+                "format": "american",
+                "value": -150
+              },
+              "quotedAt": "2026-09-26T10:30:00-07:00",
+              "source": {
+                "url": "https://example.org/book/market-1/home",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            },
+            {
+              "label": "Away",
+              "odds": {
+                "format": "american",
+                "value": 130
+              },
+              "quotedAt": "2026-09-26T10:30:00-07:00",
+              "source": {
+                "url": "https://example.org/book/market-1/away",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "status": "forecast",
+        "basis": "market-implied",
+        "probabilities": [
+          {
+            "outcomeId": "yes",
+            "p": 0.583983
+          },
+          {
+            "outcomeId": "no",
+            "p": 0.416017
+          }
+        ],
+        "band": {
+          "outcomeId": "yes",
+          "low": 0.579832,
+          "high": 0.583983,
+          "kind": "method-spread",
+          "confidence": null
+        },
+        "refusalCodes": [],
+        "deadline": {
+          "resolveBy": "2026-10-30",
+          "offset": "+05:45",
+          "startInstantUtc": "2026-10-29T18:15:00.000Z",
+          "endInstantUtcExclusive": "2026-10-30T18:15:00.000Z"
+        },
+        "questionHash": "sha256:98450f9f226e94e8315e3df393fe7aa2342f09acba59916d5ac23645d6c0bf75",
+        "probabilityHash": "sha256:9304cd80c83d7add59902fcd000b605ab133d5cc44c7876b31fca17bcdc6a36f",
+        "receiptHash": "sha256:cca88c929627d3be1e746fb287e7e598f04e15f3d642373418530a4dc4847e96",
+        "canonicalResultSha256": "2e117146ce2a204360491280e495d09c04e631b2d8cebbb0df37d4ff359f55a8"
+      }
+    },
+    {
+      "id": "v3-market-utc-offset",
+      "description": "Explicit +00:00: same probability as the v2 v2-market-sportsbook case, but a new identity (question-2) and hash",
+      "input": {
+        "specVersion": "uvrn-probability-input-3",
+        "forecastId": "fx-market-sportsbook",
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "producer": {
+          "id": "fixture-agent-1",
+          "kind": "agent",
+          "model": "fixture-model"
+        },
+        "mode": "market",
+        "question": {
+          "text": "Will the synthetic Example Home team win the fixture series?",
+          "resolveBy": "2026-10-30",
+          "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+          "kind": "binary",
+          "outcomes": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "definition": "Example Home is listed as series winner by the deadline."
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "definition": "Example Home is not listed as series winner by the deadline."
+            }
+          ],
+          "partitionConfirmed": true,
+          "resolveByOffset": "+00:00"
+        },
+        "market": {
+          "kind": "sportsbook",
+          "venue": "Example Book",
+          "domain": "sports/baseball",
+          "resolvesAt": "2026-10-30",
+          "targetOutcome": "Home",
+          "source": {
+            "url": "https://example.org/book/market-1",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          },
+          "outcomes": [
+            {
+              "label": "Home",
+              "odds": {
+                "format": "american",
+                "value": -150
+              },
+              "quotedAt": "2026-09-26T10:30:00-07:00",
+              "source": {
+                "url": "https://example.org/book/market-1/home",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            },
+            {
+              "label": "Away",
+              "odds": {
+                "format": "american",
+                "value": 130
+              },
+              "quotedAt": "2026-09-26T10:30:00-07:00",
+              "source": {
+                "url": "https://example.org/book/market-1/away",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            }
+          ]
+        }
+      },
+      "expected": {
+        "status": "forecast",
+        "basis": "market-implied",
+        "probabilities": [
+          {
+            "outcomeId": "yes",
+            "p": 0.583983
+          },
+          {
+            "outcomeId": "no",
+            "p": 0.416017
+          }
+        ],
+        "band": {
+          "outcomeId": "yes",
+          "low": 0.579832,
+          "high": 0.583983,
+          "kind": "method-spread",
+          "confidence": null
+        },
+        "refusalCodes": [],
+        "deadline": {
+          "resolveBy": "2026-10-30",
+          "offset": "+00:00",
+          "startInstantUtc": "2026-10-30T00:00:00.000Z",
+          "endInstantUtcExclusive": "2026-10-31T00:00:00.000Z"
+        },
+        "questionHash": "sha256:5716f1d9cb0b08e770b1cbe6b01167ab2cb83ca2860fa612ce36858500cc0b40",
+        "probabilityHash": "sha256:ededad61f331a48ae290844b2ea266740eab33f5a29470fc3614900c0ed555b8",
+        "receiptHash": "sha256:1c2c109d80a7350b9cfd55afaf0b67ce4cf5e4f89778aec90e14d3f7878879a6",
+        "canonicalResultSha256": "10c0d85a2bb12cfd64bd79d416599dd50acc99383cfe5c223baf7fe19ecde851"
+      }
+    },
+    {
+      "id": "v3-judgment-offset-minus-1200",
+      "description": "Judgment at the westernmost accepted offset -12:00",
+      "input": {
+        "specVersion": "uvrn-probability-input-3",
+        "forecastId": "fx3-judgment-minus-1200",
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "producer": {
+          "id": "fixture-agent-1",
+          "kind": "agent",
+          "model": "fixture-model"
+        },
+        "mode": "judgment",
+        "question": {
+          "text": "Will the synthetic Example Home team win the fixture series?",
+          "resolveBy": "2026-10-30",
+          "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+          "kind": "binary",
+          "outcomes": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "definition": "Example Home is listed as series winner by the deadline."
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "definition": "Example Home is not listed as series winner by the deadline."
+            }
+          ],
+          "partitionConfirmed": true,
+          "resolveByOffset": "-12:00"
+        },
+        "judgment": {
+          "probabilities": [
+            {
+              "outcomeId": "yes",
+              "p": 0.71
+            },
+            {
+              "outcomeId": "no",
+              "p": 0.29
+            }
+          ],
+          "evidence": [
+            {
+              "id": "e1",
+              "statement": "Fixture standings page shows Example Home leading.",
+              "source": {
+                "url": "https://example.org/standings",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            }
+          ],
+          "rationale": "Fixture lead and schedule favor Example Home.",
+          "counterarguments": [
+            "Injuries could reverse the lead.",
+            "Small samples mislead."
+          ],
+          "uncertainty": "Roster news after asOf is unknown; a lineup change would move this materially.",
+          "range": {
+            "low": 0.6,
+            "high": 0.8,
+            "rationale": "Plausible spread of reasonable fixture readings."
+          }
+        }
+      },
+      "expected": {
+        "status": "forecast",
+        "basis": "agent-judgment",
+        "probabilities": [
+          {
+            "outcomeId": "yes",
+            "p": 0.71
+          },
+          {
+            "outcomeId": "no",
+            "p": 0.29
+          }
+        ],
+        "band": {
+          "outcomeId": "yes",
+          "low": 0.6,
+          "high": 0.8,
+          "kind": "subjective",
+          "confidence": null
+        },
+        "refusalCodes": [],
+        "deadline": {
+          "resolveBy": "2026-10-30",
+          "offset": "-12:00",
+          "startInstantUtc": "2026-10-30T12:00:00.000Z",
+          "endInstantUtcExclusive": "2026-10-31T12:00:00.000Z"
+        },
+        "questionHash": "sha256:18af2bfc9a87af03296dcfdf2617e3fd89a0eb1fe30326cd54798947d820bdb8",
+        "probabilityHash": "sha256:6cdca9e6a6d5a747b33dabd3df04db9a150f0580ddcbde892649837aefff4569",
+        "receiptHash": "sha256:a8dafaeff8a8cd0ae5592bedfd269752b2e734aafab690653b51e82335f1862e",
+        "canonicalResultSha256": "ad64ce95e7ac956c30ea7aa2897d6f78a608355db7cd417fc67e19dd59b164c5"
+      }
+    },
+    {
+      "id": "v3-judgment-offset-plus-1400",
+      "description": "Judgment at the easternmost accepted offset +14:00",
+      "input": {
+        "specVersion": "uvrn-probability-input-3",
+        "forecastId": "fx3-judgment-plus-1400",
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "producer": {
+          "id": "fixture-agent-1",
+          "kind": "agent",
+          "model": "fixture-model"
+        },
+        "mode": "judgment",
+        "question": {
+          "text": "Will the synthetic Example Home team win the fixture series?",
+          "resolveBy": "2026-10-30",
+          "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+          "kind": "binary",
+          "outcomes": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "definition": "Example Home is listed as series winner by the deadline."
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "definition": "Example Home is not listed as series winner by the deadline."
+            }
+          ],
+          "partitionConfirmed": true,
+          "resolveByOffset": "+14:00"
+        },
+        "judgment": {
+          "probabilities": [
+            {
+              "outcomeId": "yes",
+              "p": 0.71
+            },
+            {
+              "outcomeId": "no",
+              "p": 0.29
+            }
+          ],
+          "evidence": [
+            {
+              "id": "e1",
+              "statement": "Fixture standings page shows Example Home leading.",
+              "source": {
+                "url": "https://example.org/standings",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            }
+          ],
+          "rationale": "Fixture lead and schedule favor Example Home.",
+          "counterarguments": [
+            "Injuries could reverse the lead.",
+            "Small samples mislead."
+          ],
+          "uncertainty": "Roster news after asOf is unknown; a lineup change would move this materially.",
+          "range": {
+            "low": 0.6,
+            "high": 0.8,
+            "rationale": "Plausible spread of reasonable fixture readings."
+          }
+        }
+      },
+      "expected": {
+        "status": "forecast",
+        "basis": "agent-judgment",
+        "probabilities": [
+          {
+            "outcomeId": "yes",
+            "p": 0.71
+          },
+          {
+            "outcomeId": "no",
+            "p": 0.29
+          }
+        ],
+        "band": {
+          "outcomeId": "yes",
+          "low": 0.6,
+          "high": 0.8,
+          "kind": "subjective",
+          "confidence": null
+        },
+        "refusalCodes": [],
+        "deadline": {
+          "resolveBy": "2026-10-30",
+          "offset": "+14:00",
+          "startInstantUtc": "2026-10-29T10:00:00.000Z",
+          "endInstantUtcExclusive": "2026-10-30T10:00:00.000Z"
+        },
+        "questionHash": "sha256:15ec2fc5a8eeef07e11707c1ce60e0d97486a8fc039daad03cf4d5971d8ce3f5",
+        "probabilityHash": "sha256:05f3556575f272d49d153c14adafbb76c0e2fb0766b94af3109c0981cb9f32f4",
+        "receiptHash": "sha256:aa373562228b256a54811d3dc0f787e8f9a2f43e43f3ed8e3578b103edb59244",
+        "canonicalResultSha256": "707c3c6cf22edb9cc6f1ea82b74c163c9ea13852d5f82095d5b7ab967daed448"
+      }
+    },
+    {
+      "id": "v3-judgment-categorical",
+      "description": "Categorical judgment with a local deadline (-05:00)",
+      "input": {
+        "specVersion": "uvrn-probability-input-3",
+        "forecastId": "fx3-judgment-categorical",
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "producer": {
+          "id": "fixture-agent-1",
+          "kind": "agent",
+          "model": "fixture-model"
+        },
+        "mode": "judgment",
+        "question": {
+          "text": "What is the status of the synthetic Example Line permit application at the deadline?",
+          "resolveBy": "2027-06-30",
+          "resolutionRule": "Status on the example.org commission docket page at 23:59:59Z on the deadline.",
+          "kind": "categorical",
+          "outcomes": [
+            {
+              "id": "approved",
+              "label": "Approved",
+              "definition": "The commission has issued an approval order."
+            },
+            {
+              "id": "denied-or-withdrawn",
+              "label": "Denied or withdrawn",
+              "definition": "The commission denied the application or the applicant withdrew it."
+            },
+            {
+              "id": "pending",
+              "label": "Still pending",
+              "definition": "No approval, denial, or withdrawal has been recorded."
+            }
+          ],
+          "partitionConfirmed": true,
+          "resolveByOffset": "-05:00"
+        },
+        "judgment": {
+          "probabilities": [
+            {
+              "outcomeId": "pending",
+              "p": 0.1
+            },
+            {
+              "outcomeId": "approved",
+              "p": 0.6
+            },
+            {
+              "outcomeId": "denied-or-withdrawn",
+              "p": 0.3
+            }
+          ],
+          "evidence": [
+            {
+              "id": "docket",
+              "statement": "Fixture docket shows hearings concluded.",
+              "source": {
+                "url": "https://example.org/docket",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            }
+          ],
+          "assumptions": [
+            {
+              "id": "a1",
+              "statement": "Assume no new intervenors join before the deadline."
+            }
+          ],
+          "rationale": "Hearings concluded; comparable fixture dockets usually close with approval.",
+          "counterarguments": [
+            "Staff recommended conditions that could trigger withdrawal."
+          ],
+          "uncertainty": "Commission calendar after asOf is unknown."
+        }
+      },
+      "expected": {
+        "status": "forecast",
+        "basis": "agent-judgment",
+        "probabilities": [
+          {
+            "outcomeId": "approved",
+            "p": 0.6
+          },
+          {
+            "outcomeId": "denied-or-withdrawn",
+            "p": 0.3
+          },
+          {
+            "outcomeId": "pending",
+            "p": 0.1
+          }
+        ],
+        "band": null,
+        "refusalCodes": [],
+        "deadline": {
+          "resolveBy": "2027-06-30",
+          "offset": "-05:00",
+          "startInstantUtc": "2027-06-30T05:00:00.000Z",
+          "endInstantUtcExclusive": "2027-07-01T05:00:00.000Z"
+        },
+        "questionHash": "sha256:724f77a74908a7a829b74708cd183b5d3798c2c3d6676879d9dcbafbe0b42616",
+        "probabilityHash": "sha256:7ce020096da7eaff86e495f2e9a4c3f365d8dfdae33e0830c30929a54f46cb1e",
+        "receiptHash": "sha256:2d3b3479d3126f31835f3a6fee92281a6cb3af520371785f006642381d1ead93",
+        "canonicalResultSha256": "0dd5df67d52ddf021c69d560a448eabd0cbf3d5feaed3ae18af237e65239a748"
+      }
+    },
+    {
+      "id": "v3-judgment-abstain",
+      "description": "Abstention with a local deadline: insufficient_basis, still receipted with inputs.deadline",
+      "input": {
+        "specVersion": "uvrn-probability-input-3",
+        "forecastId": "fx3-judgment-abstain",
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "producer": {
+          "id": "fixture-agent-1",
+          "kind": "agent",
+          "model": "fixture-model"
+        },
+        "mode": "judgment",
+        "question": {
+          "text": "Will the synthetic Example Home team win the fixture series?",
+          "resolveBy": "2026-10-30",
+          "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+          "kind": "binary",
+          "outcomes": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "definition": "Example Home is listed as series winner by the deadline."
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "definition": "Example Home is not listed as series winner by the deadline."
+            }
+          ],
+          "partitionConfirmed": true,
+          "resolveByOffset": "+09:00"
+        },
+        "judgment": {
+          "abstain": true,
+          "reason": "Fixture: no basis yet."
+        }
+      },
+      "expected": {
+        "status": "insufficient_basis",
+        "basis": null,
+        "probabilities": null,
+        "band": null,
+        "refusalCodes": [
+          "judgment_abstained"
+        ],
+        "deadline": {
+          "resolveBy": "2026-10-30",
+          "offset": "+09:00",
+          "startInstantUtc": "2026-10-29T15:00:00.000Z",
+          "endInstantUtcExclusive": "2026-10-30T15:00:00.000Z"
+        },
+        "questionHash": "sha256:5ad52ca9fe6a3096e78cc8dfb1263eac7e2233a2c2400da959a4e3d285305635",
+        "probabilityHash": "sha256:8ebe930d8c8af35f377860085be9ee43c026dcb4f883633ecb1d0fd197848837",
+        "receiptHash": "sha256:863d841473b22a4afabbc3a5eeee18c8d261573fbce138e0387cdcae945516c4",
+        "canonicalResultSha256": "3855b128c5559c3854a6f0d44b414437fd9703cbc39695ba2ec11e5b7789bcfa"
+      }
+    },
+    {
+      "id": "v3-baserate-horizon-local-end",
+      "description": "Date-only horizon 2026-09-27 at +05:30 is evaluated at local 23:59:59.999 (2026-09-27T18:29:59.999Z) → matched",
+      "input": {
+        "specVersion": "uvrn-probability-input-3",
+        "forecastId": "fx3-baserate-local-end",
+        "mode": "baserate",
+        "question": {
+          "text": "Will the synthetic Example Home team win the fixture series?",
+          "resolveBy": "2026-09-27",
+          "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+          "kind": "binary",
+          "outcomes": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "definition": "Example Home is listed as series winner by the deadline."
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "definition": "Example Home is not listed as series winner by the deadline."
+            }
+          ],
+          "partitionConfirmed": true,
+          "resolveByOffset": "+05:30"
+        },
+        "asOf": {
+          "at": "2026-09-26T00:00:00Z",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-25T23:00:00Z"
+          }
+        },
+        "producer": {
+          "id": "fixture-agent-1",
+          "kind": "agent",
+          "model": "fixture-model"
+        },
+        "baserate": {
+          "mode": "time-to-event",
+          "referenceClass": {
+            "id": "example-transmission-cpcn",
+            "description": "Synthetic reference class: state-commission CPCN applications for transmission lines",
+            "source": {
+              "url": "https://example.org/reference-class/definition",
+              "accessedAt": "2026-09-26T11:00:00-07:00"
+            },
+            "criteria": [
+              {
+                "id": "commission",
+                "text": "Decided by the state utilities commission",
+                "source": {
+                  "url": "https://example.org/criteria/commission",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              },
+              {
+                "id": "cpcn-transmission",
+                "text": "CPCN application for a transmission line",
+                "source": {
+                  "url": "https://example.org/criteria/cpcn",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              }
+            ]
+          },
+          "cases": [
+            {
+              "id": "deadline-case-1",
+              "source": {
+                "url": "https://example.org/deadline/cases/1",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2025-01-01T00:00:00Z",
+              "status": "approved",
+              "statusAt": "2025-01-01T12:00:00.000Z"
+            },
+            {
+              "id": "deadline-case-2",
+              "source": {
+                "url": "https://example.org/deadline/cases/2",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2025-01-01T00:00:00Z",
+              "status": "approved",
+              "statusAt": "2025-01-01T12:00:00.000Z"
+            },
+            {
+              "id": "deadline-case-3",
+              "source": {
+                "url": "https://example.org/deadline/cases/3",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2025-01-01T00:00:00Z",
+              "status": "approved",
+              "statusAt": "2025-01-02T12:00:00.000Z"
+            },
+            {
+              "id": "deadline-case-4",
+              "source": {
+                "url": "https://example.org/deadline/cases/4",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2025-01-01T00:00:00Z",
+              "status": "approved",
+              "statusAt": "2025-01-02T12:00:00.000Z"
+            },
+            {
+              "id": "deadline-case-5",
+              "source": {
+                "url": "https://example.org/deadline/cases/5",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2025-01-01T00:00:00Z",
+              "status": "denied",
+              "statusAt": "2025-01-02T18:00:00.000Z"
+            },
+            {
+              "id": "deadline-case-6",
+              "source": {
+                "url": "https://example.org/deadline/cases/6",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2025-01-01T00:00:00Z",
+              "status": "denied",
+              "statusAt": "2025-01-02T18:00:00.000Z"
+            },
+            {
+              "id": "deadline-case-7",
+              "source": {
+                "url": "https://example.org/deadline/cases/7",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2025-01-01T00:00:00Z",
+              "status": "pending",
+              "statusAt": "2025-01-04T00:00:00.000Z"
+            },
+            {
+              "id": "deadline-case-8",
+              "source": {
+                "url": "https://example.org/deadline/cases/8",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2025-01-01T00:00:00Z",
+              "status": "pending",
+              "statusAt": "2025-01-04T00:00:00.000Z"
+            }
+          ],
+          "subject": {
+            "id": "deadline-subject",
+            "filedAt": "2026-09-26T00:00:00Z",
+            "source": {
+              "url": "https://example.org/deadline/subject",
+              "accessedAt": "2026-09-26T11:00:00-07:00"
+            }
+          },
+          "horizon": {
+            "by": "2026-09-27"
+          },
+          "targetEvent": "approved"
+        },
+        "thresholds": {
+          "minCases": 8
+        }
+      },
+      "expected": {
+        "status": "forecast",
+        "basis": "reference-class",
+        "probabilities": [
+          {
+            "outcomeId": "yes",
+            "p": 0.5
+          },
+          {
+            "outcomeId": "no",
+            "p": 0.5
+          }
+        ],
+        "band": {
+          "outcomeId": "yes",
+          "low": 0.152036,
+          "high": 0.774865,
+          "kind": "statistical",
+          "confidence": 0.95
+        },
+        "refusalCodes": [],
+        "deadline": {
+          "resolveBy": "2026-09-27",
+          "offset": "+05:30",
+          "startInstantUtc": "2026-09-26T18:30:00.000Z",
+          "endInstantUtcExclusive": "2026-09-27T18:30:00.000Z"
+        },
+        "questionHash": "sha256:c596a2cd10b19d56211c99645582bb79c0c94871125b553d2272e758221b315b",
+        "probabilityHash": "sha256:13968e1936cfda1d0fc81f673ac8f3826853781915bd7d73741e42505f4b5c30",
+        "receiptHash": "sha256:9bc600b386a431473d84a7e56c9060dafc02f89345ed7363ee08ee2eb236d765",
+        "canonicalResultSha256": "08768f0fa011382151345fae67760fe8036ac3a262b8cdb8f8fa65799310903e"
+      }
+    },
+    {
+      "id": "v3-baserate-mismatch-local-differs",
+      "description": "Horizon 2026-09-27T02:00:00Z at -04:00 is local 2026-09-26 but UTC 2026-09-27, before the local deadline day → deadline_mismatch naming the local date",
+      "input": {
+        "specVersion": "uvrn-probability-input-3",
+        "forecastId": "fx3-baserate-local-differs",
+        "mode": "baserate",
+        "question": {
+          "text": "Will the synthetic Example Home team win the fixture series?",
+          "resolveBy": "2026-09-27",
+          "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+          "kind": "binary",
+          "outcomes": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "definition": "Example Home is listed as series winner by the deadline."
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "definition": "Example Home is not listed as series winner by the deadline."
+            }
+          ],
+          "partitionConfirmed": true,
+          "resolveByOffset": "-04:00"
+        },
+        "asOf": {
+          "at": "2026-09-26T00:00:00Z",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-25T23:00:00Z"
+          }
+        },
+        "producer": {
+          "id": "fixture-agent-1",
+          "kind": "agent",
+          "model": "fixture-model"
+        },
+        "baserate": {
+          "mode": "time-to-event",
+          "referenceClass": {
+            "id": "example-transmission-cpcn",
+            "description": "Synthetic reference class: state-commission CPCN applications for transmission lines",
+            "source": {
+              "url": "https://example.org/reference-class/definition",
+              "accessedAt": "2026-09-26T11:00:00-07:00"
+            },
+            "criteria": [
+              {
+                "id": "commission",
+                "text": "Decided by the state utilities commission",
+                "source": {
+                  "url": "https://example.org/criteria/commission",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              },
+              {
+                "id": "cpcn-transmission",
+                "text": "CPCN application for a transmission line",
+                "source": {
+                  "url": "https://example.org/criteria/cpcn",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              }
+            ]
+          },
+          "cases": [
+            {
+              "id": "deadline-case-1",
+              "source": {
+                "url": "https://example.org/deadline/cases/1",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2025-01-01T00:00:00Z",
+              "status": "approved",
+              "statusAt": "2025-01-01T12:00:00.000Z"
+            },
+            {
+              "id": "deadline-case-2",
+              "source": {
+                "url": "https://example.org/deadline/cases/2",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2025-01-01T00:00:00Z",
+              "status": "approved",
+              "statusAt": "2025-01-01T12:00:00.000Z"
+            },
+            {
+              "id": "deadline-case-3",
+              "source": {
+                "url": "https://example.org/deadline/cases/3",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2025-01-01T00:00:00Z",
+              "status": "approved",
+              "statusAt": "2025-01-02T12:00:00.000Z"
+            },
+            {
+              "id": "deadline-case-4",
+              "source": {
+                "url": "https://example.org/deadline/cases/4",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2025-01-01T00:00:00Z",
+              "status": "approved",
+              "statusAt": "2025-01-02T12:00:00.000Z"
+            },
+            {
+              "id": "deadline-case-5",
+              "source": {
+                "url": "https://example.org/deadline/cases/5",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2025-01-01T00:00:00Z",
+              "status": "denied",
+              "statusAt": "2025-01-02T18:00:00.000Z"
+            },
+            {
+              "id": "deadline-case-6",
+              "source": {
+                "url": "https://example.org/deadline/cases/6",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2025-01-01T00:00:00Z",
+              "status": "denied",
+              "statusAt": "2025-01-02T18:00:00.000Z"
+            },
+            {
+              "id": "deadline-case-7",
+              "source": {
+                "url": "https://example.org/deadline/cases/7",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2025-01-01T00:00:00Z",
+              "status": "pending",
+              "statusAt": "2025-01-04T00:00:00.000Z"
+            },
+            {
+              "id": "deadline-case-8",
+              "source": {
+                "url": "https://example.org/deadline/cases/8",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2025-01-01T00:00:00Z",
+              "status": "pending",
+              "statusAt": "2025-01-04T00:00:00.000Z"
+            }
+          ],
+          "subject": {
+            "id": "deadline-subject",
+            "filedAt": "2026-09-26T00:00:00Z",
+            "source": {
+              "url": "https://example.org/deadline/subject",
+              "accessedAt": "2026-09-26T11:00:00-07:00"
+            }
+          },
+          "horizon": {
+            "by": "2026-09-27T02:00:00Z"
+          },
+          "targetEvent": "approved"
+        },
+        "thresholds": {
+          "minCases": 8
+        }
+      },
+      "expected": {
+        "status": "insufficient_basis",
+        "basis": null,
+        "probabilities": null,
+        "band": null,
+        "refusalCodes": [
+          "deadline_mismatch"
+        ],
+        "deadline": {
+          "resolveBy": "2026-09-27",
+          "offset": "-04:00",
+          "startInstantUtc": "2026-09-27T04:00:00.000Z",
+          "endInstantUtcExclusive": "2026-09-28T04:00:00.000Z"
+        },
+        "questionHash": "sha256:2c206d301ebd3336fae6ce7441d5dea5bddc7fb8eeff5342afe0b8bcd8c5e478",
+        "probabilityHash": "sha256:388dfcdb2c2c29f06d6eb260140f65b9b416b7d60558eecfe989ed8b2378593f",
+        "receiptHash": "sha256:aa27c607bf7bfe140e48a27524d9484405a83fa48273af50b5daf2cba3435003",
+        "canonicalResultSha256": "a15255641baba7e25a17c13c9bf2b36b51ccdb4087016fc108d02c759dcc86b4"
+      }
+    },
+    {
+      "id": "v3-baserate-mixed-date-reading",
+      "description": "One record, two readings: the date-only horizon.by is read at the local end of day at -07:00, while the date-only reference-case filedAt/statusAt and subject.filedAt keep their 00:00Z meaning (SPEC v3 §3.4)",
+      "input": {
+        "specVersion": "uvrn-probability-input-3",
+        "forecastId": "fx3-baserate-mixed",
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "producer": {
+          "id": "fixture-agent-1",
+          "kind": "agent",
+          "model": "fixture-model"
+        },
+        "mode": "baserate",
+        "question": {
+          "text": "Will the synthetic Example Home team win the fixture series?",
+          "resolveBy": "2027-12-20",
+          "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+          "kind": "binary",
+          "outcomes": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "definition": "Example Home is listed as series winner by the deadline."
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "definition": "Example Home is not listed as series winner by the deadline."
+            }
+          ],
+          "partitionConfirmed": true,
+          "resolveByOffset": "-07:00"
+        },
+        "baserate": {
+          "mode": "time-to-event",
+          "referenceClass": {
+            "id": "example-transmission-cpcn",
+            "description": "Synthetic reference class: state-commission CPCN applications for transmission lines",
+            "source": {
+              "url": "https://example.org/reference-class/definition",
+              "accessedAt": "2026-09-26T11:00:00-07:00"
+            },
+            "criteria": [
+              {
+                "id": "commission",
+                "text": "Decided by the state utilities commission",
+                "source": {
+                  "url": "https://example.org/criteria/commission",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              },
+              {
+                "id": "cpcn-transmission",
+                "text": "CPCN application for a transmission line",
+                "source": {
+                  "url": "https://example.org/criteria/cpcn",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              }
+            ]
+          },
+          "cases": [
+            {
+              "id": "docket-01",
+              "source": {
+                "url": "https://example.org/dockets/1",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "approved",
+              "statusAt": "2020-04-10"
+            },
+            {
+              "id": "docket-02",
+              "source": {
+                "url": "https://example.org/dockets/2",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "denied",
+              "statusAt": "2020-05-30"
+            },
+            {
+              "id": "docket-03",
+              "source": {
+                "url": "https://example.org/dockets/3",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "approved",
+              "statusAt": "2020-07-19"
+            },
+            {
+              "id": "docket-04",
+              "source": {
+                "url": "https://example.org/dockets/4",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "withdrawn",
+              "statusAt": "2020-07-19"
+            },
+            {
+              "id": "docket-05",
+              "source": {
+                "url": "https://example.org/dockets/5",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "pending",
+              "statusAt": "2020-09-07"
+            },
+            {
+              "id": "docket-06",
+              "source": {
+                "url": "https://example.org/dockets/6",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "approved",
+              "statusAt": "2020-10-27"
+            },
+            {
+              "id": "docket-07",
+              "source": {
+                "url": "https://example.org/dockets/7",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "denied",
+              "statusAt": "2020-12-16"
+            },
+            {
+              "id": "docket-08",
+              "source": {
+                "url": "https://example.org/dockets/8",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "approved",
+              "statusAt": "2021-02-04"
+            },
+            {
+              "id": "docket-09",
+              "source": {
+                "url": "https://example.org/dockets/9",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "pending",
+              "statusAt": "2021-03-26"
+            },
+            {
+              "id": "docket-10",
+              "source": {
+                "url": "https://example.org/dockets/10",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2020-01-01",
+              "status": "approved",
+              "statusAt": "2021-05-15"
+            }
+          ],
+          "subject": {
+            "id": "subject-application",
+            "filedAt": "2026-09-26",
+            "source": {
+              "url": "https://example.org/dockets/subject",
+              "accessedAt": "2026-09-26T11:00:00-07:00"
+            }
+          },
+          "horizon": {
+            "by": "2027-12-20"
+          },
+          "targetEvent": "approved"
+        }
+      },
+      "expected": {
+        "status": "forecast",
+        "basis": "reference-class",
+        "probabilities": [
+          {
+            "outcomeId": "yes",
+            "p": 0.44
+          },
+          {
+            "outcomeId": "no",
+            "p": 0.56
+          }
+        ],
+        "band": {
+          "outcomeId": "yes",
+          "low": 0.132726,
+          "high": 0.716229,
+          "kind": "statistical",
+          "confidence": 0.95
+        },
+        "refusalCodes": [],
+        "deadline": {
+          "resolveBy": "2027-12-20",
+          "offset": "-07:00",
+          "startInstantUtc": "2027-12-20T07:00:00.000Z",
+          "endInstantUtcExclusive": "2027-12-21T07:00:00.000Z"
+        },
+        "questionHash": "sha256:5cb59116d3c571ddbbfe11d8db8e5c92b4fd163a168f5df69c363769d0c763f5",
+        "probabilityHash": "sha256:e1f3ad70bba4f96a0d239a2fcd8637f6747bc53c053d82d5db8432f956a45ee3",
+        "receiptHash": "sha256:85bdcfb383c03f27784edf865de3ce52e0199009c156ae6b93fae0805fa3bf45",
+        "canonicalResultSha256": "b23d1b743bc4b403a773cfa82bfffa8bbe10c2228f5a4e67f152d415d2611fd0"
+      }
+    },
+    {
+      "id": "v3-baserate-proportion",
+      "description": "Proportion base rate: no horizon, horizonDeadlineDate null, deadlineMatched null",
+      "input": {
+        "specVersion": "uvrn-probability-input-3",
+        "forecastId": "fx3-baserate-proportion",
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "producer": {
+          "id": "fixture-agent-1",
+          "kind": "agent",
+          "model": "fixture-model"
+        },
+        "mode": "baserate",
+        "question": {
+          "text": "Will the synthetic Example Home team win the fixture series?",
+          "resolveBy": "2027-01-15",
+          "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+          "kind": "binary",
+          "outcomes": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "definition": "Example Home is listed as series winner by the deadline."
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "definition": "Example Home is not listed as series winner by the deadline."
+            }
+          ],
+          "partitionConfirmed": true,
+          "resolveByOffset": "-08:00"
+        },
+        "baserate": {
+          "mode": "proportion",
+          "referenceClass": {
+            "id": "example-transmission-cpcn",
+            "description": "Synthetic reference class: state-commission CPCN applications for transmission lines",
+            "source": {
+              "url": "https://example.org/reference-class/definition",
+              "accessedAt": "2026-09-26T11:00:00-07:00"
+            },
+            "criteria": [
+              {
+                "id": "commission",
+                "text": "Decided by the state utilities commission",
+                "source": {
+                  "url": "https://example.org/criteria/commission",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              },
+              {
+                "id": "cpcn-transmission",
+                "text": "CPCN application for a transmission line",
+                "source": {
+                  "url": "https://example.org/criteria/cpcn",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              }
+            ]
+          },
+          "cases": [
+            {
+              "id": "case-01",
+              "source": {
+                "url": "https://example.org/cases/1",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2021-01-01"
+            },
+            {
+              "id": "case-02",
+              "source": {
+                "url": "https://example.org/cases/2",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2021-01-31"
+            },
+            {
+              "id": "case-03",
+              "source": {
+                "url": "https://example.org/cases/3",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2021-03-02"
+            },
+            {
+              "id": "case-04",
+              "source": {
+                "url": "https://example.org/cases/4",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-04-01"
+            },
+            {
+              "id": "case-05",
+              "source": {
+                "url": "https://example.org/cases/5",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-05-01"
+            },
+            {
+              "id": "case-06",
+              "source": {
+                "url": "https://example.org/cases/6",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-05-31"
+            },
+            {
+              "id": "case-07",
+              "source": {
+                "url": "https://example.org/cases/7",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-06-30"
+            },
+            {
+              "id": "case-08",
+              "source": {
+                "url": "https://example.org/cases/8",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-07-30"
+            },
+            {
+              "id": "excluded-1",
+              "source": {
+                "url": "https://example.org/cases/excluded-1",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2022-01-01"
+            },
+            {
+              "id": "excluded-2",
+              "source": {
+                "url": "https://example.org/cases/excluded-2",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2022-01-31"
+            }
+          ]
+        }
+      },
+      "expected": {
+        "status": "forecast",
+        "basis": "reference-class",
+        "probabilities": [
+          {
+            "outcomeId": "yes",
+            "p": 0.388889
+          },
+          {
+            "outcomeId": "no",
+            "p": 0.611111
+          }
+        ],
+        "band": {
+          "outcomeId": "yes",
+          "low": 0.119039,
+          "high": 0.705177,
+          "kind": "statistical",
+          "confidence": 0.95
+        },
+        "refusalCodes": [],
+        "deadline": {
+          "resolveBy": "2027-01-15",
+          "offset": "-08:00",
+          "startInstantUtc": "2027-01-15T08:00:00.000Z",
+          "endInstantUtcExclusive": "2027-01-16T08:00:00.000Z"
+        },
+        "questionHash": "sha256:66eb4b96a647006fcc2025353607b05b43eb8602abd22c292a4a554ed41d7f2d",
+        "probabilityHash": "sha256:79537a666b5799f90193b10830f9bb71d2b34a941f5f168f71ad216ad004ed3b",
+        "receiptHash": "sha256:099bd80baf8dbbb6af892a7c0cc6c74adff6e04334c9aec5713d638087d1c22a",
+        "canonicalResultSha256": "9db8163d1e13af9823f56ba941404f3ab37bea45468a8a6c8eb408c1c5c2839e"
+      }
+    },
+    {
+      "id": "v3-profile-tightened-refusal",
+      "description": "A profile raising minCases to 9 refuses the x = 3 of n = 8 class (baserate_below_min_cases), with a local deadline",
+      "input": {
+        "specVersion": "uvrn-probability-input-3",
+        "forecastId": "fx3-profile",
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "producer": {
+          "id": "fixture-agent-1",
+          "kind": "agent",
+          "model": "fixture-model"
+        },
+        "mode": "baserate",
+        "question": {
+          "text": "Will the synthetic Example Home team win the fixture series?",
+          "resolveBy": "2027-01-15",
+          "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+          "kind": "binary",
+          "outcomes": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "definition": "Example Home is listed as series winner by the deadline."
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "definition": "Example Home is not listed as series winner by the deadline."
+            }
+          ],
+          "partitionConfirmed": true,
+          "resolveByOffset": "+01:00"
+        },
+        "baserate": {
+          "mode": "proportion",
+          "referenceClass": {
+            "id": "example-transmission-cpcn",
+            "description": "Synthetic reference class: state-commission CPCN applications for transmission lines",
+            "source": {
+              "url": "https://example.org/reference-class/definition",
+              "accessedAt": "2026-09-26T11:00:00-07:00"
+            },
+            "criteria": [
+              {
+                "id": "commission",
+                "text": "Decided by the state utilities commission",
+                "source": {
+                  "url": "https://example.org/criteria/commission",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              },
+              {
+                "id": "cpcn-transmission",
+                "text": "CPCN application for a transmission line",
+                "source": {
+                  "url": "https://example.org/criteria/cpcn",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              }
+            ]
+          },
+          "cases": [
+            {
+              "id": "case-01",
+              "source": {
+                "url": "https://example.org/cases/1",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2021-01-01"
+            },
+            {
+              "id": "case-02",
+              "source": {
+                "url": "https://example.org/cases/2",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2021-01-31"
+            },
+            {
+              "id": "case-03",
+              "source": {
+                "url": "https://example.org/cases/3",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2021-03-02"
+            },
+            {
+              "id": "case-04",
+              "source": {
+                "url": "https://example.org/cases/4",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-04-01"
+            },
+            {
+              "id": "case-05",
+              "source": {
+                "url": "https://example.org/cases/5",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-05-01"
+            },
+            {
+              "id": "case-06",
+              "source": {
+                "url": "https://example.org/cases/6",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-05-31"
+            },
+            {
+              "id": "case-07",
+              "source": {
+                "url": "https://example.org/cases/7",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-06-30"
+            },
+            {
+              "id": "case-08",
+              "source": {
+                "url": "https://example.org/cases/8",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "outcome": "no",
+              "resolvedAt": "2021-07-30"
+            },
+            {
+              "id": "excluded-1",
+              "source": {
+                "url": "https://example.org/cases/excluded-1",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2022-01-01"
+            },
+            {
+              "id": "excluded-2",
+              "source": {
+                "url": "https://example.org/cases/excluded-2",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission"
+              ],
+              "outcome": "yes",
+              "resolvedAt": "2022-01-31"
+            }
+          ]
+        },
+        "profile": {
+          "specVersion": "uvrn-probability-profile-1",
+          "id": "fixture-strict-profile",
+          "version": "1.0.0",
+          "thresholds": {
+            "minCases": 9
+          }
+        }
+      },
+      "expected": {
+        "status": "insufficient_basis",
+        "basis": null,
+        "probabilities": null,
+        "band": null,
+        "refusalCodes": [
+          "baserate_below_min_cases"
+        ],
+        "deadline": {
+          "resolveBy": "2027-01-15",
+          "offset": "+01:00",
+          "startInstantUtc": "2027-01-14T23:00:00.000Z",
+          "endInstantUtcExclusive": "2027-01-15T23:00:00.000Z"
+        },
+        "questionHash": "sha256:60a9d699dea1ece2d42888b007393637739ab0efda9cc9ef0cb7d470d2148d0a",
+        "probabilityHash": "sha256:7f9f6a4f180b07176e825e120a616475671fa6b64eaf1788f96822a636263d72",
+        "receiptHash": "sha256:cd630f2ae86225aed17e1c42d2aea66414d2bd3f5927874435c2e4e132c79633",
+        "canonicalResultSha256": "3088a5f790ba9bd3fa7ea63b40e735a99da519969e1e5dad06a5fa91089e936d"
+      }
+    },
+    {
+      "id": "v3-market-signed",
+      "description": "The offset-match market case, signed with the SPEC test key",
+      "input": {
+        "specVersion": "uvrn-probability-input-3",
+        "forecastId": "fx3-market-signed",
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "producer": {
+          "id": "fixture-agent-1",
+          "kind": "agent",
+          "model": "fixture-model"
+        },
+        "mode": "market",
+        "question": {
+          "text": "Will the synthetic Example Home team win the fixture series?",
+          "resolveBy": "2026-10-31",
+          "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+          "kind": "binary",
+          "outcomes": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "definition": "Example Home is listed as series winner by the deadline."
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "definition": "Example Home is not listed as series winner by the deadline."
+            }
+          ],
+          "partitionConfirmed": true,
+          "resolveByOffset": "-04:00"
+        },
+        "market": {
+          "kind": "exchange",
+          "venue": "Example Exchange",
+          "domain": "politics/us",
+          "resolvesAt": "2026-10-31T23:59:59-04:00",
+          "targetOutcome": "Yes",
+          "source": {
+            "url": "https://example.org/exchange/contract-1",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          },
+          "outcomes": [
+            {
+              "label": "Yes",
+              "bid": 0.61,
+              "ask": 0.63,
+              "depthUsd": 5000,
+              "quotedAt": "2026-09-26T10:30:00-07:00",
+              "source": {
+                "url": "https://example.org/exchange/contract-1/book",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            }
+          ]
+        }
+      },
+      "options": {
+        "signer": {
+          "privateKey": "$keys.privateKeySeed",
+          "publicKeyRef": "uvrn-spec-pk-2026-v1",
+          "signedAt": "2026-09-26T19:05:00Z"
+        }
+      },
+      "expected": {
+        "status": "forecast",
+        "basis": "market-implied",
+        "probabilities": [
+          {
+            "outcomeId": "yes",
+            "p": 0.62
+          },
+          {
+            "outcomeId": "no",
+            "p": 0.38
+          }
+        ],
+        "band": {
+          "outcomeId": "yes",
+          "low": 0.61,
+          "high": 0.63,
+          "kind": "bid-ask",
+          "confidence": null
+        },
+        "refusalCodes": [],
+        "deadline": {
+          "resolveBy": "2026-10-31",
+          "offset": "-04:00",
+          "startInstantUtc": "2026-10-31T04:00:00.000Z",
+          "endInstantUtcExclusive": "2026-11-01T04:00:00.000Z"
+        },
+        "questionHash": "sha256:c9e5757e5906f15a10928c672a6dcc04d235b62e85e7c6175795d1db67dd0d2d",
+        "probabilityHash": "sha256:d7bc6bd1c27f157e153b73d3170be32a6dd0099433cf7ddd3d21c632b72c1f5a",
+        "receiptHash": "sha256:2f730dd7e62e6afea2db1f4aed14de9ac226b522d3365b209e352457a19765ad",
+        "canonicalResultSha256": "d991341b36c42cde44af10cb1a21887541315caf90926d0c9347a98457d430fe",
+        "signature": {
+          "alg": "ed25519",
+          "publicKeyRef": "uvrn-spec-pk-2026-v1",
+          "sig": "WxLME7Pblkcusdq5uD6qnoOusbRYoR2eOlXRhC2+VHLu1GC0GJF2sJWkg4yws9HNxEGOMuRf4zqJ1q4HhZN5AA==",
+          "signedAt": "2026-09-26T19:05:00Z"
+        }
+      }
+    }
+  ],
+  "validationErrors": [
+    {
+      "id": "v3-missing-offset",
+      "description": "A missing resolveByOffset is a missing required member: invalid_input (consistent with v2)",
+      "input": {
+        "specVersion": "uvrn-probability-input-3",
+        "forecastId": "fx3-missing",
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "producer": {
+          "id": "fixture-agent-1",
+          "kind": "agent",
+          "model": "fixture-model"
+        },
+        "mode": "judgment",
+        "question": {
+          "text": "Will the synthetic Example Home team win the fixture series?",
+          "resolveBy": "2026-10-30",
+          "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+          "kind": "binary",
+          "outcomes": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "definition": "Example Home is listed as series winner by the deadline."
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "definition": "Example Home is not listed as series winner by the deadline."
+            }
+          ],
+          "partitionConfirmed": true
+        },
+        "judgment": {
+          "probabilities": [
+            {
+              "outcomeId": "yes",
+              "p": 0.71
+            },
+            {
+              "outcomeId": "no",
+              "p": 0.29
+            }
+          ],
+          "evidence": [
+            {
+              "id": "e1",
+              "statement": "Fixture standings page shows Example Home leading.",
+              "source": {
+                "url": "https://example.org/standings",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            }
+          ],
+          "rationale": "Fixture lead and schedule favor Example Home.",
+          "counterarguments": [
+            "Injuries could reverse the lead.",
+            "Small samples mislead."
+          ],
+          "uncertainty": "Roster news after asOf is unknown; a lineup change would move this materially.",
+          "range": {
+            "low": 0.6,
+            "high": 0.8,
+            "rationale": "Plausible spread of reasonable fixture readings."
+          }
+        }
+      },
+      "expectedError": {
+        "code": "invalid_input",
+        "path": "question.resolveByOffset"
+      }
+    },
+    {
+      "id": "v3-offset-minus-zero",
+      "description": "-00:00 is rejected; UTC is +00:00",
+      "input": {
+        "specVersion": "uvrn-probability-input-3",
+        "forecastId": "fx3-m00",
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "producer": {
+          "id": "fixture-agent-1",
+          "kind": "agent",
+          "model": "fixture-model"
+        },
+        "mode": "judgment",
+        "question": {
+          "text": "Will the synthetic Example Home team win the fixture series?",
+          "resolveBy": "2026-10-30",
+          "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+          "kind": "binary",
+          "outcomes": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "definition": "Example Home is listed as series winner by the deadline."
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "definition": "Example Home is not listed as series winner by the deadline."
+            }
+          ],
+          "partitionConfirmed": true,
+          "resolveByOffset": "-00:00"
+        },
+        "judgment": {
+          "probabilities": [
+            {
+              "outcomeId": "yes",
+              "p": 0.71
+            },
+            {
+              "outcomeId": "no",
+              "p": 0.29
+            }
+          ],
+          "evidence": [
+            {
+              "id": "e1",
+              "statement": "Fixture standings page shows Example Home leading.",
+              "source": {
+                "url": "https://example.org/standings",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            }
+          ],
+          "rationale": "Fixture lead and schedule favor Example Home.",
+          "counterarguments": [
+            "Injuries could reverse the lead.",
+            "Small samples mislead."
+          ],
+          "uncertainty": "Roster news after asOf is unknown; a lineup change would move this materially.",
+          "range": {
+            "low": 0.6,
+            "high": 0.8,
+            "rationale": "Plausible spread of reasonable fixture readings."
+          }
+        }
+      },
+      "expectedError": {
+        "code": "invalid_question",
+        "path": "question.resolveByOffset"
+      }
+    },
+    {
+      "id": "v3-offset-minus-1201",
+      "description": "Below -12:00",
+      "input": {
+        "specVersion": "uvrn-probability-input-3",
+        "forecastId": "fx3-m1201",
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "producer": {
+          "id": "fixture-agent-1",
+          "kind": "agent",
+          "model": "fixture-model"
+        },
+        "mode": "judgment",
+        "question": {
+          "text": "Will the synthetic Example Home team win the fixture series?",
+          "resolveBy": "2026-10-30",
+          "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+          "kind": "binary",
+          "outcomes": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "definition": "Example Home is listed as series winner by the deadline."
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "definition": "Example Home is not listed as series winner by the deadline."
+            }
+          ],
+          "partitionConfirmed": true,
+          "resolveByOffset": "-12:01"
+        },
+        "judgment": {
+          "probabilities": [
+            {
+              "outcomeId": "yes",
+              "p": 0.71
+            },
+            {
+              "outcomeId": "no",
+              "p": 0.29
+            }
+          ],
+          "evidence": [
+            {
+              "id": "e1",
+              "statement": "Fixture standings page shows Example Home leading.",
+              "source": {
+                "url": "https://example.org/standings",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            }
+          ],
+          "rationale": "Fixture lead and schedule favor Example Home.",
+          "counterarguments": [
+            "Injuries could reverse the lead.",
+            "Small samples mislead."
+          ],
+          "uncertainty": "Roster news after asOf is unknown; a lineup change would move this materially.",
+          "range": {
+            "low": 0.6,
+            "high": 0.8,
+            "rationale": "Plausible spread of reasonable fixture readings."
+          }
+        }
+      },
+      "expectedError": {
+        "code": "invalid_question",
+        "path": "question.resolveByOffset"
+      }
+    },
+    {
+      "id": "v3-offset-plus-1401",
+      "description": "Above +14:00",
+      "input": {
+        "specVersion": "uvrn-probability-input-3",
+        "forecastId": "fx3-p1401",
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "producer": {
+          "id": "fixture-agent-1",
+          "kind": "agent",
+          "model": "fixture-model"
+        },
+        "mode": "judgment",
+        "question": {
+          "text": "Will the synthetic Example Home team win the fixture series?",
+          "resolveBy": "2026-10-30",
+          "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+          "kind": "binary",
+          "outcomes": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "definition": "Example Home is listed as series winner by the deadline."
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "definition": "Example Home is not listed as series winner by the deadline."
+            }
+          ],
+          "partitionConfirmed": true,
+          "resolveByOffset": "+14:01"
+        },
+        "judgment": {
+          "probabilities": [
+            {
+              "outcomeId": "yes",
+              "p": 0.71
+            },
+            {
+              "outcomeId": "no",
+              "p": 0.29
+            }
+          ],
+          "evidence": [
+            {
+              "id": "e1",
+              "statement": "Fixture standings page shows Example Home leading.",
+              "source": {
+                "url": "https://example.org/standings",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            }
+          ],
+          "rationale": "Fixture lead and schedule favor Example Home.",
+          "counterarguments": [
+            "Injuries could reverse the lead.",
+            "Small samples mislead."
+          ],
+          "uncertainty": "Roster news after asOf is unknown; a lineup change would move this materially.",
+          "range": {
+            "low": 0.6,
+            "high": 0.8,
+            "rationale": "Plausible spread of reasonable fixture readings."
+          }
+        }
+      },
+      "expectedError": {
+        "code": "invalid_question",
+        "path": "question.resolveByOffset"
+      }
+    },
+    {
+      "id": "v3-offset-plus-2400",
+      "description": "Not a civil offset",
+      "input": {
+        "specVersion": "uvrn-probability-input-3",
+        "forecastId": "fx3-p2400",
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "producer": {
+          "id": "fixture-agent-1",
+          "kind": "agent",
+          "model": "fixture-model"
+        },
+        "mode": "judgment",
+        "question": {
+          "text": "Will the synthetic Example Home team win the fixture series?",
+          "resolveBy": "2026-10-30",
+          "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+          "kind": "binary",
+          "outcomes": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "definition": "Example Home is listed as series winner by the deadline."
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "definition": "Example Home is not listed as series winner by the deadline."
+            }
+          ],
+          "partitionConfirmed": true,
+          "resolveByOffset": "+24:00"
+        },
+        "judgment": {
+          "probabilities": [
+            {
+              "outcomeId": "yes",
+              "p": 0.71
+            },
+            {
+              "outcomeId": "no",
+              "p": 0.29
+            }
+          ],
+          "evidence": [
+            {
+              "id": "e1",
+              "statement": "Fixture standings page shows Example Home leading.",
+              "source": {
+                "url": "https://example.org/standings",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            }
+          ],
+          "rationale": "Fixture lead and schedule favor Example Home.",
+          "counterarguments": [
+            "Injuries could reverse the lead.",
+            "Small samples mislead."
+          ],
+          "uncertainty": "Roster news after asOf is unknown; a lineup change would move this materially.",
+          "range": {
+            "low": 0.6,
+            "high": 0.8,
+            "rationale": "Plausible spread of reasonable fixture readings."
+          }
+        }
+      },
+      "expectedError": {
+        "code": "invalid_question",
+        "path": "question.resolveByOffset"
+      }
+    },
+    {
+      "id": "v3-asof-at-deadline-end",
+      "description": "asOf exactly at the exclusive end of the local deadline day (2026-10-31 at -04:00 ends 2026-11-01T04:00:00Z)",
+      "input": {
+        "specVersion": "uvrn-probability-input-3",
+        "forecastId": "fx3-asof-end",
+        "asOf": {
+          "at": "2026-11-01T04:00:00Z",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-11-01T03:00:00Z"
+          }
+        },
+        "producer": {
+          "id": "fixture-agent-1",
+          "kind": "agent",
+          "model": "fixture-model"
+        },
+        "mode": "judgment",
+        "question": {
+          "text": "Will the synthetic Example Home team win the fixture series?",
+          "resolveBy": "2026-10-31",
+          "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+          "kind": "binary",
+          "outcomes": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "definition": "Example Home is listed as series winner by the deadline."
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "definition": "Example Home is not listed as series winner by the deadline."
+            }
+          ],
+          "partitionConfirmed": true,
+          "resolveByOffset": "-04:00"
+        },
+        "judgment": {
+          "probabilities": [
+            {
+              "outcomeId": "yes",
+              "p": 0.71
+            },
+            {
+              "outcomeId": "no",
+              "p": 0.29
+            }
+          ],
+          "evidence": [
+            {
+              "id": "e1",
+              "statement": "Fixture standings page shows Example Home leading.",
+              "source": {
+                "url": "https://example.org/standings",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            }
+          ],
+          "rationale": "Fixture lead and schedule favor Example Home.",
+          "counterarguments": [
+            "Injuries could reverse the lead.",
+            "Small samples mislead."
+          ],
+          "uncertainty": "Roster news after asOf is unknown; a lineup change would move this materially.",
+          "range": {
+            "low": 0.6,
+            "high": 0.8,
+            "rationale": "Plausible spread of reasonable fixture readings."
+          }
+        }
+      },
+      "expectedError": {
+        "code": "invalid_question",
+        "path": "question.resolveBy"
+      }
+    },
+    {
+      "id": "v3-year-range-upper",
+      "description": "9999-12-31 at -12:00 would end at +010000-01-01T12:00Z: outside years 0000–9999",
+      "input": {
+        "specVersion": "uvrn-probability-input-3",
+        "forecastId": "fx3-year-upper",
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "producer": {
+          "id": "fixture-agent-1",
+          "kind": "agent",
+          "model": "fixture-model"
+        },
+        "mode": "judgment",
+        "question": {
+          "text": "Will the synthetic Example Home team win the fixture series?",
+          "resolveBy": "9999-12-31",
+          "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+          "kind": "binary",
+          "outcomes": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "definition": "Example Home is listed as series winner by the deadline."
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "definition": "Example Home is not listed as series winner by the deadline."
+            }
+          ],
+          "partitionConfirmed": true,
+          "resolveByOffset": "-12:00"
+        },
+        "judgment": {
+          "probabilities": [
+            {
+              "outcomeId": "yes",
+              "p": 0.71
+            },
+            {
+              "outcomeId": "no",
+              "p": 0.29
+            }
+          ],
+          "evidence": [
+            {
+              "id": "e1",
+              "statement": "Fixture standings page shows Example Home leading.",
+              "source": {
+                "url": "https://example.org/standings",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            }
+          ],
+          "rationale": "Fixture lead and schedule favor Example Home.",
+          "counterarguments": [
+            "Injuries could reverse the lead.",
+            "Small samples mislead."
+          ],
+          "uncertainty": "Roster news after asOf is unknown; a lineup change would move this materially.",
+          "range": {
+            "low": 0.6,
+            "high": 0.8,
+            "rationale": "Plausible spread of reasonable fixture readings."
+          }
+        }
+      },
+      "expectedError": {
+        "code": "invalid_question",
+        "path": "question.resolveBy"
+      }
+    },
+    {
+      "id": "v3-year-range-upper-exact",
+      "description": "9999-12-31 at +00:00: the exclusive end is exactly 10000-01-01T00:00Z → rejected",
+      "input": {
+        "specVersion": "uvrn-probability-input-3",
+        "forecastId": "fx3-year-upper-exact",
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "producer": {
+          "id": "fixture-agent-1",
+          "kind": "agent",
+          "model": "fixture-model"
+        },
+        "mode": "judgment",
+        "question": {
+          "text": "Will the synthetic Example Home team win the fixture series?",
+          "resolveBy": "9999-12-31",
+          "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+          "kind": "binary",
+          "outcomes": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "definition": "Example Home is listed as series winner by the deadline."
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "definition": "Example Home is not listed as series winner by the deadline."
+            }
+          ],
+          "partitionConfirmed": true,
+          "resolveByOffset": "+00:00"
+        },
+        "judgment": {
+          "probabilities": [
+            {
+              "outcomeId": "yes",
+              "p": 0.71
+            },
+            {
+              "outcomeId": "no",
+              "p": 0.29
+            }
+          ],
+          "evidence": [
+            {
+              "id": "e1",
+              "statement": "Fixture standings page shows Example Home leading.",
+              "source": {
+                "url": "https://example.org/standings",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            }
+          ],
+          "rationale": "Fixture lead and schedule favor Example Home.",
+          "counterarguments": [
+            "Injuries could reverse the lead.",
+            "Small samples mislead."
+          ],
+          "uncertainty": "Roster news after asOf is unknown; a lineup change would move this materially.",
+          "range": {
+            "low": 0.6,
+            "high": 0.8,
+            "rationale": "Plausible spread of reasonable fixture readings."
+          }
+        }
+      },
+      "expectedError": {
+        "code": "invalid_question",
+        "path": "question.resolveBy"
+      }
+    },
+    {
+      "id": "v3-year-range-lower",
+      "description": "0000-01-01 at +14:00 would start at -000001-12-31T10:00Z: outside years 0000–9999. asOf is 0000-01-01T00:00Z (before that local day ends), so only the year-range rule can fire",
+      "input": {
+        "specVersion": "uvrn-probability-input-3",
+        "forecastId": "fx3-year-lower",
+        "asOf": {
+          "at": "0000-01-01T00:00:00Z",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "0000-01-01T00:00:00Z"
+          }
+        },
+        "producer": {
+          "id": "fixture-agent-1",
+          "kind": "agent",
+          "model": "fixture-model"
+        },
+        "mode": "judgment",
+        "question": {
+          "text": "Will the synthetic Example Home team win the fixture series?",
+          "resolveBy": "0000-01-01",
+          "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+          "kind": "binary",
+          "outcomes": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "definition": "Example Home is listed as series winner by the deadline."
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "definition": "Example Home is not listed as series winner by the deadline."
+            }
+          ],
+          "partitionConfirmed": true,
+          "resolveByOffset": "+14:00"
+        },
+        "judgment": {
+          "probabilities": [
+            {
+              "outcomeId": "yes",
+              "p": 0.71
+            },
+            {
+              "outcomeId": "no",
+              "p": 0.29
+            }
+          ],
+          "evidence": [
+            {
+              "id": "e1",
+              "statement": "Fixture standings page shows Example Home leading.",
+              "source": {
+                "url": "https://example.org/standings",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            }
+          ],
+          "rationale": "Fixture lead and schedule favor Example Home.",
+          "counterarguments": [
+            "Injuries could reverse the lead.",
+            "Small samples mislead."
+          ],
+          "uncertainty": "Roster news after asOf is unknown; a lineup change would move this materially.",
+          "range": {
+            "low": 0.6,
+            "high": 0.8,
+            "rationale": "Plausible spread of reasonable fixture readings."
+          }
+        }
+      },
+      "expectedError": {
+        "code": "invalid_question",
+        "path": "question.resolveBy"
+      }
+    },
+    {
+      "id": "v3-cutoff-year-range",
+      "description": "Deadline 9999-12-30 at -01:00 with a date-only resolvesAt 9999-12-31 would be read at +010000-01-01T00:59:59.999Z: invalid_input, no receipt",
+      "input": {
+        "specVersion": "uvrn-probability-input-3",
+        "forecastId": "fx3-cutoff-year",
+        "asOf": {
+          "at": "2026-09-26T12:00:00-07:00",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          }
+        },
+        "producer": {
+          "id": "fixture-agent-1",
+          "kind": "agent",
+          "model": "fixture-model"
+        },
+        "mode": "market",
+        "question": {
+          "text": "Will the synthetic Example Home team win the fixture series?",
+          "resolveBy": "9999-12-30",
+          "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+          "kind": "binary",
+          "outcomes": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "definition": "Example Home is listed as series winner by the deadline."
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "definition": "Example Home is not listed as series winner by the deadline."
+            }
+          ],
+          "partitionConfirmed": true,
+          "resolveByOffset": "-01:00"
+        },
+        "market": {
+          "kind": "exchange",
+          "venue": "Example Exchange",
+          "domain": "politics/us",
+          "resolvesAt": "9999-12-31",
+          "targetOutcome": "Yes",
+          "source": {
+            "url": "https://example.org/exchange/contract-1",
+            "accessedAt": "2026-09-26T11:00:00-07:00"
+          },
+          "outcomes": [
+            {
+              "label": "Yes",
+              "bid": 0.61,
+              "ask": 0.63,
+              "depthUsd": 5000,
+              "quotedAt": "2026-09-26T10:30:00-07:00",
+              "source": {
+                "url": "https://example.org/exchange/contract-1/book",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              }
+            }
+          ]
+        }
+      },
+      "expectedError": {
+        "code": "invalid_input",
+        "path": "market.resolvesAt"
+      }
+    },
+    {
+      "id": "v3-horizon-year-range",
+      "description": "A date-only horizon.by 9999-12-31 read at local end of day at -01:00 falls in year 10000: invalid_input, no receipt",
+      "input": {
+        "specVersion": "uvrn-probability-input-3",
+        "forecastId": "fx3-horizon-year",
+        "mode": "baserate",
+        "question": {
+          "text": "Will the synthetic Example Home team win the fixture series?",
+          "resolveBy": "9999-12-30",
+          "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+          "kind": "binary",
+          "outcomes": [
+            {
+              "id": "yes",
+              "label": "Yes",
+              "definition": "Example Home is listed as series winner by the deadline."
+            },
+            {
+              "id": "no",
+              "label": "No",
+              "definition": "Example Home is not listed as series winner by the deadline."
+            }
+          ],
+          "partitionConfirmed": true,
+          "resolveByOffset": "-01:00"
+        },
+        "asOf": {
+          "at": "2026-09-26T00:00:00Z",
+          "source": {
+            "url": "https://example.org/asof-clock-note",
+            "accessedAt": "2026-09-25T23:00:00Z"
+          }
+        },
+        "producer": {
+          "id": "fixture-agent-1",
+          "kind": "agent",
+          "model": "fixture-model"
+        },
+        "baserate": {
+          "mode": "time-to-event",
+          "referenceClass": {
+            "id": "example-transmission-cpcn",
+            "description": "Synthetic reference class: state-commission CPCN applications for transmission lines",
+            "source": {
+              "url": "https://example.org/reference-class/definition",
+              "accessedAt": "2026-09-26T11:00:00-07:00"
+            },
+            "criteria": [
+              {
+                "id": "commission",
+                "text": "Decided by the state utilities commission",
+                "source": {
+                  "url": "https://example.org/criteria/commission",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              },
+              {
+                "id": "cpcn-transmission",
+                "text": "CPCN application for a transmission line",
+                "source": {
+                  "url": "https://example.org/criteria/cpcn",
+                  "accessedAt": "2026-09-26T11:00:00-07:00"
+                }
+              }
+            ]
+          },
+          "cases": [
+            {
+              "id": "deadline-case-1",
+              "source": {
+                "url": "https://example.org/deadline/cases/1",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2025-01-01T00:00:00Z",
+              "status": "approved",
+              "statusAt": "2025-01-01T12:00:00.000Z"
+            },
+            {
+              "id": "deadline-case-2",
+              "source": {
+                "url": "https://example.org/deadline/cases/2",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2025-01-01T00:00:00Z",
+              "status": "approved",
+              "statusAt": "2025-01-01T12:00:00.000Z"
+            },
+            {
+              "id": "deadline-case-3",
+              "source": {
+                "url": "https://example.org/deadline/cases/3",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2025-01-01T00:00:00Z",
+              "status": "approved",
+              "statusAt": "2025-01-02T12:00:00.000Z"
+            },
+            {
+              "id": "deadline-case-4",
+              "source": {
+                "url": "https://example.org/deadline/cases/4",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2025-01-01T00:00:00Z",
+              "status": "approved",
+              "statusAt": "2025-01-02T12:00:00.000Z"
+            },
+            {
+              "id": "deadline-case-5",
+              "source": {
+                "url": "https://example.org/deadline/cases/5",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2025-01-01T00:00:00Z",
+              "status": "denied",
+              "statusAt": "2025-01-02T18:00:00.000Z"
+            },
+            {
+              "id": "deadline-case-6",
+              "source": {
+                "url": "https://example.org/deadline/cases/6",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2025-01-01T00:00:00Z",
+              "status": "denied",
+              "statusAt": "2025-01-02T18:00:00.000Z"
+            },
+            {
+              "id": "deadline-case-7",
+              "source": {
+                "url": "https://example.org/deadline/cases/7",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2025-01-01T00:00:00Z",
+              "status": "pending",
+              "statusAt": "2025-01-04T00:00:00.000Z"
+            },
+            {
+              "id": "deadline-case-8",
+              "source": {
+                "url": "https://example.org/deadline/cases/8",
+                "accessedAt": "2026-09-26T11:00:00-07:00"
+              },
+              "meetsCriteria": [
+                "commission",
+                "cpcn-transmission"
+              ],
+              "filedAt": "2025-01-01T00:00:00Z",
+              "status": "pending",
+              "statusAt": "2025-01-04T00:00:00.000Z"
+            }
+          ],
+          "subject": {
+            "id": "deadline-subject",
+            "filedAt": "2026-09-26T00:00:00Z",
+            "source": {
+              "url": "https://example.org/deadline/subject",
+              "accessedAt": "2026-09-26T11:00:00-07:00"
+            }
+          },
+          "horizon": {
+            "by": "9999-12-31"
+          },
+          "targetEvent": "approved"
+        },
+        "thresholds": {
+          "minCases": 8
+        }
+      },
+      "expectedError": {
+        "code": "invalid_input",
+        "path": "baserate.horizon.by"
+      }
+    }
+  ],
+  "unit": {
+    "questionHashV2Identity": {
+      "note": "uvrn-probability-question-2 = the question-1 preimage plus resolveByOffset, specVersion uvrn-probability-question-2. The same question without an offset keeps its question-1 hash.",
+      "question": {
+        "text": "Will the synthetic Example Home team win the fixture series?",
+        "resolveBy": "2026-10-31",
+        "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+        "kind": "binary",
+        "outcomes": [
+          {
+            "id": "yes",
+            "label": "Yes",
+            "definition": "Example Home is listed as series winner by the deadline."
+          },
+          {
+            "id": "no",
+            "label": "No",
+            "definition": "Example Home is not listed as series winner by the deadline."
+          }
+        ],
+        "partitionConfirmed": true,
+        "resolveByOffset": "-04:00"
+      },
+      "preimage": {
+        "specVersion": "uvrn-probability-question-2",
+        "text": "Will the synthetic Example Home team win the fixture series?",
+        "kind": "binary",
+        "resolveBy": "2026-10-31",
+        "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+        "outcomes": [
+          {
+            "id": "yes",
+            "label": "Yes",
+            "definition": "Example Home is listed as series winner by the deadline."
+          },
+          {
+            "id": "no",
+            "label": "No",
+            "definition": "Example Home is not listed as series winner by the deadline."
+          }
+        ],
+        "resolveByOffset": "-04:00"
+      },
+      "questionHash": "sha256:c9e5757e5906f15a10928c672a6dcc04d235b62e85e7c6175795d1db67dd0d2d",
+      "questionWithoutOffset": {
+        "text": "Will the synthetic Example Home team win the fixture series?",
+        "resolveBy": "2026-10-31",
+        "resolutionRule": "Resolves YES if the example.org fixture results page lists Example Home as series winner by the deadline.",
+        "kind": "binary",
+        "outcomes": [
+          {
+            "id": "yes",
+            "label": "Yes",
+            "definition": "Example Home is listed as series winner by the deadline."
+          },
+          {
+            "id": "no",
+            "label": "No",
+            "definition": "Example Home is not listed as series winner by the deadline."
+          }
+        ],
+        "partitionConfirmed": true
+      },
+      "questionHashWithoutOffset": "sha256:29d2a6ae7d831a3721c19c2ff6de7b6c48d457bd799f9dbd2d69cafc0d5b9259"
+    }
+  }
+}

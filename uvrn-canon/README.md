@@ -1,0 +1,145 @@
+# @uvrn/canon
+
+> The canonization layer for the UVRN protocol.
+> The final step in the TVC loop: **Test → Validate → Canonize.**
+
+Part of the [UVRN](https://uvrn.org) ecosystem.
+
+## Minimal install
+
+```bash
+npm install @uvrn/canon @uvrn/core @uvrn/drift
+```
+
+`@uvrn/core` and `@uvrn/drift` are the peer dependencies. No other `@uvrn/*` package is required at runtime.
+
+---
+
+## What canonization means
+
+A drift receipt is a point-in-time score. It can be updated, superseded, or forgotten.
+
+A **canon receipt** is permanent. It says:
+
+> *"At this moment, this claim held this score, from these sources, and this canonizer signed that record — and the record is now locked."*
+
+A canon receipt does not prove the claim is true; it records a score and who signed it. Any change to the record breaks its content hash. Anyone can check it: `verify()` recomputes the content hash (integrity) **and** checks the signature against the public key embedded in the receipt. That proves the record is unaltered and was signed by the holder of that key — it does not by itself prove who owns the key.
+
+**Package provides:** `Canon`, `NodeSigner`, `MockSigner`; stores (`R2Store`, `SupabaseStore`, `IpfsStore`, `MultiStore`, `MockStore`); `qualify`, `suggest`, `canonize`, `verify`. DRVC3 v1.01 receipt shape; verification from embedded public key.
+
+**You provide:** At least one store (R2 bucket, Supabase client, or IPFS client); a signer (e.g. `NodeSigner` with private key); `canonizerId`. Drift receipt and snapshot to canonize (e.g. from `@uvrn/agent` or manual).
+
+---
+
+## Install
+
+```bash
+npm install @uvrn/canon @uvrn/drift @uvrn/core
+```
+
+---
+
+## Quick start
+
+```typescript
+import { Canon, NodeSigner, MultiStore, R2Store, SupabaseStore } from '@uvrn/canon'
+
+const canon = new Canon({
+  stores: [
+    new MultiStore([
+      new R2Store(env.R2_BUCKET),
+      new SupabaseStore(supabaseClient),
+    ])
+  ],
+  signer:      new NodeSigner(process.env.UVRN_PRIVATE_KEY),
+  canonizerId: 'uvrn-agent-prod-01',
+  autoSuggest: {
+    enabled:         true,
+    consecutiveRuns: 3,      // 3 stable runs → suggest
+    minScore:        85,     // must be above 85
+    suggestionTtlMs: 24 * 60 * 60 * 1000,  // suggestion expires in 24h
+  },
+})
+```
+
+---
+
+## The two-step flow
+
+### Step 1 — Agent records runs, Canon auto-suggests
+
+```typescript
+// In @uvrn/agent — after each drift run:
+const suggestion = await canon.recordRun(claimId, snapshot)
+
+if (suggestion) {
+  await notify({
+    message: `Claim ${claimId} ready to canonize`,
+    score:   suggestion.qualifying_score,
+    id:      suggestion.suggestion_id,
+  })
+}
+```
+
+### Step 2 — Human confirms, Canon executes
+
+```typescript
+const result = await canon.canonize({
+  driftReceipt:  lastReceipt,
+  finalSnapshot: lastSnapshot,
+  trigger: {
+    type:          'auto_suggest',
+    confirmed_by:  'shawn',
+    suggestion_id: suggestion.suggestion_id,
+  },
+  suggestionId: suggestion.suggestion_id,
+})
+
+console.log(result.receipt.canon_id)
+console.log(result.receipt.content_hash)
+console.log(result.verified) // true when the canonizer's own signature over content_hash checked out right after write
+```
+
+---
+
+## Stores
+
+| Store | Use |
+|---|---|
+| `R2Store(bucket)` | Cloudflare R2 — fast, cheap, CF Workers native |
+| `SupabaseStore(client)` | Queryable — filter by score, date, claim |
+| `IpfsStore(client)` | Content-addressed — CID IS the checksum |
+| `MultiStore([...])` | Fan-out to all simultaneously |
+| `MockStore` | Testing — in-memory, no network |
+
+---
+
+## Verify any receipt
+
+Anyone can check a canon receipt — content-hash recompute plus a signature check against the receipt's embedded public key (trust in who holds that key is up to you):
+
+```typescript
+const isValid = await canon.verify(receipt)
+```
+
+---
+
+## Manual canonization
+
+```typescript
+const result = await canon.canonize({
+  driftReceipt:  receipt,
+  finalSnapshot: snapshot,
+  trigger: {
+    type:         'manual',
+    confirmed_by: 'shawn',
+    reason:       'auditor requested permanent record',
+  },
+})
+```
+
+---
+
+## License
+
+Apache License 2.0 — see [LICENSE](LICENSE). If you redistribute this package or a work derived from it, include the attribution notices from [NOTICE](NOTICE) (in short: "Built on UVRN"). Versions published before the 5.1 release were MIT-licensed and stay MIT.

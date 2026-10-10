@@ -1,0 +1,12 @@
+export * from './types';
+export { CLAIM_LADDER, LADDER_ORDER, EVIDENCE_TAXONOMY } from './ladder';
+export { RuleBasedClaimClassifier } from './RuleBasedClaimClassifier';
+export { DefaultEvidenceTagger } from './DefaultEvidenceTagger';
+export { matchSufficiency } from './matcher';
+export type { MatchOptions } from './matcher';
+export { bridgeFromDomainSignals, normalizeEvidence } from './bridge';
+export type { EvidenceInput } from './bridge';
+export { verifyClaim, verifyClaimAsync } from './verifyClaim';
+export type { ClaimInput, VerifyClaimOptions } from './verifyClaim';
+export { readSupport } from './readSupport';
+export type { SupportReadout, ReadSupportOptions } from './readSupport';

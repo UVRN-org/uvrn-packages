@@ -28,8 +28,8 @@ peers and `better-sqlite3` are optional.
 | `SqliteCanonStore` | `CanonStore` (`@uvrn/canon`) | canonized receipts (immutable, INSERT OR IGNORE) |
 | `SqliteIdentityStore` | `IdentityStore` (`@uvrn/identity`) | reputation scores + activity history |
 | `SqliteTimelineStore` | `TimelineStore` (`@uvrn/timeline`) + write side | drift snapshots + canon events |
-| `SqliteWatchStore` | `WatchStore` (`@uvrn/watch`, v4) | watcher subscriptions |
-| `SqliteAgentStateStore` | `AgentStateStore` (`@uvrn/agent`, v4) | agent claims, last snapshots, failure counts |
+| `SqliteWatchStore` | `WatchStore` (`@uvrn/watch`, since v4) | watcher subscriptions |
+| `SqliteAgentStateStore` | `AgentStateStore` (`@uvrn/agent`, since v4) | agent claims, last snapshots, failure counts |
 | `SqliteReceiptStore` | — (this package) | local NetworkReceipt outbox + `pushToNetwork()` |
 
 `SqliteTrackRecordStore` lives on the **optional** subpath `@uvrn/store-sqlite/track-record`
@@ -106,4 +106,4 @@ is yours — back it up by copying it. 5.1.0 adds `track_forecast_log` and
 
 ## License
 
-Apache License 2.0 — see [LICENSE](LICENSE). If you redistribute this package or a work derived from it, include the attribution notices from [NOTICE](NOTICE) (in short: "Built on UVRN"). Versions published before the 5.1 release were MIT-licensed and stay MIT.
+Apache License 2.0 — see [LICENSE](LICENSE). If you redistribute this package or a work derived from it, include the attribution notices from [NOTICE](NOTICE) (in short: "Built on UVRN").

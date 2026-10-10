@@ -230,7 +230,7 @@ const verdict = await verifyClaimAsync(
 ```
 
 Evidence tagging stays in-process — only claim classification is awaited. Pair this with a
-real `DomainConnector` (or `searchDelegate`) for fully non-synthetic runs: as of v4,
+real `DomainConnector` (or `searchDelegate`) for fully non-synthetic runs: since v4,
 `MockDomainConnector` logs a loud one-time warning when constructed outside test environments
 (`NODE_ENV !== 'test'` and no `JEST_WORKER_ID`), because mock signals are synthetic and must
 not be trusted as research output.
@@ -287,4 +287,4 @@ pnpm --filter @uvrn/lattice run build
 
 ## License
 
-Apache License 2.0 — see [LICENSE](LICENSE). If you redistribute this package or a work derived from it, include the attribution notices from [NOTICE](NOTICE) (in short: "Built on UVRN"). Versions published before the 5.1 release were MIT-licensed and stay MIT.
+Apache License 2.0 — see [LICENSE](LICENSE). If you redistribute this package or a work derived from it, include the attribution notices from [NOTICE](NOTICE) (in short: "Built on UVRN").

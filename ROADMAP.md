@@ -1,9 +1,9 @@
 # UVRN Package Roadmap — Open Protocol Specs
 
 **Status:** Active — updated as packages ship
-**Last updated:** 2026-06-09
+**Last updated:** 2026-10-10
 
-> **Current release line (2026-10-02):** the workspace is on the `5.x` line — `@uvrn/cli`, `@uvrn/mcp` (14 MCP tools, including `delta_prob_run`), `@uvrn/track-record`, and `@uvrn/store-sqlite` at `5.1.0`, the other public packages at `5.0.x`, and `@uvrn/probability` at `0.3.0`. The interface specs below date from the v3 (23-package) generation and remain the design reference; package READMEs, `README.md`, and `CHANGELOG.md` are authoritative for current versions and surfaces.
+> **Current release line (2026-10-10) — UVRN 5.1:** 29 public `@uvrn/*` packages at `5.1.0`; `@uvrn/cli`, `@uvrn/mcp` (14 MCP tools, including `delta_prob_run`), `@uvrn/store-sqlite`, and `@uvrn/track-record` at `5.1.1`; and `@uvrn/probability` at `0.3.1`. The interface specs below date from the v3 (23-package) generation and remain the design reference; package READMEs, `README.md`, and `CHANGELOG.md` are authoritative for current versions and surfaces.
 >
 > **UVRN Packages v3 (historical).** All 23 packages were aligned to `3.0.0` with `^3.0.0` internal peer ranges at that time. See `CHANGELOG.md`.
 
@@ -721,33 +721,35 @@ import { ConsensusBadge } from '@uvrn/embed';
 
 ---
 
-## Full Package Status
+## Package Index (v3-generation specs)
 
-| Package | Layer | Status | Role |
-|---------|-------|--------|------|
-| `@uvrn/core` | 2 | Live (npm) | Deterministic delta engine — V-Score math, validation, DRVC3 receipts |
-| `@uvrn/sdk` | 2 | Live (npm) | TypeScript SDK — submit claims, read receipts |
-| `@uvrn/adapter` | 2 | Live (npm) | DRVC3 envelope adapter — EIP-191 signatures |
-| `@uvrn/mcp` | 4 | Live (npm) | MCP server — AI agent native access |
-| `@uvrn/api` | 4 | Live (npm) | Fastify REST API — self-hosted deployments |
-| `@uvrn/cli` | 4 | Live (npm) | CLI — `uvrn run bundle.json` → receipt |
-| `@uvrn/drift` | 3 | Live (npm) — v3.0.0 | Temporal decay scoring |
-| `@uvrn/agent` | 3 | Live (npm) — v3.0.0 | Continuous claim monitoring loop |
-| `@uvrn/canon` | 3 | Live (npm) — v3.0.0 | Canonization engine — permanent signed records |
-| `@uvrn/farm` | 1 | Live (npm) — v3.0.0 | Data source connectors |
-| `@uvrn/consensus` | 1 | Live (npm) — v3.0.0 | Multi-source signal aggregation |
-| `@uvrn/normalize` | 1 | Live (npm) — v3.0.0 | Source normalization layer |
-| `@uvrn/signal` | 1 | Live (npm) — v3.0.0 | Internal event bus |
-| `@uvrn/timeline` | 3 | Live (npm) — v3.0.0 | Time-series query layer |
-| `@uvrn/score` | 2 | Live (npm) — v3.0.0 | V-Score composition & profiles |
-| `@uvrn/compare` | 2 | Live (npm) — v3.0.0 | Cross-receipt comparison |
-| `@uvrn/identity` | 2 | Live (npm) — v3.0.0 | Signer reputation layer |
-| `@uvrn/test` | 2 | Live (npm) — v3.0.0 | Testing utilities & mocks |
-| `@uvrn/measure` | 2 | Built — v3.0.0 | Pluggable agree/disagree/conflict/potential measurements + registry |
-| `@uvrn/lattice` | 1 | Built — v0.4.1 | Cross-domain question decomposition |
-| `@uvrn/algox` | 3 | Built — v3.0.0 | Signal ranking and selection |
-| `@uvrn/watch` | 4 | Live (npm) — v3.0.0 | Subscription & threshold alerts |
-| `@uvrn/embed` | 4 | Live (npm) — v3.0.0 | Embeddable consensus badges |
+All 23 packages specified above are published at `5.1.x` in the UVRN 5.1 release. Current per-package versions and status live in the [README package table](README.md#full-package-status).
+
+| Package | Layer | Role |
+|---------|-------|------|
+| `@uvrn/core` | 2 | Deterministic delta engine — V-Score math, validation, DRVC3 receipts |
+| `@uvrn/sdk` | 2 | TypeScript SDK — submit claims, read receipts |
+| `@uvrn/adapter` | 2 | DRVC3 envelope adapter — EIP-191 signatures |
+| `@uvrn/mcp` | 4 | MCP server — AI agent native access |
+| `@uvrn/api` | 4 | Fastify REST API — self-hosted deployments |
+| `@uvrn/cli` | 4 | CLI — `uvrn run bundle.json` → receipt |
+| `@uvrn/drift` | 3 | Temporal decay scoring |
+| `@uvrn/agent` | 3 | Continuous claim monitoring loop |
+| `@uvrn/canon` | 3 | Canonization engine — permanent signed records |
+| `@uvrn/farm` | 1 | Data source connectors |
+| `@uvrn/consensus` | 1 | Multi-source signal aggregation |
+| `@uvrn/normalize` | 1 | Source normalization layer |
+| `@uvrn/signal` | 1 | Internal event bus |
+| `@uvrn/timeline` | 3 | Time-series query layer |
+| `@uvrn/score` | 2 | V-Score composition & profiles |
+| `@uvrn/compare` | 2 | Cross-receipt comparison |
+| `@uvrn/identity` | 2 | Signer reputation layer |
+| `@uvrn/test` | 2 | Testing utilities & mocks |
+| `@uvrn/measure` | 2 | Pluggable agree/disagree/conflict/potential measurements + registry |
+| `@uvrn/lattice` | 1 | Cross-domain question decomposition |
+| `@uvrn/algox` | 3 | Signal ranking and selection |
+| `@uvrn/watch` | 4 | Subscription & threshold alerts |
+| `@uvrn/embed` | 4 | Embeddable consensus badges |
 
 ---
 
@@ -759,4 +761,4 @@ import { ConsensusBadge } from '@uvrn/embed';
 
 *UVRN is an open protocol. These specs are public so anyone can build compatible implementations. The official packages will ship on their own timeline — but the protocol doesn't have to wait.*
 
-*Apache License 2.0 — [UVRN-org](https://github.com/UVRN-org) (releases before 5.1 were MIT)*
+*Apache License 2.0 — [UVRN-org](https://github.com/UVRN-org)*

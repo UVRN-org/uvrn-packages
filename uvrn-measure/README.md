@@ -72,7 +72,7 @@ agreeMeasurement.evaluate({ claim: '…', sources, context: { agreeThreshold: 0.
 
 `withTypedObservation` only merges host-declared axes into `attributes`. It never invents `quantityKind` or units from claim text or titles.
 
-**D5 forecast realism:** eight additive short-horizon market goldens live in `SPEC/vectors/typed-observation-forecast-realism.json` and `uvrn-case-bank/fixtures/forecast-realism/` — exercised by `tests/forecast-realism-goldens.test.ts`. Default thresholds stay; CaseBank frozen baseline is untouched.
+**Forecast realism:** eight additive short-horizon market goldens live in `SPEC/vectors/typed-observation-forecast-realism.json` — exercised by `tests/forecast-realism-goldens.test.ts`. Default thresholds stay.
 
 ## Usage
 
@@ -129,4 +129,4 @@ Source code and issues: [GitHub (uvrn-packages)](https://github.com/UVRN-org/uvr
 
 ## License
 
-Apache License 2.0 — see [LICENSE](LICENSE). If you redistribute this package or a work derived from it, include the attribution notices from [NOTICE](NOTICE) (in short: "Built on UVRN"). Versions published before the 5.1 release were MIT-licensed and stay MIT.
+Apache License 2.0 — see [LICENSE](LICENSE). If you redistribute this package or a work derived from it, include the attribution notices from [NOTICE](NOTICE) (in short: "Built on UVRN").

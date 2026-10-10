@@ -52,7 +52,7 @@ Live remote / store-backed identity remains Admin-gated (D9). See `fixtures/cont
 
 ## Evidence-based recording: `recordEvent()`
 
-`recordEvent()` is the v4 path: each event may carry `AttestedEvidence` — an Ed25519 signature over the canonical JSON of `{ publicKeyRef, receiptHash, schemaVersion, sigVersion: 'uvrn-sig-1', signedAt? }`, verified against the raw 32-byte public key in `evidence.publicKey` (base64). Payload bytes use the shared environment-pure `@uvrn/core/canonical-serialize-2` module; identity contains no live serializer copy.
+`recordEvent()` is the evidence-based path (since v4): each event may carry `AttestedEvidence` — an Ed25519 signature over the canonical JSON of `{ publicKeyRef, receiptHash, schemaVersion, sigVersion: 'uvrn-sig-1', signedAt? }`, verified against the raw 32-byte public key in `evidence.publicKey` (base64). Payload bytes use the shared environment-pure `@uvrn/core/canonical-serialize-2` module; identity contains no live serializer copy.
 
 ```ts
 const result = await registry.recordEvent({
@@ -75,7 +75,7 @@ result.attested; // true only if the signature verified
 
 ### The attested/discount model
 
-- **Attested** (evidence present and the signature verifies): the event counts as a full receipt (weight `1`), and the reputation is keyed by `evidence.publicKey` — in v4 the canonical reputation key is the public key. Free-string addresses remain for unattested/legacy events.
+- **Attested** (evidence present and the signature verifies): the event counts as a full receipt (weight `1`), and the reputation is keyed by `evidence.publicKey` — since v4 the canonical reputation key is the public key. Free-string addresses remain for unattested/legacy events.
 - **Unattested** (no evidence, or verification fails): the event is still accepted and recorded — never hidden — but flagged `attested: false` and weighted at `unattestedWeight` (default `0.25`, configurable on `IdentityRegistryOptions`).
 - `receipts`, `canonRate`, and `accuracy` accumulate the event's weight instead of a flat `1`; `attestedReceipts` counts attested events only.
 - Optional time decay: set `accuracyHalfLifeMs` to multiply each event's weight by `2^(-(now − timestamp) / accuracyHalfLifeMs)`. Off by default.
@@ -161,4 +161,4 @@ The interface is intentionally backend-agnostic. You can implement it with:
 
 ## License
 
-Apache License 2.0 — see [LICENSE](LICENSE). If you redistribute this package or a work derived from it, include the attribution notices from [NOTICE](NOTICE) (in short: "Built on UVRN"). Versions published before the 5.1 release were MIT-licensed and stay MIT.
+Apache License 2.0 — see [LICENSE](LICENSE). If you redistribute this package or a work derived from it, include the attribution notices from [NOTICE](NOTICE) (in short: "Built on UVRN").

@@ -30,7 +30,7 @@
 - `uvrn verify-receipt --key` exits 2 when the signature does not verify (wrong key, forged or missing signature); without `--key` it stays integrity-only. Scripts that relied on exit 0 in those cases will now fail, by design.
 
 ### License
-- **License:** MIT → **Apache-2.0** with a NOTICE file ("Built on UVRN" attribution; no rights to the UVRN name). Earlier published versions stay MIT.
+- **License:** **Apache-2.0** with a NOTICE file ("Built on UVRN" attribution; no rights to the UVRN name).
 
 ## [5.0.0] - 2026-08-16
 

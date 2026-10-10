@@ -17,7 +17,7 @@
 - **BP-v2.1-LATER-D7:** product-path docs (templates → `searchDelegate` → receipt) + end-to-end test `tests/product-path-templates-searchDelegate.test.ts`. Docs/tests only — no lattice src code change this unit. Honest vocabulary retained (receipt ≠ verified market).
 
 ### Changed
-- **License:** MIT → **Apache-2.0** with a NOTICE file ("Built on UVRN" attribution; no rights to the UVRN name). Earlier published versions stay MIT.
+- **License:** **Apache-2.0** with a NOTICE file ("Built on UVRN" attribution; no rights to the UVRN name).
 
 ## [4.0.0] - 2026-06-10 (unreleased, v4 / fable-refactor-1)
 

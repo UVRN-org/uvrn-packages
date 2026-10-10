@@ -16,7 +16,7 @@
 
 ## Measured baseline
 
-Before changing the build, `npx -y @uvrn/mcp@4.0.1` was run from a new temporary directory with an
+Before changing the build, a prior 4.x release of `@uvrn/mcp` was launched with `npx -y` from a new temporary directory with an
 isolated empty npm cache using Node 25.8.1 and npm 11.11.0. It started successfully and returned the
 exact nine tools. npm made that work by auto-installing all eleven declared `@uvrn/*` peers beside
 `@uvrn/mcp`; the launch therefore worked, but was coupled to npm's peer-install behavior and the

@@ -15,7 +15,7 @@ Command-line interface for the UVRN Delta Engine. Transform data bundles into in
 
 ## Install
 
-`@uvrn/core` and `@uvrn/receipt` (`^5.0.0`) are peer dependencies; npm 7+ installs them
+`@uvrn/core` and `@uvrn/receipt` (`^5.1.0`) are peer dependencies; npm 7+ installs them
 automatically. `uvrn prob run` also needs the optional peer `@uvrn/probability`:
 
 ```bash
@@ -403,7 +403,7 @@ chmod +x node_modules/.bin/uvrn
 
 ## License
 
-Apache License 2.0 — see [LICENSE](LICENSE). If you redistribute this package or a work derived from it, include the attribution notices from [NOTICE](NOTICE) (in short: "Built on UVRN"). Versions published before the 5.1 release were MIT-licensed and stay MIT.
+Apache License 2.0 — see [LICENSE](LICENSE). If you redistribute this package or a work derived from it, include the attribution notices from [NOTICE](NOTICE) (in short: "Built on UVRN").
 
 ## Links
 

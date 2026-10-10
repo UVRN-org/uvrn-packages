@@ -1,6 +1,6 @@
 # UVRN Packages — Changelog
 
-Earlier generations (v1–v4, 5.0) are legacy and were MIT-licensed; see the npm deprecation notes.
+Earlier generations (v1–v4, 5.0) are legacy and no longer maintained.
 
 ## [5.1 alignment] — 2026-10-10 — every public package on the 5.1 line
 
@@ -16,7 +16,7 @@ Earlier generations (v1–v4, 5.0) are legacy and were MIT-licensed; see the npm
 - **Packaging:** `@uvrn/api` bin runs (shebang, no dev-only logger); `@uvrn/embed` `require()` works, UMD at `./umd`; `@uvrn/sdk` ESM import works and `VERSION` follows package.json; `@uvrn/test`, `@uvrn/store-sqlite`, `@uvrn/mcp` types resolve on a solo install.
 - **Behaviour:** `uvrn verify-receipt --key` exits 2 when the signature does not verify; `@uvrn/mcp` loads `@uvrn/probability` from the host (true optional peer) and bundles the rest.
 - **Honesty / hygiene:** sdk and canon docs no longer call hash-only checks "verified"; a private package name removed from canon types; `scripts/check-published-purity.mjs` scans all 34 packed packages; `prepublishOnly` guard refuses `npm publish`.
-- **License: MIT → Apache-2.0** for all 34 packages and the repo, with a NOTICE file in every package ("Built on UVRN" attribution, required on redistribution under §4(d); §6 reserves the UVRN name). Versions published before 5.1 stay MIT.
+- **License: Apache-2.0** for all 34 packages and the repo, with a NOTICE file in every package ("Built on UVRN" attribution, required on redistribution under §4(d); §6 reserves the UVRN name).
 - No changes to SPECs, schemas, hashed field lists or golden vectors.
 
 ## [5.1.0] — 2026-10-02 — `@uvrn/cli`, `@uvrn/mcp`, `@uvrn/track-record`, `@uvrn/store-sqlite` 5.1.0 + `@uvrn/probability` 0.3.0

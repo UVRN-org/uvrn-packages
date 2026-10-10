@@ -21,7 +21,7 @@ host, outside this package.
 npm install @uvrn/probability @uvrn/receipt
 ```
 
-`@uvrn/receipt` (`^5.0.0`) is a required peer.
+`@uvrn/receipt` (`^5.1.0`) is a required peer.
 
 ## What's new in 0.3.0
 
@@ -255,4 +255,4 @@ estimation for competing risks analysis*.
 
 ## License
 
-Apache License 2.0 — see [LICENSE](LICENSE). If you redistribute this package or a work derived from it, include the attribution notices from [NOTICE](NOTICE) (in short: "Built on UVRN"). Versions published before the 5.1 release were MIT-licensed and stay MIT.
+Apache License 2.0 — see [LICENSE](LICENSE). If you redistribute this package or a work derived from it, include the attribution notices from [NOTICE](NOTICE) (in short: "Built on UVRN").

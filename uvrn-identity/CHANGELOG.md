@@ -12,7 +12,7 @@
 - Republished from the public repository `UVRN-org/uvrn-packages`: package metadata (repository URL) now points at the public repo.
 
 ### Changed
-- **License:** MIT → **Apache-2.0** with a NOTICE file ("Built on UVRN" attribution; no rights to the UVRN name). Earlier published versions stay MIT.
+- **License:** **Apache-2.0** with a NOTICE file ("Built on UVRN" attribution; no rights to the UVRN name).
 
 ## [Unreleased]
 

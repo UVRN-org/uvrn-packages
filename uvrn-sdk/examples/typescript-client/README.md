@@ -61,5 +61,4 @@ Explores BundleBuilder features:
 ## Learn More
 
 - [SDK Guide](../../docs/SDK_GUIDE.md)
-- [API Documentation](../../docs/api/)
 - [Main README](../../README.md)

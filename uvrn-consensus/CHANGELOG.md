@@ -22,7 +22,7 @@
 - Undated sources earn no recency credit (inferred timestamps are not passed to `calculateRecencyScore`).
 
 ### Changed
-- **License:** MIT → **Apache-2.0** with a NOTICE file ("Built on UVRN" attribution; no rights to the UVRN name). Earlier published versions stay MIT.
+- **License:** **Apache-2.0** with a NOTICE file ("Built on UVRN" attribution; no rights to the UVRN name).
 
 ## [4.1.0] - 2026-07-19
 

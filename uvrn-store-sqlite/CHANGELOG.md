@@ -24,7 +24,7 @@
 - Main-entry type declarations no longer import optional peers, so a solo install type-checks.
 
 ### License
-- **License:** MIT → **Apache-2.0** with a NOTICE file ("Built on UVRN" attribution; no rights to the UVRN name). Earlier published versions stay MIT.
+- **License:** **Apache-2.0** with a NOTICE file ("Built on UVRN" attribution; no rights to the UVRN name).
 
 ## [5.0.2] - 2026-08-30
 

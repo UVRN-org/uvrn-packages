@@ -9,7 +9,7 @@ This is the UVRN protocol monorepo for the **public** generation:
 **External / 3rd-party MCP clients:** [`uvrn-mcp/CONNECT.md`](uvrn-mcp/CONNECT.md) (`@uvrn/mcp` 5.1.1, 14 tools).
 
 **Org / protocol home:** [`UVRN-org/uvrn`](https://github.com/UVRN-org/uvrn).  
-**Earlier generations:** v1–v4 and 5.0 are legacy and were MIT-licensed; this repository starts at the UVRN 5.1 release.
+**Earlier generations:** v1–v4 and 5.0 are legacy; this repository starts at the UVRN 5.1 release.
 
 ## Build & test
 

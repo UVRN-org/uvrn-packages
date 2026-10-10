@@ -261,7 +261,7 @@ Existing `HumanView.provenance` means integrity / signature honesty vocabulary. 
 | Topic | Unit |
 |---|---|
 | UCUM comparability implementation, origin counting code, negative tests | BP-20 |
-| Case-bank score-channel movement explanations | BP-20 |
+| Offline diagnostic score-channel movement explanations | BP-20 |
 | JSON-LD projection package placement | BP-21 |
 | Idea snapshots catalogue and model seam | BP-22 |
 | Per-origin track records / store family | BP-23 (Admin-gated) |

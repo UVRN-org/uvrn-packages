@@ -148,7 +148,7 @@ ctx.selected; // ranked output
 
 ## Status
 
-`v4.0.0` — part of the v4 protocol generation. See `CHANGELOG.md`.
+`5.1.0` — part of the UVRN 5.1 release. See `CHANGELOG.md`.
 
 ## Attribution
 
@@ -164,4 +164,4 @@ affiliated with or endorsed by X Corp. or X.AI Corp.
 
 ## License
 
-Apache License 2.0 — see [LICENSE](LICENSE). If you redistribute this package or a work derived from it, include the attribution notices from [NOTICE](NOTICE) (in short: "Built on UVRN"). NOTICE also records the third-party attribution for X's x-algorithm. Versions published before the 5.1 release were MIT-licensed and stay MIT.
+Apache License 2.0 — see [LICENSE](LICENSE). If you redistribute this package or a work derived from it, include the attribution notices from [NOTICE](NOTICE) (in short: "Built on UVRN"). NOTICE also records the third-party attribution for X's x-algorithm.

@@ -17,7 +17,7 @@
 - `reportRankStability` — baseline ranking plus survive/reorder report across declared weight variants (ordering stability only; not verification or market outcome). Exports `DEFAULT_RANK_STABILITY_VARIANTS` (N=3 implementer PREP proposal) and related types.
 
 ### Changed
-- **License:** MIT → **Apache-2.0** with a NOTICE file ("Built on UVRN" attribution; no rights to the UVRN name). Earlier published versions stay MIT.
+- **License:** **Apache-2.0** with a NOTICE file ("Built on UVRN" attribution; no rights to the UVRN name).
 
 ## [4.0.0] - 2026-06-10 (unreleased, v4 / fable-refactor-1)
 

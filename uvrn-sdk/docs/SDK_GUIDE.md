@@ -757,9 +757,9 @@ const client = new DeltaEngineClient({
 ## Next Steps
 
 - Explore [examples](../examples/) for complete working code
-- Read [API documentation](./api/) for detailed type definitions
-- Check out [Delta Engine Core](https://github.com/uvrn/uvrn-core) for engine details
+- Read the [package README](../README.md) for the full API and type reference
+- Check out [`@uvrn/core`](../../uvrn-core/README.md) for engine details
 
 ---
 
-**Questions or issues?** [Open an issue](https://github.com/uvrn/uvrn-core/issues)
+**Questions or issues?** [Open an issue](https://github.com/UVRN-org/uvrn-packages/issues)

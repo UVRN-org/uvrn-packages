@@ -315,9 +315,6 @@ import type {
 See the [examples directory](./examples/) for complete working examples:
 
 - [examples/typescript-client/](./examples/typescript-client/) - TypeScript usage
-- [examples/javascript-client/](./examples/javascript-client/) - JavaScript (ESM and CommonJS)
-- [examples/error-handling/](./examples/error-handling/) - Error handling patterns
-- [examples/batch-processing/](./examples/batch-processing/) - Processing multiple bundles
 
 ## Links
 
@@ -336,4 +333,4 @@ See the [examples directory](./examples/) for complete working examples:
 
 ## License
 
-Apache License 2.0 — see [LICENSE](LICENSE). If you redistribute this package or a work derived from it, include the attribution notices from [NOTICE](NOTICE) (in short: "Built on UVRN"). Versions published before the 5.1 release were MIT-licensed and stay MIT.
+Apache License 2.0 — see [LICENSE](LICENSE). If you redistribute this package or a work derived from it, include the attribution notices from [NOTICE](NOTICE) (in short: "Built on UVRN").

@@ -104,7 +104,7 @@ The `summary` field is intentionally short and verbatim-ready for logs or LLM re
 
 ### Named spread readout — `reportSpread`
 
-Host-facing **spread** capability (BP-v2.1-Spread): label + organize claim-relative roles, compute **class-partitioned** within-role agreement (C-2), and return a signed cross-role divergence readout (C-3) with **magnitude** and **sign**.
+Host-facing **spread** capability: label + organize claim-relative roles, compute **class-partitioned** within-role agreement (C-2), and return a signed cross-role divergence readout (C-3) with **magnitude** and **sign**.
 
 **EvidenceClass home:** the `EvidenceClass` string union is **mirrored** in `@uvrn/consensus` (aligned with `@uvrn/lattice`) so this additive readout does not add a lattice peer. Keep the unions in sync when lattice taxonomy changes.
 
@@ -143,4 +143,4 @@ Honest vocabulary: divergence **state** only — not an opportunity/accuracy sco
 
 ## License
 
-Apache License 2.0 — see [LICENSE](LICENSE). If you redistribute this package or a work derived from it, include the attribution notices from [NOTICE](NOTICE) (in short: "Built on UVRN"). Versions published before the 5.1 release were MIT-licensed and stay MIT.
+Apache License 2.0 — see [LICENSE](LICENSE). If you redistribute this package or a work derived from it, include the attribution notices from [NOTICE](NOTICE) (in short: "Built on UVRN").

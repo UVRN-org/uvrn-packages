@@ -565,7 +565,7 @@ The path taken is reported back as `evidenceMode` (`host_sources` | `connector` 
 ```
 `v_score` is the canonical V-Score. `sourceCount` is the number of sources **actually scored** — after non-numeric sources are dropped and near-identical sources (within 1% of each other and 1 day apart) are deduplicated — so it may be lower than the number of `sources` supplied.
 
-**v4 result fields (additive — every pre-v4 field is unchanged):**
+**Result fields added since v4 (additive — every pre-v4 field is unchanged):**
 
 - `networkReceipt` — the signed `uvrn-receipt-4` NetworkReceipt envelope wrapping `masterReceipt` (payload untouched, narrative auto-generated from the human vocabulary, optional normalized `topic`). Measurements inside the payload carry `humanExplanation`, stamped **before** master hashing so the human language is inside the hashed envelope.
 - `humanView` — `toHumanView(networkReceipt)` from `@uvrn/receipt`: a render-ready, protocol-free object (headline, verdict label/tone, score card carrying `v_score` plus the consensus `completeness`/`parity`/`freshness` components, sources, measurements, gaps, provenance, how-to-verify).
@@ -801,7 +801,7 @@ graph LR
 
 ## License
 
-Apache License 2.0 — see [LICENSE](LICENSE). If you redistribute this package or a work derived from it, include the attribution notices from [NOTICE](NOTICE) (in short: "Built on UVRN"). Versions published before the 5.1 release were MIT-licensed and stay MIT.
+Apache License 2.0 — see [LICENSE](LICENSE). If you redistribute this package or a work derived from it, include the attribution notices from [NOTICE](NOTICE) (in short: "Built on UVRN").
 
 ## Links
 

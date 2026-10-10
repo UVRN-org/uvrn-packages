@@ -55,7 +55,7 @@ If a new package needs to import constants, types, or functions from a sibling:
 2. Document it here with the reason and usage pattern
 3. Never duplicate the constant — import it
 
-## @uvrn/receipt → @uvrn/core (v4)
+## @uvrn/receipt → @uvrn/core (since v4)
 
 `@uvrn/receipt` peer-depends on `@uvrn/core` for the protocol types
 (`DeltaReceipt`, `MasterReceipt`) and, in tests, the frozen v3 hash path
@@ -70,7 +70,7 @@ consumes `@uvrn/receipt` for envelope shape, canonicalization
 duplicates JCS/hash logic — that duplication (worker `src/index.ts`, site
 `src/api/uvrn.js`) is retired in Phases 5–6.
 
-## @uvrn/store-sqlite → canon / identity / timeline / watch / agent / receipt (v4)
+## @uvrn/store-sqlite → canon / identity / timeline / watch / agent / receipt (since v4)
 
 `@uvrn/store-sqlite` implements the store interfaces those packages define
 (`CanonStore`, `IdentityStore`, `TimelineStore`, `WatchStore`, `AgentStateStore`)
@@ -83,13 +83,13 @@ protocol package gains storage — the interfaces stay the seam.
 main entry) implements `TrackRecordStore` from `@uvrn/track-record`, an optional
 peer at `^5.1.0` since store-sqlite 5.1.0 (it imports the forecast-log types).
 
-## @uvrn/protocol → core / receipt / measure / consensus / score / signal (v4)
+## @uvrn/protocol → core / receipt / measure / consensus / score / signal (since v4)
 
 The umbrella package (decision D-3) re-exports the common path as real
-`workspace:^` dependencies (rewritten to `^4.0.0` on publish). It adds no logic;
+`workspace:^` dependencies (rewritten to `^5.1.0` on publish). It adds no logic;
 the coupling is the package's entire purpose.
 
-## @uvrn/mcp → @uvrn/receipt and @uvrn/cli → @uvrn/receipt (v4)
+## @uvrn/mcp → @uvrn/receipt and @uvrn/cli → @uvrn/receipt (since v4)
 
 Both consume the canonical receipt object model: mcp's `delta_score_claim`
 returns a signed NetworkReceipt + HumanView (enriched before hashing); cli's

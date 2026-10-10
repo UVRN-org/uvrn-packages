@@ -28,7 +28,7 @@
 - Types ship as one self-contained `dist/index.d.ts`; `createServer` is declared to return `McpServerHandle` (`connect`, `close`); at runtime it is still the SDK `Server`.
 
 ### License
-- **License:** MIT → **Apache-2.0** with a NOTICE file ("Built on UVRN" attribution; no rights to the UVRN name). Earlier published versions stay MIT.
+- **License:** **Apache-2.0** with a NOTICE file ("Built on UVRN" attribution; no rights to the UVRN name).
 
 ## [5.0.0] - 2026-08-16
 

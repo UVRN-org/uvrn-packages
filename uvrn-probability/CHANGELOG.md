@@ -158,4 +158,4 @@ was never published on its own.
 - Thresholds are PROVISIONAL placeholders pending owner decision.
 
 ### Changed
-- **License:** MIT → **Apache-2.0** with a NOTICE file ("Built on UVRN" attribution; no rights to the UVRN name). Earlier published versions stay MIT.
+- **License:** **Apache-2.0** with a NOTICE file ("Built on UVRN" attribution; no rights to the UVRN name).

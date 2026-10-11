@@ -10,6 +10,7 @@ Earlier generations (v1–v4, 5.0) are legacy and no longer maintained.
   - Graded one-sided stance keeps "split" and adds the `same-side-graded` descriptor.
   - Host sources are counted one by one in the narrative.
   - Stance runs say when the V-Score was not measured (`scoreBasis`).
+- **Breaking (`delta_score_claim`):** runs with fewer than 2 independent sources now succeed with `insufficientIndependentSources` and no receipt fields, where they used to raise an error. Check that field before reading `masterReceipt`/`networkReceipt`.
 - **Breaking (`delta_verify_receipt`):** the `verified` alias is removed. No signature is checked, so it broke the honesty rule. Read `integrityOk`. For verification, use the signed `networkReceipt` with `verifyReceiptFull()` from `@uvrn/receipt` or `npx @uvrn/cli verify-receipt`.
 - **Dependency:** `@modelcontextprotocol/sdk` `^1.0.0 → ^1.27.1`.
 - No changes to SPECs, schemas, hashed field lists or golden vectors. Details: [`uvrn-mcp/CHANGELOG.md`](uvrn-mcp/CHANGELOG.md).

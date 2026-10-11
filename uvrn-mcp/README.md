@@ -586,13 +586,14 @@ The path taken is reported back as `evidenceMode` (`host_sources` | `connector` 
     "reason": "2 usable measurements were found, but 1 near-identical source was removed, leaving 1; 1 more independent source required."
   },
   "absoluteConsensusValue": { "median": 100, "n": 1, "min": 100, "max": 100 },
-  "stanceCounts": { "supports": 0, "opposes": 0, "mixed": 0, "neutral": 0, "insufficient": 0, "unlabeled": 2, "quorum": { "met": false } }
+  "stanceCounts": { "supports": 0, "opposes": 0, "mixed": 0, "neutral": 0, "insufficient": 0, "unlabeled": 2, "quorum": { "met": false, "evidenceAxis": "prominence", "sourceCount": 2, "groundedCount": 0, "requiredSources": 4, "requiredGrounded": 3, "confidenceFloor": 0.6, "reason": "source-quorum-missed" } },
+  "hostMeasurements": [ { "url": "https://example.org/wire", "value": 100 }, { "url": "https://example.org/reprint", "value": 100.5 } ]
 }
 ```
 
 **`scoreBasis` (stance axis):** the V-Score components come from numeric `value`/`evidenceScore` and `measuredAt`, not from stance. On a stance run where no source carries a numeric value, the result adds `scoreBasis: { measured: false, reason }`, `v_score` is 0 meaning *not measured*, and `humanView.scoreCard` omits the numbers.
 
-**Result fields added since v4 (additive — every pre-v4 field is unchanged):**
+**Result fields added since v4 (additive on scored results; since 5.1.2 an insufficient result carries none of the receipt fields, see above):**
 
 - `networkReceipt` — the signed `uvrn-receipt-4` NetworkReceipt envelope wrapping `masterReceipt` (payload untouched, narrative auto-generated from the human vocabulary, optional normalized `topic`). Measurements inside the payload carry `humanExplanation`, stamped **before** master hashing so the human language is inside the hashed envelope.
 - `humanView` — `toHumanView(networkReceipt)` from `@uvrn/receipt`: a render-ready, protocol-free object (headline, verdict label/tone, score card carrying `v_score` plus the consensus `completeness`/`parity`/`freshness` components, sources, measurements, gaps, provenance, how-to-verify).

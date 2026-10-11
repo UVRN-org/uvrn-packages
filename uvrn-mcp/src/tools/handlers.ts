@@ -38,6 +38,7 @@ import {
   parseTopic,
   signReceipt,
   toHumanView,
+  verdictHuman,
   wrapMasterReceipt,
   type VerdictDescriptor,
 } from '@uvrn/receipt';
@@ -706,8 +707,12 @@ async function handleScoreClaim(
       });
       // One node per host source, so the narrative and human view count sources, not the
       // single host that supplied them ("4 of 4 sources", never "1 of 1").
+      // Duplicate URLs get a #n suffix so node ids stay distinct.
+      const seen = new Map<string, number>();
       for (const s of input.sources) {
-        nodes.push({ id: s.url, status: 'on', detail: 'host source', observedAt });
+        const n = (seen.get(s.url) ?? 0) + 1;
+        seen.set(s.url, n);
+        nodes.push({ id: n === 1 ? s.url : `${s.url}#${n}`, status: 'on', detail: 'host source', observedAt });
       }
     } else {
       // Path 2: configured connectors, or the zero-external mock fallback.
@@ -759,7 +764,7 @@ async function handleScoreClaim(
           ...insufficient,
           reason:
             stanceMode.evidenceAxis === 'stance'
-              ? stanceInsufficientReason(merged.sources, stanceMode, insufficient.retainedCount)
+              ? stanceInsufficientReason(merged.sources, stanceMode, insufficient)
               : insufficient.reason,
         },
         absoluteConsensusValue: built.absoluteConsensusValue,
@@ -810,7 +815,7 @@ async function handleScoreClaim(
     // explanation say the spread is in strength, not side.
     const sameSideGraded =
       stanceMode.evidenceAxis === 'stance' &&
-      isSameSideGraded(stanceProjection, measurementResults);
+      isSameSideGraded(stanceProjection, measurementResults, merged.sources);
     // Enrich BEFORE buildMasterReceipt so humanExplanation sits inside the hashed
     // master envelope (B5.2) — enriching afterwards would invalidate masterHash.
     const measurements = enrichMeasurements(
@@ -856,6 +861,9 @@ async function handleScoreClaim(
       claim: { id: registration.id, text: input.claim },
       source: 'uvrn-mcp',
       action: 'delta_score_claim',
+      // The default narrative uses the `disagree` meaning ("point in different directions"),
+      // which would contradict the descriptor inside the same signed receipt.
+      ...(sameSideGraded ? { narrative: sameSideGradedNarrative(input.claim, nodes) } : {}),
       ...(topic !== undefined ? { topic } : {}),
     });
     const domain =
@@ -958,17 +966,26 @@ const SAME_SIDE_GRADED_EXPLANATION =
   'Sources split — gap detected. Every grounded source takes the same side of the claim; their stance values differ in strength by more than the divergence threshold.';
 
 const STANCE_SCORE_NOT_MEASURED =
-  'Stance was measured, but no source carried a numeric value or evidenceScore (or a measuredAt), so completeness, parity and freshness, and the V-Score built from them, were not measured on this run. A zero v_score here means not measured, not weak evidence.';
+  'Stance was measured, but no source carried a numeric value or evidenceScore, so completeness, parity and freshness, and the V-Score built from them, were not measured on this run. A zero v_score here means not measured, not weak evidence. (Freshness also needs measuredAt.)';
+
+function sameSideGradedNarrative(claim: string, nodes: readonly NodeStatusRecord[]): string {
+  const responded = nodes.filter((node) => node.status === 'on').length;
+  const label = verdictHuman('disagree').label;
+  const text = `${label}: ${responded} of ${nodes.length} sources weighed in on "${claim}". Every grounded source takes the same side of the claim; they differ in how strongly.`;
+  return text.length <= 500 ? text : `${text.slice(0, 497)}...`;
+}
 
 type StanceProjection = ReturnType<typeof stanceToMeasurementSources>;
 
 /**
- * True when `disagree` fired without `conflict`, and every projected stance (numeric and
- * categorical) sits on one side: one label (supports or opposes) with values of matching sign.
+ * True when `disagree` fired without `conflict`, every grounded source (including mixed or
+ * neutral ones that never reach a projection) carries the same label, supports or opposes, and
+ * every projected value has the matching sign.
  */
 function isSameSideGraded(
   projection: StanceProjection,
-  results: ReadonlyArray<{ type: string; verdict: string }>
+  results: ReadonlyArray<{ type: string; verdict: string }>,
+  sources: readonly ConsensusFarmResult['sources'][number][]
 ): boolean {
   const fired = (type: string, verdict: string) =>
     results.some((r) => r.type === type && r.verdict === verdict);
@@ -982,16 +999,22 @@ function isSameSideGraded(
   if ((side !== 'supports' && side !== 'opposes') || labels.some((l) => l !== side)) {
     return false;
   }
+  if (sources.some((s) => isGroundedStanceSource(s) && s.stanceLabel !== side)) {
+    return false;
+  }
   return projection.numeric.every((s) =>
     side === 'supports' ? (s.value as number) > 0 : (s.value as number) < 0
   );
 }
 
-/** Stance-axis wording for @uvrn/consensus's insufficient result. Never derives a value. */
+/**
+ * Stance-axis wording for @uvrn/consensus's insufficient result, branching on the engine's own
+ * counts. Never derives a value.
+ */
 function stanceInsufficientReason(
   sources: readonly ConsensusFarmResult['sources'][number][],
   stanceMode: StanceMode,
-  retainedCount: number
+  insufficient: { usableCount: number; retainedCount: number; deduplicatedCount: number }
 ): string {
   const withValue = sources.filter(
     (s) =>
@@ -1002,10 +1025,14 @@ function stanceInsufficientReason(
   const quorum = `Stance quorum met (${stanceMode.groundedCount} of ${stanceMode.sourceCount} sources grounded)`;
   const never =
     'stanceValue is never derived from stanceLabel (uvrn-stance-v1 §2): supply a stanceValue in [-1, 1] on each grounded source.';
-  if (withValue < 2) {
-    return `${quorum}, but only ${withValue} grounded source${withValue === 1 ? '' : 's'} carried a numeric stanceValue; stance agreement needs at least 2. ${never}`;
+  if (insufficient.usableCount < 2) {
+    const excluded =
+      insufficient.usableCount < withValue
+        ? ` ${withValue - insufficient.usableCount} grounded source${withValue - insufficient.usableCount === 1 ? ' was' : 's were'} excluded as a forecast (obsStatus F) or out of range.`
+        : '';
+    return `${quorum}, but only ${insufficient.usableCount} grounded source${insufficient.usableCount === 1 ? '' : 's'} carried a usable stanceValue; stance agreement needs at least 2.${excluded} ${never}`;
   }
-  return `${quorum} and ${withValue} grounded sources carried a stanceValue, but sources with stance values within 1% published within 24 hours are treated as one, leaving ${retainedCount}; stance agreement needs at least 2 independent sources.`;
+  return `${quorum} and ${insufficient.usableCount} grounded sources carried a usable stanceValue, but ${insufficient.deduplicatedCount} with stance values within 1% published within 24 hours of another ${insufficient.deduplicatedCount === 1 ? 'was' : 'were'} treated as one, leaving ${insufficient.retainedCount}; stance agreement needs at least 2 independent sources.`;
 }
 
 function toIsoTimestamp(value: unknown, fallback: string): string {

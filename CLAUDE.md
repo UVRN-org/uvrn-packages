@@ -6,7 +6,7 @@ This is the UVRN protocol monorepo for the **public** generation:
 34 `@uvrn/*` workspace packages (including `@uvrn/probability`) plus the protocol specifications in `SPEC/`.
 
 **Cursor / Claude agents:** this file.  
-**External / 3rd-party MCP clients:** [`uvrn-mcp/CONNECT.md`](uvrn-mcp/CONNECT.md) (`@uvrn/mcp` 5.1.1, 14 tools).
+**External / 3rd-party MCP clients:** [`uvrn-mcp/CONNECT.md`](uvrn-mcp/CONNECT.md) (`@uvrn/mcp` 5.1.2, 14 tools).
 
 **Org / protocol home:** [`UVRN-org/uvrn`](https://github.com/UVRN-org/uvrn).  
 **Earlier generations:** v1–v4 and 5.0 are legacy; this repository starts at the UVRN 5.1 release.

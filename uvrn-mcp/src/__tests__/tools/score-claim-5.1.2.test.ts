@@ -223,6 +223,135 @@ describe('delta_score_claim — identical same-day stance values', () => {
     });
 
     expect(result.insufficientIndependentSources).toMatchObject({ usableCount: 4, retainedCount: 1 });
-    expect(result.insufficientIndependentSources!.reason).toContain('within 24 hours are treated as one');
+    const reason = result.insufficientIndependentSources!.reason;
+    expect(reason).toContain('within 24 hours');
+    expect(reason).toContain('3 with stance values');
+    expect(reason).toContain('treated as one, leaving 1');
+  });
+});
+
+// Narrow the ScoreClaimOutput union the way a consumer should.
+function scored<T extends { insufficientIndependentSources?: unknown }>(result: T) {
+  if (result.insufficientIndependentSources !== undefined) {
+    throw new Error('expected a scored result');
+  }
+  return result as Exclude<T, { insufficientIndependentSources: object }>;
+}
+
+describe('5.1.2 audit follow-ups', () => {
+  it('does not claim "same side" when a grounded source is neutral without a stanceValue', async () => {
+    const { handleScoreClaim } = await loadHandlers();
+    const result = scored(
+      await handleScoreClaim({
+        claim: 'Neutral source claim',
+        sources: [
+          stanceSource('n1', 'supports', { stanceValue: 0.9 }),
+          stanceSource('n2', 'supports', { stanceValue: 0.7 }),
+          stanceSource('n3', 'supports', { stanceValue: 0.6 }),
+          { ...stanceSource('n4', 'supports'), stanceLabel: 'neutral' as const },
+        ],
+      })
+    );
+    expect(result.humanView.verdictDescriptor).toBeUndefined();
+    expect(JSON.stringify(result.networkReceipt)).not.toContain('same side');
+  });
+
+  it('does not claim "same side" when a grounded source is mixed', async () => {
+    const { handleScoreClaim } = await loadHandlers();
+    const result = scored(
+      await handleScoreClaim({
+        claim: 'Mixed source claim',
+        sources: [
+          stanceSource('m1', 'supports', { stanceValue: 0.9 }),
+          stanceSource('m2', 'supports', { stanceValue: 0.6 }),
+          { ...stanceSource('m3', 'supports'), stanceLabel: 'mixed' as const },
+          stanceSource('m4', 'supports'),
+        ],
+      })
+    );
+    expect(result.humanView.verdictDescriptor).toBeUndefined();
+  });
+
+  it('does not claim "same side" on a sign mismatch', async () => {
+    const { handleScoreClaim } = await loadHandlers();
+    const result = scored(
+      await handleScoreClaim({
+        claim: 'Sign mismatch claim',
+        sources: [
+          stanceSource('s1', 'supports', { stanceValue: 0.9 }),
+          stanceSource('s2', 'supports', { stanceValue: 0.7 }),
+          stanceSource('s3', 'supports', { stanceValue: 0.6 }),
+          stanceSource('s4', 'supports', { stanceValue: -0.2 }),
+        ],
+      })
+    );
+    expect(result.humanView.verdictDescriptor).toBeUndefined();
+  });
+
+  it('keeps the signed narrative consistent with same-side-graded', async () => {
+    const { handleScoreClaim } = await loadHandlers();
+    const result = scored(
+      await handleScoreClaim({
+        claim: 'Graded narrative claim',
+        sources: [0.9, 0.8, 0.7, 0.6].map((v, i) => stanceSource(`g${i}`, 'supports', { stanceValue: v })),
+      })
+    );
+    expect(result.humanView.verdictDescriptor?.term).toBe('same-side-graded');
+    expect(result.networkReceipt.narrative).toContain('4 of 4 sources weighed in');
+    expect(result.networkReceipt.narrative).toContain('same side');
+    expect(result.networkReceipt.narrative).not.toContain('different directions');
+  });
+
+  it('does not blame deduplication when a stance source was excluded as a forecast', async () => {
+    const { handleScoreClaim } = await loadHandlers();
+    const result = await handleScoreClaim({
+      claim: 'Forecast exclusion claim',
+      sources: [
+        stanceSource('f1', 'supports', { stanceValue: 0.9 }),
+        stanceSource('f2', 'supports', { stanceValue: 0.3, obsStatus: 'F' }),
+        stanceSource('f3', 'supports'),
+        stanceSource('f4', 'supports'),
+      ],
+    });
+    const info = result.insufficientIndependentSources!;
+    expect(info).toMatchObject({ usableCount: 1, deduplicatedCount: 0 });
+    expect(info.reason).not.toContain('treated as one');
+    expect(info.reason).toContain('forecast');
+  });
+
+  it('scoreBasis reason does not claim a measuredAt was missing', async () => {
+    const { handleScoreClaim } = await loadHandlers();
+    const result = scored(
+      await handleScoreClaim({
+        claim: 'MeasuredAt claim',
+        sources: [0.9, 0.85, 0.8, 0.75].map((v, i) =>
+          stanceSource(`t${i}`, 'supports', { stanceValue: v, measuredAt: '2026-10-01T00:00:00Z' })
+        ),
+      })
+    );
+    expect(result.scoreBasis?.reason).toContain('not measured');
+    expect(result.scoreBasis?.reason).not.toContain('(or a measuredAt)');
+  });
+
+  it('gives duplicate host-source URLs distinct node ids', async () => {
+    const { handleScoreClaim } = await loadHandlers();
+    const result = scored(
+      await handleScoreClaim({
+        claim: 'Duplicate url claim',
+        sources: [
+          { url: 'https://example.org/same', title: 'A', snippet: 'a', evidenceScore: 70 },
+          { url: 'https://example.org/same', title: 'B', snippet: 'b', evidenceScore: 40 },
+        ],
+      })
+    );
+    const ids = result.masterReceipt.nodes.map((n) => n.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it('tells agents about the receipt-less insufficient result in the tool description', async () => {
+    const { createServer } = await import('../../server');
+    expect(typeof createServer).toBe('function');
+    const src = readFileSync(resolve(__dirname, '../../server.ts'), 'utf8');
+    expect(src).toContain('the result carries `insufficientIndependentSources` and no masterReceipt');
   });
 });

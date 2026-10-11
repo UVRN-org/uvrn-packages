@@ -18,11 +18,14 @@ or canonicalization changed; the `SPEC/` golden vectors pass byte-identically.
   (`SPEC/uvrn-stance-v1.md` §2). The `sources[].stanceValue` schema description now says so.
 - **Graded one-sided stance.** When every grounded source takes the same side with graded values
   (e.g. all `supports`, 0.6–0.9), `disagree` still fires and the Tier-0 verdict stays "split" as
-  `uvrn-stance-v1` §6 requires; the payload now carries the Tier-1 descriptor `same-side-graded`
-  (parent `split`), and the `disagree` explanation says the spread is in strength, not side,
-  instead of "Sources point in different directions".
-- **Host-source counts.** Host mode records one node per source, so the signed narrative and
-  `humanView` read "4 of 4 sources weighed in", not "1 of 1".
+  `uvrn-stance-v1` §6 requires. The payload now carries the Tier-1 descriptor `same-side-graded`
+  (parent `split`). The `disagree` explanation and the signed narrative say the spread is in
+  strength, not side, instead of "Sources point in different directions". It never applies when
+  a grounded source is mixed, neutral or on the other side, or when a value's sign disagrees with
+  its label.
+- **Host-source counts.** Host mode records one node per source (duplicate URLs get a `#n`
+  suffix), so the signed narrative and `humanView` read "4 of 4 sources weighed in", not "1 of 1".
+  Connector and mock modes still record one node per connector.
 - **Stance-axis score basis.** On stance runs where no source carries a numeric `value` /
   `evidenceScore`, the V-Score components were not measured. The result now adds
   `scoreBasis: { measured: false, reason }` and `humanView.scoreCard` omits the numbers;
@@ -40,6 +43,12 @@ or canonicalization changed; the `SPEC/` golden vectors pass byte-identically.
     or `npx @uvrn/cli verify-receipt`.
   - The tool description, the `details` text and the analysis prompt no longer suggest
     `verifyReceiptFull()` for legacy receipts.
+- **`delta_score_claim` can now succeed without a receipt.** Runs with fewer than 2 independent
+  sources used to return an `EXECUTION_ERROR`. They now return a successful result carrying
+  `insufficientIndependentSources`, with no `masterReceipt`, `networkReceipt`, `humanView` or
+  `v_score`.
+  - **Migrate:** check `insufficientIndependentSources` before reading the receipt fields.
+  - The tool description now says so.
 
 ### Changed
 - `@modelcontextprotocol/sdk` range tightened from `^1.0.0` to `^1.27.1` (the tested version).

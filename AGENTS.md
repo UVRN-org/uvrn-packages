@@ -7,7 +7,7 @@ This is the UVRN protocol monorepo for the **public** generation:
 
 **Cursor / Claude agents:** this file.  
 **Read book + article / how to speak results:** [`agents/SCRIBE.md`](agents/SCRIBE.md) (index: [`agents/README.md`](agents/README.md)).  
-**External / 3rd-party MCP clients** (connectors, online agents): [`uvrn-mcp/CONNECT.md`](uvrn-mcp/CONNECT.md) (`@uvrn/mcp` 5.1.1, 14 tools) — not this file.
+**External / 3rd-party MCP clients** (connectors, online agents): [`uvrn-mcp/CONNECT.md`](uvrn-mcp/CONNECT.md) (`@uvrn/mcp` 5.1.2, 14 tools) — not this file.
 
 **Org / protocol home:** [`UVRN-org/uvrn`](https://github.com/UVRN-org/uvrn).  
 **Earlier generations:** v1–v4 and 5.0 are legacy; this repository starts at the UVRN 5.1 release.

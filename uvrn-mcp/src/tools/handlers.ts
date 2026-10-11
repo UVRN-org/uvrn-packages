@@ -18,6 +18,8 @@ import { computeDrift, profileFor } from '@uvrn/drift';
 import { CompareEngine } from '@uvrn/compare';
 import {
   ConsensusEngine,
+  isGroundedStanceSource,
+  type ConsensusBuildResult,
   type FarmResult as ConsensusFarmResult,
   type StanceLabel,
   type StanceMode,
@@ -37,6 +39,7 @@ import {
   signReceipt,
   toHumanView,
   wrapMasterReceipt,
+  type VerdictDescriptor,
 } from '@uvrn/receipt';
 import {
   CanonGetInput,
@@ -52,6 +55,7 @@ import {
   ScoreDriftOutput,
   ScoreClaimInput,
   ScoreClaimOutput,
+  ScoreBasisNote,
   ExpectedValueDivergenceNote,
   HostMeasurementEcho,
   StanceCounts,
@@ -438,7 +442,6 @@ async function handleVerifyReceipt(
     if (!input.receipt || typeof input.receipt !== 'object') {
       return {
         integrityOk: false,
-        verified: false,
         error: 'Invalid input: receipt must be an object',
         details: 'The provided receipt is not an object',
       };
@@ -457,7 +460,6 @@ async function handleVerifyReceipt(
 
     return {
       integrityOk,
-      verified: integrityOk,
       recomputedHash: result.recomputedHash,
       error: result.error,
       details: integrityOk
@@ -470,7 +472,6 @@ async function handleVerifyReceipt(
 
     return {
       integrityOk: false,
-      verified: false,
       error: 'Integrity check error',
       details: message,
     };
@@ -703,12 +704,11 @@ async function handleScoreClaim(
           stanceEvidence: s.stanceEvidence,
         })),
       });
-      nodes.push({
-        id: 'HostSources',
-        status: 'on',
-        detail: `${input.sources.length} host sources`,
-        observedAt,
-      });
+      // One node per host source, so the narrative and human view count sources, not the
+      // single host that supplied them ("4 of 4 sources", never "1 of 1").
+      for (const s of input.sources) {
+        nodes.push({ id: s.url, status: 'on', detail: 'host source', observedAt });
+      }
     } else {
       // Path 2: configured connectors, or the zero-external mock fallback.
       const connectors = config.connectors && config.connectors.length > 0
@@ -746,7 +746,28 @@ async function handleScoreClaim(
     const normalized = normalize(merged.sources, 'general');
     const consensusEngine = new ConsensusEngine({ sources: merged, claim: input.claim });
     const stanceMode = consensusEngine.stanceMode();
-    const consensus = consensusEngine.buildConsensusResult(input.claim);
+    const built = consensusEngine.buildConsensusResult<ConsensusBuildResult>(input.claim);
+    if ('insufficientIndependentSources' in built) {
+      // Fewer than two independent sources survived parsing + dedup. That is an honest
+      // result, not an error: nothing is scored, sealed, or signed.
+      const insufficient = built.insufficientIndependentSources;
+      return {
+        claimId: registration.id,
+        evidenceMode,
+        sourceCount: insufficient.retainedCount,
+        insufficientIndependentSources: {
+          ...insufficient,
+          reason:
+            stanceMode.evidenceAxis === 'stance'
+              ? stanceInsufficientReason(merged.sources, stanceMode, insufficient.retainedCount)
+              : insufficient.reason,
+        },
+        absoluteConsensusValue: built.absoluteConsensusValue,
+        stanceCounts: buildStanceCounts(merged.sources, stanceMode),
+        ...(hostMeasurements.length > 0 ? { hostMeasurements } : {}),
+      };
+    }
+    const consensus = built;
     const base = runDeltaEngine(consensus.bundle);
     const breakdown = new ScoreBreakdown(consensus.components, SCORE_PROFILES.general);
     const stanceProjection = stanceToMeasurementSources(
@@ -784,9 +805,23 @@ async function handleScoreClaim(
         components: consensus.components,
       },
     });
+    // Graded one-sided stance (e.g. all `supports`, 0.6–0.9) still measures `disagree` and
+    // keeps the locked Tier-0 `split` (uvrn-stance-v1 §6); the Tier-1 descriptor and the
+    // explanation say the spread is in strength, not side.
+    const sameSideGraded =
+      stanceMode.evidenceAxis === 'stance' &&
+      isSameSideGraded(stanceProjection, measurementResults);
     // Enrich BEFORE buildMasterReceipt so humanExplanation sits inside the hashed
     // master envelope (B5.2) — enriching afterwards would invalidate masterHash.
-    const measurements = enrichMeasurements(measurementResults);
+    const measurements = enrichMeasurements(
+      sameSideGraded
+        ? measurementResults.map((m) =>
+            m.type === 'disagree' && m.verdict === 'disagree'
+              ? { ...m, humanExplanation: SAME_SIDE_GRADED_EXPLANATION }
+              : m
+          )
+        : measurementResults
+    );
 
     const masterReceipt = buildMasterReceipt({
       base,
@@ -812,6 +847,7 @@ async function handleScoreClaim(
             },
           }
         : {}),
+      ...(sameSideGraded ? { verdictDescriptor: SAME_SIDE_GRADED_DESCRIPTOR } : {}),
     };
 
     // Attach additive arcanum identity fields AFTER wrap (hash sealed) and BEFORE sign.
@@ -842,14 +878,26 @@ async function handleScoreClaim(
       config.receiptStore.save(networkReceipt);
     }
 
-    const humanView = toHumanView(networkReceipt, {
-      scores: {
-        vScore: breakdown.final,
-        completeness: consensus.components.completeness,
-        parity: consensus.components.parity,
-        freshness: consensus.components.freshness,
-      },
-    });
+    // On the stance axis the V-Score components still come from the prominence path
+    // (uvrn-stance-v1 §1.2). When no source carried a numeric value, they were not
+    // measured: say so rather than show zeros as a score.
+    const scoreBasis: ScoreBasisNote | undefined =
+      stanceMode.evidenceAxis === 'stance' && consensus.components.completeness === 0
+        ? { measured: false, reason: STANCE_SCORE_NOT_MEASURED }
+        : undefined;
+    const humanView = toHumanView(
+      networkReceipt,
+      scoreBasis
+        ? {}
+        : {
+            scores: {
+              vScore: breakdown.final,
+              completeness: consensus.components.completeness,
+              parity: consensus.components.parity,
+              freshness: consensus.components.freshness,
+            },
+          }
+    );
 
     // expectedValue is host input → envelope observation only. Computed after
     // receipts are sealed so it cannot enter hashed surfaces.
@@ -876,6 +924,7 @@ async function handleScoreClaim(
       // or not the quorum was met. Deliberately computed after the receipts are sealed so
       // it cannot reach `receiptPayload` — the payload's gated `stanceSummary` is untouched.
       stanceCounts: buildStanceCounts(merged.sources, stanceMode),
+      ...(scoreBasis !== undefined ? { scoreBasis } : {}),
       ...(hostMeasurements.length > 0 ? { hostMeasurements } : {}),
       ...(expectedValueDivergence !== undefined ? { expectedValueDivergence } : {}),
       ...(input.trackRecordObservations !== undefined && input.trackRecordObservations.length > 0
@@ -897,6 +946,66 @@ async function handleScoreClaim(
     logger.error('Score claim failed', { error: message });
     throw new ExecutionError(`Score claim failed: ${message}`, errorDetails);
   }
+}
+
+const SAME_SIDE_GRADED_DESCRIPTOR: VerdictDescriptor = {
+  term: 'same-side-graded',
+  parent: 'split',
+  definition: 'Every grounded source takes the same side of the claim; they differ in how strongly.',
+};
+
+const SAME_SIDE_GRADED_EXPLANATION =
+  'Sources split — gap detected. Every grounded source takes the same side of the claim; their stance values differ in strength by more than the divergence threshold.';
+
+const STANCE_SCORE_NOT_MEASURED =
+  'Stance was measured, but no source carried a numeric value or evidenceScore (or a measuredAt), so completeness, parity and freshness, and the V-Score built from them, were not measured on this run. A zero v_score here means not measured, not weak evidence.';
+
+type StanceProjection = ReturnType<typeof stanceToMeasurementSources>;
+
+/**
+ * True when `disagree` fired without `conflict`, and every projected stance (numeric and
+ * categorical) sits on one side: one label (supports or opposes) with values of matching sign.
+ */
+function isSameSideGraded(
+  projection: StanceProjection,
+  results: ReadonlyArray<{ type: string; verdict: string }>
+): boolean {
+  const fired = (type: string, verdict: string) =>
+    results.some((r) => r.type === type && r.verdict === verdict);
+  if (!fired('disagree', 'disagree') || fired('conflict', 'conflict')) return false;
+
+  const labels = [
+    ...projection.numeric.map((s) => s.attributes?.stanceLabel),
+    ...projection.categorical.map((s) => s.assertion),
+  ];
+  const side = labels[0];
+  if ((side !== 'supports' && side !== 'opposes') || labels.some((l) => l !== side)) {
+    return false;
+  }
+  return projection.numeric.every((s) =>
+    side === 'supports' ? (s.value as number) > 0 : (s.value as number) < 0
+  );
+}
+
+/** Stance-axis wording for @uvrn/consensus's insufficient result. Never derives a value. */
+function stanceInsufficientReason(
+  sources: readonly ConsensusFarmResult['sources'][number][],
+  stanceMode: StanceMode,
+  retainedCount: number
+): string {
+  const withValue = sources.filter(
+    (s) =>
+      isGroundedStanceSource(s) &&
+      typeof s.stanceValue === 'number' &&
+      Number.isFinite(s.stanceValue)
+  ).length;
+  const quorum = `Stance quorum met (${stanceMode.groundedCount} of ${stanceMode.sourceCount} sources grounded)`;
+  const never =
+    'stanceValue is never derived from stanceLabel (uvrn-stance-v1 §2): supply a stanceValue in [-1, 1] on each grounded source.';
+  if (withValue < 2) {
+    return `${quorum}, but only ${withValue} grounded source${withValue === 1 ? '' : 's'} carried a numeric stanceValue; stance agreement needs at least 2. ${never}`;
+  }
+  return `${quorum} and ${withValue} grounded sources carried a stanceValue, but sources with stance values within 1% published within 24 hours are treated as one, leaving ${retainedCount}; stance agreement needs at least 2 independent sources.`;
 }
 
 function toIsoTimestamp(value: unknown, fallback: string): string {

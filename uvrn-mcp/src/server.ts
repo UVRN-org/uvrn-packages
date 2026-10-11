@@ -64,7 +64,7 @@ export function createServer(runtimeConfig?: RuntimeConfig): McpServerHandle {
   const server = new Server(
     {
       name: 'delta-engine-mcp',
-      version: '5.1.1',
+      version: '5.1.2',
     },
     {
       capabilities: {

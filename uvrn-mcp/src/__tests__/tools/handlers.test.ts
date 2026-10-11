@@ -36,7 +36,7 @@ describe('delta_verify_receipt', () => {
     const receipt = (await handleRunEngine({ bundle: createTestBundle() })).receipt;
     const result = await handleVerifyReceipt({ receipt });
 
-    expect(result.verified).toBe(true);
+    expect(result.integrityOk).toBe(true);
   });
 
   it('should detect tampered receipt', async () => {
@@ -45,7 +45,7 @@ describe('delta_verify_receipt', () => {
     const tampered = { ...receipt, outcome: 'indeterminate' as const };
     const result = await handleVerifyReceipt({ receipt: tampered });
 
-    expect(result.verified).toBe(false);
+    expect(result.integrityOk).toBe(false);
     expect(result.details).toContain('Hash mismatch');
   });
 
@@ -53,23 +53,23 @@ describe('delta_verify_receipt', () => {
     const { handleVerifyReceipt } = await loadHandlers();
     const result = await handleVerifyReceipt({ receipt: { bundleId: 'missing-hash' } as any });
 
-    expect(result.verified).toBe(false);
+    expect(result.integrityOk).toBe(false);
     expect(result.error).toBe('Receipt missing hash');
   });
 
-  it('reports integrityOk with verified retained as a deprecated alias', async () => {
+  it('reports integrityOk and no legacy verified alias (removed in 5.1.2)', async () => {
     const { handleRunEngine, handleVerifyReceipt } = await loadHandlers();
     const receipt = (await handleRunEngine({ bundle: createTestBundle() })).receipt;
 
     const ok = await handleVerifyReceipt({ receipt });
     expect(ok.integrityOk).toBe(true);
-    expect(ok.verified).toBe(ok.integrityOk);
+    expect('verified' in ok).toBe(false);
 
     const tampered = await handleVerifyReceipt({
       receipt: { ...receipt, outcome: 'indeterminate' as const },
     });
     expect(tampered.integrityOk).toBe(false);
-    expect(tampered.verified).toBe(tampered.integrityOk);
+    expect('verified' in tampered).toBe(false);
   });
 
   it('never calls a hash recompute verification in its details string', async () => {

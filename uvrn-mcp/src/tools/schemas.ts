@@ -525,7 +525,7 @@ export const scoreClaimSchema = {
     sources: {
       type: 'array',
       description:
-        'Optional host-provided evidence. If you (the calling agent) can search the web, gather 2+ sources and pass them here; this skips connector fetch. Precedence: any non-empty array requests host-evidence mode, so exactly one source is rejected (it does not fall back to a connector/mock). If omitted or empty, the server uses a configured connector, or mock data as a last resort.',
+        'Optional host-provided evidence. If you (the calling agent) can search the web, gather 2+ sources and pass them here; this skips connector fetch. Precedence: any non-empty array requests host-evidence mode, so exactly one source is rejected (it does not fall back to a connector/mock). If omitted or empty, the server uses a configured connector, or mock data as a last resort. Sources whose values are within 1% and published within 24 hours count as one (reprints); if fewer than 2 independent sources remain, the result carries insufficientIndependentSources and no receipt or v_score.',
       items: {
         type: 'object',
         properties: {
@@ -545,7 +545,13 @@ export const scoreClaimSchema = {
               'Free-text unit for `value` (e.g. "m/s", "ppm", "USD"). Recorded and echoed back on the result envelope only — it does not influence any computation yet.',
           },
           evidenceScore: { type: 'number', minimum: 0, maximum: 100, description: '0–100 host-derived quality/trend-support score. Keeps its 0–100 bound; pass a real-world magnitude as `value` instead of rescaling it into this range.' },
-          stanceValue: { type: 'number', minimum: -1, maximum: 1, description: 'Explicit numeric claim position; -1 opposes and 1 supports' },
+          stanceValue: {
+            type: 'number',
+            minimum: -1,
+            maximum: 1,
+            description:
+              'Explicit numeric claim position; -1 opposes and 1 supports. Required for stance agreement: when the stance quorum is met (4+ sources, 3+ grounded with stanceLabel, stanceEvidence and stanceConfidence >= 0.6), only grounded sources with a stanceValue are measured, and fewer than 2 returns an insufficientIndependentSources result. It is never derived from stanceLabel (uvrn-stance-v1 §2).',
+          },
           stanceLabel: {
             type: 'string',
             enum: ['supports', 'opposes', 'mixed', 'neutral', 'insufficient'],

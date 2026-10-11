@@ -1,6 +1,6 @@
 {
   "name": "@uvrn/mcp",
-  "version": "5.1.1",
+  "version": "5.1.2",
   "description": "UVRN MCP server — 14 stdio tools for AI agents: Delta Engine runs, receipt checks, claim scoring, post-pipeline readouts, pattern scans, and receipted probability",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -47,7 +47,7 @@
     }
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.0"
+    "@modelcontextprotocol/sdk": "^1.27.1"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

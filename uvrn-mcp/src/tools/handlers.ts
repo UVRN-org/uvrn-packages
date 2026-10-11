@@ -463,7 +463,7 @@ async function handleVerifyReceipt(
       recomputedHash: result.recomputedHash,
       error: result.error,
       details: integrityOk
-        ? `Receipt for bundle "${receipt.bundleId}" is integrity-checked: its canonical payload rehashes to ${receipt.hash}. No producer signature was checked, so this is not verification — use verifyReceiptFull() from @uvrn/receipt for integrity plus signature.`
+        ? `Receipt for bundle "${receipt.bundleId}" is integrity-checked: its canonical payload rehashes to ${receipt.hash}. Legacy DeltaReceipts carry no signature, so integrity is all that can be checked here; for verification use the signed networkReceipt from delta_score_claim with verifyReceiptFull().`
         : result.error,
     };
   } catch (error) {

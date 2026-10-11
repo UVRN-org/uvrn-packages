@@ -82,7 +82,7 @@ Help me understand:
 3. What was the final delta between sources?
 4. How many rounds were needed?
 5. For each round, what were the deltas by metric?
-6. Does the receipt hash recompute? (delta_verify_receipt reports integrityOk — integrity only; full verification needs a producer signature via verifyReceiptFull in @uvrn/receipt)
+6. Does the receipt hash recompute? (delta_verify_receipt reports integrityOk — integrity only; a legacy DeltaReceipt carries no signature, so it can be integrity-checked but not verified)
 7. What does this tell us about data agreement across sources?
 8. If this is a MasterReceipt, what measurements ran and which nodes were off or unavailable?
 9. If canon tools are relevant, use delta_canon_qualify for read-only candidacy assessment; do not canonize automatically.

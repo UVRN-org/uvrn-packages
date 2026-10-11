@@ -28,10 +28,20 @@ or canonicalization changed; the `SPEC/` golden vectors pass byte-identically.
   `scoreBasis: { measured: false, reason }` and `humanView.scoreCard` omits the numbers;
   `v_score` stays 0 for type compatibility.
 
-### Changed
-- **`delta_verify_receipt` no longer returns `verified`.** It was an alias for `integrityOk`, and
+### Breaking
+- **`delta_verify_receipt` no longer returns `verified`.** It was an alias for `integrityOk`, but
   no signature is checked, so it broke the rule that "verified" means integrity plus signature.
-  Read `integrityOk`; use `verifyReceiptFull()` from `@uvrn/receipt` for verification.
+  This removes a documented field in a patch release, a deliberate choice of the honesty rule
+  over semver. Callers reading `result.verified` now get `undefined`.
+  - **Migrate:** read `integrityOk`. It means integrity-checked only. A legacy DeltaReceipt carries
+    no signature, so it cannot be verified.
+  - **For verification:** use the signed `networkReceipt` from `delta_score_claim` with
+    `verifyReceiptFull(networkReceipt, { publicKey })` from `@uvrn/receipt` (installed separately),
+    or `npx @uvrn/cli verify-receipt`.
+  - The tool description, the `details` text and the analysis prompt no longer suggest
+    `verifyReceiptFull()` for legacy receipts.
+
+### Changed
 - `@modelcontextprotocol/sdk` range tightened from `^1.0.0` to `^1.27.1` (the tested version).
 
 ### Known

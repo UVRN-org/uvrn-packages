@@ -198,6 +198,9 @@ describe('delta_verify_receipt — honest vocabulary', () => {
     expect(ok.integrityOk).toBe(true);
     expect('verified' in ok).toBe(false);
 
+    expect(ok.details).toContain('carry no signature');
+    expect(ok.details).not.toContain('from @uvrn/receipt for integrity plus signature');
+
     const bad = await handleVerifyReceipt({ receipt: { bundleId: 'missing-hash' } as any });
     expect(bad.integrityOk).toBe(false);
     expect('verified' in bad).toBe(false);

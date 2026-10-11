@@ -274,11 +274,17 @@ Validate bundle structure without executing the engine.
 
 ### `delta_verify_receipt`
 
-Integrity-check a DeltaReceipt by recomputing its canonical hash. Returns `integrityOk`
-(true means the receipt has not been altered). This does **not** check a producer
-signature — so it is not verification. (`verified` is a deprecated alias of
-`integrityOk`.) For full verification — integrity plus a producer signature that
-checks out — use `verifyReceiptFull()` from `@uvrn/receipt`.
+Integrity-check a legacy DeltaReceipt by recomputing its canonical hash. Returns `integrityOk`
+(true means the covered contents have not been altered since the hash was computed). This is
+**integrity-checked, not verified**: legacy DeltaReceipts carry no signature, so nothing about
+who produced the receipt is established. The former `verified` field was **removed in 5.1.2**
+(it was an alias of `integrityOk`); read `integrityOk`.
+
+No tool in this server checks signatures. For verification — integrity plus a producer
+signature that checks out — take the signed `networkReceipt` returned by `delta_score_claim` and
+check it with `verifyReceiptFull(networkReceipt, { publicKey })` from `@uvrn/receipt` (install it
+separately; `@uvrn/mcp` bundles it but does not re-export it; in ephemeral mode the key is the
+result's `signerPublicKey`), or with `npx @uvrn/cli verify-receipt`.
 
 **Input:**
 ```json
@@ -300,7 +306,7 @@ checks out — use `verifyReceiptFull()` from `@uvrn/receipt`.
 {
   "integrityOk": true,
   "recomputedHash": "sha256:abc123...",
-  "details": "Receipt for bundle \"test-bundle-001\" is integrity-checked: its canonical payload rehashes to sha256:abc123.... No producer signature was checked, so this is not verification — use verifyReceiptFull() from @uvrn/receipt for integrity plus signature."
+  "details": "Receipt for bundle \"test-bundle-001\" is integrity-checked: its canonical payload rehashes to sha256:abc123.... Legacy DeltaReceipts carry no signature, so integrity is all that can be checked here; for verification use the signed networkReceipt from delta_score_claim with verifyReceiptFull()."
 }
 ```
 

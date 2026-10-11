@@ -103,13 +103,13 @@ export function createServer(runtimeConfig?: RuntimeConfig): McpServerHandle {
         {
           name: 'delta_verify_receipt',
           description:
-            'Integrity-check a DeltaReceipt by recomputing its canonical hash. Returns `integrityOk`: ' +
-            'true means the receipt has not been altered since it was produced. It does NOT mean the ' +
-            'receipt was verified — no producer signature is checked here, so nothing about who ' +
-            'produced it is established. (`verified` is a deprecated alias of `integrityOk`, kept for ' +
-            'existing callers.) For full verification — integrity plus a producer signature that checks ' +
-            'out — use verifyReceiptFull() from @uvrn/receipt; its FullVerifyResult reports `integrityOk` ' +
-            'and `signatureOk` separately so the two are never conflated.',
+            'Integrity-check a legacy DeltaReceipt by recomputing its canonical hash. Returns `integrityOk`: ' +
+            'true means the covered contents have not been altered since the hash was computed. This is ' +
+            'integrity-checked, not verified: legacy DeltaReceipts carry no signature, so nothing about who ' +
+            'produced the receipt is established. (The former `verified` field was removed in 5.1.2.) ' +
+            'For verification — integrity plus a producer signature that checks out — use the signed ' +
+            '`networkReceipt` returned by delta_score_claim with verifyReceiptFull() from @uvrn/receipt ' +
+            '(installed separately) or `npx @uvrn/cli verify-receipt`. No tool in this server checks signatures.',
           inputSchema: verifyReceiptSchema,
         },
         {

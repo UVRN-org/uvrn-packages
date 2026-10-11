@@ -2,6 +2,18 @@
 
 Earlier generations (v1–v4, 5.0) are legacy and no longer maintained.
 
+## [5.1.2 patch] — 2026-10-11 — `@uvrn/mcp` only
+
+- **Versions:** `@uvrn/mcp` `5.1.1 → 5.1.2`; every other package unchanged. Handshake `serverInfo.version` and `plugin-manifest.json` report `5.1.2`. Order in [`PUBLISH.md`](PUBLISH.md).
+- **Fixed (`delta_score_claim`):**
+  - Same-day reprints and stance runs without `stanceValue` return an honest `insufficientIndependentSources` result instead of an execution error.
+  - Graded one-sided stance keeps "split" and adds the `same-side-graded` descriptor.
+  - Host sources are counted one by one in the narrative.
+  - Stance runs say when the V-Score was not measured (`scoreBasis`).
+- **Breaking (`delta_verify_receipt`):** the `verified` alias is removed. No signature is checked, so it broke the honesty rule. Read `integrityOk`. For verification, use the signed `networkReceipt` with `verifyReceiptFull()` from `@uvrn/receipt` or `npx @uvrn/cli verify-receipt`.
+- **Dependency:** `@modelcontextprotocol/sdk` `^1.0.0 → ^1.27.1`.
+- No changes to SPECs, schemas, hashed field lists or golden vectors. Details: [`uvrn-mcp/CHANGELOG.md`](uvrn-mcp/CHANGELOG.md).
+
 ## [5.1 alignment] — 2026-10-10 — every public package on the 5.1 line
 
 - **Versions:** the 27 packages at `5.0.1` and `@uvrn/visual`, `@uvrn/chart-memory` (`5.0.2`) → `5.1.0`; `@uvrn/cli`, `@uvrn/mcp`, `@uvrn/track-record`, `@uvrn/store-sqlite` `5.1.0 → 5.1.1`; `@uvrn/probability` `0.3.0 → 0.3.1`. Order in [`PUBLISH.md`](PUBLISH.md).

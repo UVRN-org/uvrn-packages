@@ -707,12 +707,14 @@ async function handleScoreClaim(
       });
       // One node per host source, so the narrative and human view count sources, not the
       // single host that supplied them ("4 of 4 sources", never "1 of 1").
-      // Duplicate URLs get a #n suffix so node ids stay distinct.
-      const seen = new Map<string, number>();
+      // Duplicate URLs get a #n suffix so node ids stay distinct, even against a URL that
+      // already ends in #n.
+      const used = new Set<string>();
       for (const s of input.sources) {
-        const n = (seen.get(s.url) ?? 0) + 1;
-        seen.set(s.url, n);
-        nodes.push({ id: n === 1 ? s.url : `${s.url}#${n}`, status: 'on', detail: 'host source', observedAt });
+        let id = s.url;
+        for (let n = 2; used.has(id); n += 1) id = `${s.url}#${n}`;
+        used.add(id);
+        nodes.push({ id, status: 'on', detail: 'host source', observedAt });
       }
     } else {
       // Path 2: configured connectors, or the zero-external mock fallback.
@@ -970,8 +972,15 @@ const STANCE_SCORE_NOT_MEASURED =
 
 function sameSideGradedNarrative(claim: string, nodes: readonly NodeStatusRecord[]): string {
   const responded = nodes.filter((node) => node.status === 'on').length;
+  const total = nodes.length;
+  const gaps = total - responded;
   const label = verdictHuman('disagree').label;
-  const text = `${label}: ${responded} of ${nodes.length} sources weighed in on "${claim}". Every grounded source takes the same side of the claim; they differ in how strongly.`;
+  // Same gap note as buildMasterNarrative (@uvrn/receipt): unreachable sources are disclosed.
+  const gapNote =
+    gaps > 0
+      ? ` ${gaps} of ${total} source${total === 1 ? '' : 's'} ${gaps === 1 ? 'was' : 'were'} unreachable — recorded, not hidden.`
+      : '';
+  const text = `${label}: ${responded} of ${total} sources weighed in on "${claim}". Every grounded source takes the same side of the claim; they differ in how strongly.${gapNote}`;
   return text.length <= 500 ? text : `${text.slice(0, 497)}...`;
 }
 

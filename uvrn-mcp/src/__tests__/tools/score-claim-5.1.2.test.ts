@@ -355,3 +355,42 @@ describe('5.1.2 audit follow-ups', () => {
     expect(src).toContain('the result carries `insufficientIndependentSources` and no masterReceipt');
   });
 });
+
+describe('5.1.2 re-audit follow-ups', () => {
+  it('keeps host node ids distinct even when a URL already carries the suffix', async () => {
+    const { handleScoreClaim } = await loadHandlers();
+    const result = scored(
+      await handleScoreClaim({
+        claim: 'Suffix collision claim',
+        sources: [
+          { url: 'https://x.org/a', title: 'A', snippet: 'a', evidenceScore: 70 },
+          { url: 'https://x.org/a', title: 'B', snippet: 'b', evidenceScore: 40 },
+          { url: 'https://x.org/a#2', title: 'C', snippet: 'c', evidenceScore: 10 },
+        ],
+      })
+    );
+    const ids = result.masterReceipt.nodes.map((n) => n.id);
+    expect(new Set(ids).size).toBe(3);
+  });
+
+  it('keeps the unreachable disclosure in the same-side narrative', async () => {
+    const [{ buildHandlers }, { resolveRuntimeConfig }] = await Promise.all([
+      import('../../tools/handlers'),
+      import('../../config'),
+    ]);
+    const graded = [0.9, 0.8, 0.7, 0.6].map((v, i) => stanceSource(`c${i}`, 'supports', { stanceValue: v }));
+    class Broken { async fetch(): Promise<never> { throw new Error('offline'); } }
+    class Graded {
+      async fetch(claim: { id: string }) {
+        return { claimId: claim.id, fetchedAt: '2026-10-01T10:00:00.000Z', durationMs: 0, sources: graded };
+      }
+    }
+    const { handleScoreClaim } = buildHandlers(
+      resolveRuntimeConfig({ connectors: [new Graded(), new Broken()] } as any)
+    );
+    const result = scored(await handleScoreClaim({ claim: 'Connector gap claim' }));
+    expect(result.humanView.verdictDescriptor?.term).toBe('same-side-graded');
+    expect(result.networkReceipt.narrative).toContain('1 of 2 sources');
+    expect(result.networkReceipt.narrative).toContain('unreachable — recorded, not hidden');
+  });
+});

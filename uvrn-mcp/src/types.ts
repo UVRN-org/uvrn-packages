@@ -131,16 +131,11 @@ export interface VerifyReceiptInput {
  * verification — integrity AND a producer signature that checks out — is
  * `verifyReceiptFull()` in `@uvrn/receipt`, whose `FullVerifyResult` reports `integrityOk`
  * and `signatureOk` separately for exactly this reason. This output reuses that vocabulary.
+ * The legacy `verified` alias (equal to `integrityOk`, no signature checked) was removed in 5.1.2.
  */
 export interface VerifyReceiptOutput {
   /** True when the receipt's canonical payload rehashes to its recorded hash. */
   integrityOk: boolean;
-  /**
-   * @deprecated Misleading name retained for existing callers: this is the hash recompute
-   * result, identical to `integrityOk`, not a signature check. Read `integrityOk`, and use
-   * `verifyReceiptFull()` from `@uvrn/receipt` when you need real verification.
-   */
-  verified: boolean;
   recomputedHash?: string;
   error?: string;
   details?: string;
@@ -368,10 +363,19 @@ export interface HostMeasurementEcho {
 }
 
 /**
- * ScoreClaimOutput returns the master receipt, the canonical V-Score, and provenance metadata,
- * plus the v4 additions: the signed NetworkReceipt envelope and its UI-agnostic HumanView.
+ * Envelope-only note on what the V-Score and its components were computed from. Present only
+ * when they could not be measured, so zeros are not read as a score of poor evidence.
  */
-export interface ScoreClaimOutput {
+export interface ScoreBasisNote {
+  measured: false;
+  reason: string;
+}
+
+/**
+ * ScoreClaimScoredOutput returns the master receipt, the canonical V-Score, and provenance
+ * metadata, plus the v4 additions: the signed NetworkReceipt envelope and its UI-agnostic HumanView.
+ */
+export interface ScoreClaimScoredOutput {
   masterReceipt: MasterReceipt;
   v_score: number; // Canonical V-Score via @uvrn/score ScoreBreakdown
   claimId: string; // Echoed from input or derived slug
@@ -381,12 +385,13 @@ export interface ScoreClaimOutput {
   humanView: HumanView; // toHumanView(networkReceipt) — render-ready, protocol-free
   /** Untyped median and range from the retained post-dedup consensus metrics. */
   absoluteConsensusValue?: AbsoluteConsensusValue;
+  /** Never present on a scored result; see ScoreClaimInsufficientOutput. */
+  insufficientIndependentSources?: undefined;
   /**
-   * Present when fewer than two independent numeric sources survive.
-   * No receipt is constructed for this outcome.
+   * Present when the V-Score components could not be measured on this run (stance-axis runs
+   * whose sources carry no numeric value/evidenceScore). Envelope-only — never hashed.
    */
-  insufficientIndependentSources?:
-    InsufficientIndependentSources['insufficientIndependentSources'];
+  scoreBasis?: ScoreBasisNote;
   /**
    * All five stance labels plus quorum state, reported on every run. Envelope-only —
    * never hashed, and never a substitute for the payload's gated `stanceSummary`.
@@ -418,6 +423,24 @@ export interface ScoreClaimOutput {
    */
   signerPublicKey?: string;
 }
+
+/**
+ * Fewer than two independent sources survived parsing and deduplication, so there is nothing
+ * to score. An honest result, not an error: no receipt is built, sealed, or signed, and there
+ * is no V-Score. Mirrors @uvrn/consensus `InsufficientIndependentSources`.
+ */
+export interface ScoreClaimInsufficientOutput {
+  claimId: string;
+  evidenceMode: 'host_sources' | 'connector' | 'mock';
+  /** Independent sources retained after parsing and deduplication (always below 2). */
+  sourceCount: number;
+  insufficientIndependentSources: InsufficientIndependentSources['insufficientIndependentSources'];
+  absoluteConsensusValue: AbsoluteConsensusValue;
+  stanceCounts: StanceCounts;
+  hostMeasurements?: HostMeasurementEcho[];
+}
+
+export type ScoreClaimOutput = ScoreClaimScoredOutput | ScoreClaimInsufficientOutput;
 
 /**
  * ReadSupportInput — post-pipeline support sufficiency via lattice `readSupport`.

@@ -6,7 +6,7 @@
 
 | Set | Scope | Count | Access | Version |
 |-----|-------|-------|--------|---------|
-| Public spine + advancements | `@uvrn/*` | 33 | `public` | `5.1.0`; `cli`, `mcp`, `track-record`, `store-sqlite` → `5.1.1` |
+| Public spine + advancements | `@uvrn/*` | 33 | `public` | `5.1.0`; `cli`, `track-record`, `store-sqlite` → `5.1.1`; `mcp` → `5.1.2` |
 | Probability layer | `@uvrn/probability` | 1 | `public` | `0.3.1` |
 
 
@@ -35,6 +35,12 @@ pnpm -r run build
 pnpm -r --if-present run test
 pnpm run check:phase1-gates
 ```
+
+## 5.1.2 patch (`@uvrn/mcp` only)
+
+Only `@uvrn/mcp` publishes, at `5.1.2`. It contains `delta_score_claim` honesty fixes and removes
+`verified` from `delta_verify_receipt` (a breaking change; see `uvrn-mcp/CHANGELOG.md`). Every other package
+stays at its current version. Owner GO and 2FA are required, as below.
 
 ## Publish order — 5.1 alignment release (current; all 34 packages)
 
@@ -65,7 +71,7 @@ Owner decision 2026-10-10: every public package publishes on the 5.1 line (33 at
 19. `@uvrn/jsonld@5.1.0`
 20. `@uvrn/normalize@5.1.0`
 21. `@uvrn/lattice@5.1.0`
-22. `@uvrn/mcp@5.1.1`
+22. `@uvrn/mcp@5.1.2`
 23. `@uvrn/measure@5.1.0`
 24. `@uvrn/meta-readout@5.1.0`
 25. `@uvrn/pattern@5.1.0`

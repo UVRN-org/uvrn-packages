@@ -165,7 +165,7 @@ printf '%s\n' \
   | node <ABSOLUTE_PATH_TO_REPO>/uvrn-mcp/dist/index.js
 ```
 
-A healthy server reports `delta-engine-mcp` v5.1.1 with `tools: 14, resources: 4, prompts: 3` and
+A healthy server reports `delta-engine-mcp` v5.1.2 with `tools: 14, resources: 4, prompts: 3` and
 returns the 14 tool names.
 
 ---

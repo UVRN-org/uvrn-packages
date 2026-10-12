@@ -42,6 +42,14 @@ describe('MCP Protocol Compliance', () => {
     expect(client).toBeDefined();
   });
 
+  it('describes delta_verify_receipt as integrity-only with no verified alias', async () => {
+    const { tools } = await client.listTools();
+    const description = tools.find((t) => t.name === 'delta_verify_receipt')?.description ?? '';
+    expect(description).toContain('integrityOk');
+    expect(description).toContain('removed in 5.1.2');
+    expect(description).not.toMatch(/deprecated alias|kept for existing callers/);
+  });
+
   it('should list tools', async () => {
     const tools = await client.listTools();
     expect(tools.tools).toHaveLength(14);

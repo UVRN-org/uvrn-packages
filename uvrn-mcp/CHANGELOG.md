@@ -1,5 +1,64 @@
 # Changelog
 
+## [5.1.2] - 2026-10-11
+
+Fixes found while recording real `delta_score_claim` sessions. No hashed field list, signature,
+or canonicalization changed; the `SPEC/` golden vectors pass byte-identically.
+
+### Fixed
+- **Same-day reprints no longer crash `delta_score_claim`.** When fewer than two independent
+  sources survive deduplication (values within 1% published within 24 hours), the tool now
+  returns `insufficientIndependentSources` (the `@uvrn/consensus` shape) with
+  `absoluteConsensusValue` and `stanceCounts`, instead of
+  `EXECUTION_ERROR: Invalid DeltaBundle: Bundle is undefined or null`. It is an honest result:
+  no receipt is built, sealed, or signed, and there is no `v_score`.
+- **Stance runs without `stanceValue` refuse honestly.** When the stance quorum is met but fewer
+  than two grounded sources carry a numeric `stanceValue`, the same insufficient result is returned
+  with a stance-specific reason. `stanceValue` is never derived from `stanceLabel`
+  (`SPEC/uvrn-stance-v1.md` §2). The `sources[].stanceValue` schema description now says so.
+- **Graded one-sided stance.** When every grounded source takes the same side with graded values
+  (e.g. all `supports`, 0.6–0.9), `disagree` still fires and the Tier-0 verdict stays "split" as
+  `uvrn-stance-v1` §6 requires. The payload now carries the Tier-1 descriptor `same-side-graded`
+  (parent `split`). The `disagree` explanation and the signed narrative say the spread is in
+  strength, not side, instead of "Sources point in different directions". It never applies when
+  a grounded source is mixed, neutral or on the other side, or when a value's sign disagrees with
+  its label.
+- **Host-source counts.** Host mode records one node per source (duplicate URLs get a `#n`
+  suffix), so the signed narrative and `humanView` read "4 of 4 sources weighed in", not "1 of 1".
+  Connector and mock modes still record one node per connector.
+- **Stance-axis score basis.** On stance runs where no source carries a numeric `value` /
+  `evidenceScore`, the V-Score components were not measured. The result now adds
+  `scoreBasis: { measured: false, reason }` and `humanView.scoreCard` omits the numbers;
+  `v_score` stays 0 for type compatibility.
+
+### Breaking
+- **`delta_verify_receipt` no longer returns `verified`.** It was an alias for `integrityOk`, but
+  no signature is checked, so it broke the rule that "verified" means integrity plus signature.
+  This removes a documented field in a patch release, a deliberate choice of the honesty rule
+  over semver. Callers reading `result.verified` now get `undefined`.
+  - **Migrate:** read `integrityOk`. It means integrity-checked only. A legacy DeltaReceipt carries
+    no signature, so it cannot be verified.
+  - **For verification:** use the signed `networkReceipt` from `delta_score_claim` with
+    `verifyReceiptFull(networkReceipt, { publicKey })` from `@uvrn/receipt` (installed separately),
+    or `npx @uvrn/cli verify-receipt`.
+  - The tool description, the `details` text and the analysis prompt no longer suggest
+    `verifyReceiptFull()` for legacy receipts.
+- **`delta_score_claim` can now succeed without a receipt.** Runs with fewer than 2 independent
+  sources used to return an `EXECUTION_ERROR`. They now return a successful result carrying
+  `insufficientIndependentSources`, with no `masterReceipt`, `networkReceipt`, `humanView` or
+  `v_score`.
+  - **Migrate:** check `insufficientIndependentSources` before reading the receipt fields.
+  - The tool description now says so.
+
+### Changed
+- `@modelcontextprotocol/sdk` range tightened from `^1.0.0` to `^1.27.1` (the tested version).
+
+### Known
+- On the stance axis, value-similarity dedup still treats independent sources with identical
+  `stanceValue`s published the same day as reprints (four outlets at 0.9 → one source). The
+  result is now an honest insufficient result with that reason, not a crash; whether stance values
+  should be deduplicated at all is a `@uvrn/consensus` / `uvrn-stance-v1` decision.
+
 ## [5.1.1] - 2026-10-10
 
 ### Changed

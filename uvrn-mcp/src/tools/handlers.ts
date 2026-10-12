@@ -18,6 +18,8 @@ import { computeDrift, profileFor } from '@uvrn/drift';
 import { CompareEngine } from '@uvrn/compare';
 import {
   ConsensusEngine,
+  isGroundedStanceSource,
+  type ConsensusBuildResult,
   type FarmResult as ConsensusFarmResult,
   type StanceLabel,
   type StanceMode,
@@ -36,7 +38,9 @@ import {
   parseTopic,
   signReceipt,
   toHumanView,
+  verdictHuman,
   wrapMasterReceipt,
+  type VerdictDescriptor,
 } from '@uvrn/receipt';
 import {
   CanonGetInput,
@@ -52,6 +56,7 @@ import {
   ScoreDriftOutput,
   ScoreClaimInput,
   ScoreClaimOutput,
+  ScoreBasisNote,
   ExpectedValueDivergenceNote,
   HostMeasurementEcho,
   StanceCounts,
@@ -438,7 +443,6 @@ async function handleVerifyReceipt(
     if (!input.receipt || typeof input.receipt !== 'object') {
       return {
         integrityOk: false,
-        verified: false,
         error: 'Invalid input: receipt must be an object',
         details: 'The provided receipt is not an object',
       };
@@ -457,11 +461,10 @@ async function handleVerifyReceipt(
 
     return {
       integrityOk,
-      verified: integrityOk,
       recomputedHash: result.recomputedHash,
       error: result.error,
       details: integrityOk
-        ? `Receipt for bundle "${receipt.bundleId}" is integrity-checked: its canonical payload rehashes to ${receipt.hash}. No producer signature was checked, so this is not verification — use verifyReceiptFull() from @uvrn/receipt for integrity plus signature.`
+        ? `Receipt for bundle "${receipt.bundleId}" is integrity-checked: its canonical payload rehashes to ${receipt.hash}. Legacy DeltaReceipts carry no signature, so integrity is all that can be checked here; for verification use the signed networkReceipt from delta_score_claim with verifyReceiptFull().`
         : result.error,
     };
   } catch (error) {
@@ -470,7 +473,6 @@ async function handleVerifyReceipt(
 
     return {
       integrityOk: false,
-      verified: false,
       error: 'Integrity check error',
       details: message,
     };
@@ -703,12 +705,17 @@ async function handleScoreClaim(
           stanceEvidence: s.stanceEvidence,
         })),
       });
-      nodes.push({
-        id: 'HostSources',
-        status: 'on',
-        detail: `${input.sources.length} host sources`,
-        observedAt,
-      });
+      // One node per host source, so the narrative and human view count sources, not the
+      // single host that supplied them ("4 of 4 sources", never "1 of 1").
+      // Duplicate URLs get a #n suffix so node ids stay distinct, even against a URL that
+      // already ends in #n.
+      const used = new Set<string>();
+      for (const s of input.sources) {
+        let id = s.url;
+        for (let n = 2; used.has(id); n += 1) id = `${s.url}#${n}`;
+        used.add(id);
+        nodes.push({ id, status: 'on', detail: 'host source', observedAt });
+      }
     } else {
       // Path 2: configured connectors, or the zero-external mock fallback.
       const connectors = config.connectors && config.connectors.length > 0
@@ -746,7 +753,28 @@ async function handleScoreClaim(
     const normalized = normalize(merged.sources, 'general');
     const consensusEngine = new ConsensusEngine({ sources: merged, claim: input.claim });
     const stanceMode = consensusEngine.stanceMode();
-    const consensus = consensusEngine.buildConsensusResult(input.claim);
+    const built = consensusEngine.buildConsensusResult<ConsensusBuildResult>(input.claim);
+    if ('insufficientIndependentSources' in built) {
+      // Fewer than two independent sources survived parsing + dedup. That is an honest
+      // result, not an error: nothing is scored, sealed, or signed.
+      const insufficient = built.insufficientIndependentSources;
+      return {
+        claimId: registration.id,
+        evidenceMode,
+        sourceCount: insufficient.retainedCount,
+        insufficientIndependentSources: {
+          ...insufficient,
+          reason:
+            stanceMode.evidenceAxis === 'stance'
+              ? stanceInsufficientReason(merged.sources, stanceMode, insufficient)
+              : insufficient.reason,
+        },
+        absoluteConsensusValue: built.absoluteConsensusValue,
+        stanceCounts: buildStanceCounts(merged.sources, stanceMode),
+        ...(hostMeasurements.length > 0 ? { hostMeasurements } : {}),
+      };
+    }
+    const consensus = built;
     const base = runDeltaEngine(consensus.bundle);
     const breakdown = new ScoreBreakdown(consensus.components, SCORE_PROFILES.general);
     const stanceProjection = stanceToMeasurementSources(
@@ -784,9 +812,23 @@ async function handleScoreClaim(
         components: consensus.components,
       },
     });
+    // Graded one-sided stance (e.g. all `supports`, 0.6–0.9) still measures `disagree` and
+    // keeps the locked Tier-0 `split` (uvrn-stance-v1 §6); the Tier-1 descriptor and the
+    // explanation say the spread is in strength, not side.
+    const sameSideGraded =
+      stanceMode.evidenceAxis === 'stance' &&
+      isSameSideGraded(stanceProjection, measurementResults, merged.sources);
     // Enrich BEFORE buildMasterReceipt so humanExplanation sits inside the hashed
     // master envelope (B5.2) — enriching afterwards would invalidate masterHash.
-    const measurements = enrichMeasurements(measurementResults);
+    const measurements = enrichMeasurements(
+      sameSideGraded
+        ? measurementResults.map((m) =>
+            m.type === 'disagree' && m.verdict === 'disagree'
+              ? { ...m, humanExplanation: SAME_SIDE_GRADED_EXPLANATION }
+              : m
+          )
+        : measurementResults
+    );
 
     const masterReceipt = buildMasterReceipt({
       base,
@@ -812,6 +854,7 @@ async function handleScoreClaim(
             },
           }
         : {}),
+      ...(sameSideGraded ? { verdictDescriptor: SAME_SIDE_GRADED_DESCRIPTOR } : {}),
     };
 
     // Attach additive arcanum identity fields AFTER wrap (hash sealed) and BEFORE sign.
@@ -820,6 +863,9 @@ async function handleScoreClaim(
       claim: { id: registration.id, text: input.claim },
       source: 'uvrn-mcp',
       action: 'delta_score_claim',
+      // The default narrative uses the `disagree` meaning ("point in different directions"),
+      // which would contradict the descriptor inside the same signed receipt.
+      ...(sameSideGraded ? { narrative: sameSideGradedNarrative(input.claim, nodes) } : {}),
       ...(topic !== undefined ? { topic } : {}),
     });
     const domain =
@@ -842,14 +888,26 @@ async function handleScoreClaim(
       config.receiptStore.save(networkReceipt);
     }
 
-    const humanView = toHumanView(networkReceipt, {
-      scores: {
-        vScore: breakdown.final,
-        completeness: consensus.components.completeness,
-        parity: consensus.components.parity,
-        freshness: consensus.components.freshness,
-      },
-    });
+    // On the stance axis the V-Score components still come from the prominence path
+    // (uvrn-stance-v1 §1.2). When no source carried a numeric value, they were not
+    // measured: say so rather than show zeros as a score.
+    const scoreBasis: ScoreBasisNote | undefined =
+      stanceMode.evidenceAxis === 'stance' && consensus.components.completeness === 0
+        ? { measured: false, reason: STANCE_SCORE_NOT_MEASURED }
+        : undefined;
+    const humanView = toHumanView(
+      networkReceipt,
+      scoreBasis
+        ? {}
+        : {
+            scores: {
+              vScore: breakdown.final,
+              completeness: consensus.components.completeness,
+              parity: consensus.components.parity,
+              freshness: consensus.components.freshness,
+            },
+          }
+    );
 
     // expectedValue is host input → envelope observation only. Computed after
     // receipts are sealed so it cannot enter hashed surfaces.
@@ -876,6 +934,7 @@ async function handleScoreClaim(
       // or not the quorum was met. Deliberately computed after the receipts are sealed so
       // it cannot reach `receiptPayload` — the payload's gated `stanceSummary` is untouched.
       stanceCounts: buildStanceCounts(merged.sources, stanceMode),
+      ...(scoreBasis !== undefined ? { scoreBasis } : {}),
       ...(hostMeasurements.length > 0 ? { hostMeasurements } : {}),
       ...(expectedValueDivergence !== undefined ? { expectedValueDivergence } : {}),
       ...(input.trackRecordObservations !== undefined && input.trackRecordObservations.length > 0
@@ -897,6 +956,92 @@ async function handleScoreClaim(
     logger.error('Score claim failed', { error: message });
     throw new ExecutionError(`Score claim failed: ${message}`, errorDetails);
   }
+}
+
+const SAME_SIDE_GRADED_DESCRIPTOR: VerdictDescriptor = {
+  term: 'same-side-graded',
+  parent: 'split',
+  definition: 'Every grounded source takes the same side of the claim; they differ in how strongly.',
+};
+
+const SAME_SIDE_GRADED_EXPLANATION =
+  'Sources split — gap detected. Every grounded source takes the same side of the claim; their stance values differ in strength by more than the divergence threshold.';
+
+const STANCE_SCORE_NOT_MEASURED =
+  'Stance was measured, but no source carried a numeric value or evidenceScore, so completeness, parity and freshness, and the V-Score built from them, were not measured on this run. A zero v_score here means not measured, not weak evidence. (Freshness also needs measuredAt.)';
+
+function sameSideGradedNarrative(claim: string, nodes: readonly NodeStatusRecord[]): string {
+  const responded = nodes.filter((node) => node.status === 'on').length;
+  const total = nodes.length;
+  const gaps = total - responded;
+  const label = verdictHuman('disagree').label;
+  // Same gap note as buildMasterNarrative (@uvrn/receipt): unreachable sources are disclosed.
+  const gapNote =
+    gaps > 0
+      ? ` ${gaps} of ${total} source${total === 1 ? '' : 's'} ${gaps === 1 ? 'was' : 'were'} unreachable — recorded, not hidden.`
+      : '';
+  const text = `${label}: ${responded} of ${total} sources weighed in on "${claim}". Every grounded source takes the same side of the claim; they differ in how strongly.${gapNote}`;
+  return text.length <= 500 ? text : `${text.slice(0, 497)}...`;
+}
+
+type StanceProjection = ReturnType<typeof stanceToMeasurementSources>;
+
+/**
+ * True when `disagree` fired without `conflict`, every grounded source (including mixed or
+ * neutral ones that never reach a projection) carries the same label, supports or opposes, and
+ * every projected value has the matching sign.
+ */
+function isSameSideGraded(
+  projection: StanceProjection,
+  results: ReadonlyArray<{ type: string; verdict: string }>,
+  sources: readonly ConsensusFarmResult['sources'][number][]
+): boolean {
+  const fired = (type: string, verdict: string) =>
+    results.some((r) => r.type === type && r.verdict === verdict);
+  if (!fired('disagree', 'disagree') || fired('conflict', 'conflict')) return false;
+
+  const labels = [
+    ...projection.numeric.map((s) => s.attributes?.stanceLabel),
+    ...projection.categorical.map((s) => s.assertion),
+  ];
+  const side = labels[0];
+  if ((side !== 'supports' && side !== 'opposes') || labels.some((l) => l !== side)) {
+    return false;
+  }
+  if (sources.some((s) => isGroundedStanceSource(s) && s.stanceLabel !== side)) {
+    return false;
+  }
+  return projection.numeric.every((s) =>
+    side === 'supports' ? (s.value as number) > 0 : (s.value as number) < 0
+  );
+}
+
+/**
+ * Stance-axis wording for @uvrn/consensus's insufficient result, branching on the engine's own
+ * counts. Never derives a value.
+ */
+function stanceInsufficientReason(
+  sources: readonly ConsensusFarmResult['sources'][number][],
+  stanceMode: StanceMode,
+  insufficient: { usableCount: number; retainedCount: number; deduplicatedCount: number }
+): string {
+  const withValue = sources.filter(
+    (s) =>
+      isGroundedStanceSource(s) &&
+      typeof s.stanceValue === 'number' &&
+      Number.isFinite(s.stanceValue)
+  ).length;
+  const quorum = `Stance quorum met (${stanceMode.groundedCount} of ${stanceMode.sourceCount} sources grounded)`;
+  const never =
+    'stanceValue is never derived from stanceLabel (uvrn-stance-v1 §2): supply a stanceValue in [-1, 1] on each grounded source.';
+  if (insufficient.usableCount < 2) {
+    const excluded =
+      insufficient.usableCount < withValue
+        ? ` ${withValue - insufficient.usableCount} grounded source${withValue - insufficient.usableCount === 1 ? ' was' : 's were'} excluded as a forecast (obsStatus F) or out of range.`
+        : '';
+    return `${quorum}, but only ${insufficient.usableCount} grounded source${insufficient.usableCount === 1 ? '' : 's'} carried a usable stanceValue; stance agreement needs at least 2.${excluded} ${never}`;
+  }
+  return `${quorum} and ${insufficient.usableCount} grounded sources carried a usable stanceValue, but ${insufficient.deduplicatedCount} with stance values within 1% published within 24 hours of another ${insufficient.deduplicatedCount === 1 ? 'was' : 'were'} treated as one, leaving ${insufficient.retainedCount}; stance agreement needs at least 2 independent sources.`;
 }
 
 function toIsoTimestamp(value: unknown, fallback: string): string {

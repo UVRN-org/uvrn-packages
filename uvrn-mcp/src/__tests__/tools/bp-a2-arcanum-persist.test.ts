@@ -1,11 +1,7 @@
 /**
- * BP-A2 FIRST CONSUMER — delta_score_claim persists through injected arcanum archive.
- * Durable signing (arcanum-producer-v1) + reopen store ("restart") + verifyReceiptFull.
+ * BP-A2 FIRST CONSUMER — delta_score_claim persists through an injected archive
+ * (`RuntimeConfig.arcanum`): durable signing, a stored round trip ("restart"), verifyReceiptFull.
  */
-
-import { mkdtempSync, rmSync, existsSync, readFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
 
 const ORIGINAL_ENV = { ...process.env };
 
@@ -33,73 +29,37 @@ async function loadHandlers(runtimeConfig = {}) {
   return buildHandlers(resolveRuntimeConfig(runtimeConfig as any));
 }
 
-async function loadArcanumProducerKeys(): Promise<{
-  privateKey: string;
-  publicKey: string;
-}> {
-  const umbrellaSecrets = resolve(process.cwd(), '../../../../secrets/arcanum');
-  const alt = resolve(process.cwd(), '../../../secrets/arcanum');
-  for (const dir of [umbrellaSecrets, alt]) {
-    const privPath = resolve(dir, 'arcanum-producer-v1.private.b64');
-    const pubPath = resolve(dir, 'arcanum-producer-v1.public.b64');
-    if (existsSync(privPath) && existsSync(pubPath)) {
-      return {
-        privateKey: readFileSync(privPath, 'utf8').trim(),
-        publicKey: readFileSync(pubPath, 'utf8').trim(),
-      };
-    }
-  }
-  const { generateReceiptKeyPair } = await import('@uvrn/receipt');
-  const kp = generateReceiptKeyPair();
-  return { privateKey: kp.privateKey, publicKey: kp.publicKey };
+/**
+ * In-memory stand-in for an injected archive. It implements the public `RuntimeConfig.arcanum`
+ * contract (`persist`) and stores receipts as JSON, so reading one back is a real
+ * serialize/deserialize round trip, the same thing a durable store does across a restart.
+ */
+function memoryArchive() {
+  const rows = new Map<string, string>();
+  return {
+    persist(receipt: any) {
+      rows.set(receipt.receiptHash, JSON.stringify(receipt));
+      return receipt;
+    },
+    get(hash: string) {
+      const row = rows.get(hash);
+      return row === undefined ? null : JSON.parse(row);
+    },
+    size: () => rows.size,
+  };
 }
 
-// Optional private peer (not published, not in this repo). The specifier is assembled at
-// runtime so the private scope name is not spelled out in this public source file.
-const ARCANUM_PKG = ['@suttle', 'media/arcanum'].join('');
-
-describe('BP-A2 arcanum persist (first consumer)', () => {
-  let dir: string;
-  let dbPath: string;
-  let arcanumAvailable = false;
-
-  beforeAll(async () => {
-    try {
-      await import(/* @vite-ignore */ ARCANUM_PKG);
-      arcanumAvailable = true;
-    } catch {
-      arcanumAvailable = false;
-    }
-  });
-
-  beforeEach(() => {
-    dir = mkdtempSync(join(tmpdir(), 'uvrn-mcp-a2-'));
-    dbPath = join(dir, 'master.db');
-  });
-
-  afterEach(() => {
-    rmSync(dir, { recursive: true, force: true });
-  });
-
-  it('delta_score_claim + durable signing + arcanum survives restart and verifies', async () => {
-    if (!arcanumAvailable) {
-      console.warn('Skipping: optional arcanum peer not installed');
-      return;
-    }
+describe('BP-A2 archive persist (first consumer)', () => {
+  it('delta_score_claim persists the signed receipt to an injected archive, and it verifies after a round trip', async () => {
     vi.doUnmock('@uvrn/core');
     vi.resetModules();
 
-    const { verifyReceiptFull } = await import('@uvrn/receipt');
-    const { openArcanum } = await import(/* @vite-ignore */ ARCANUM_PKG);
-
-    const keys = await loadArcanumProducerKeys();
-    const archive = openArcanum({ dbPath, driver: 'node:sqlite' });
+    const { verifyReceiptFull, generateReceiptKeyPair } = await import('@uvrn/receipt');
+    const keys = generateReceiptKeyPair();
+    const archive = memoryArchive();
 
     const { handleScoreClaim } = await loadHandlers({
-      signing: {
-        privateKey: keys.privateKey,
-        publicKeyRef: 'arcanum-producer-v1',
-      },
+      signing: { privateKey: keys.privateKey, publicKeyRef: 'test-producer-v1' },
       arcanum: archive,
     });
 
@@ -110,26 +70,22 @@ describe('BP-A2 arcanum persist (first consumer)', () => {
 
     const receipt = result.networkReceipt;
     expect(receipt.arcanumType).toBe('uvrn-market');
-    expect(receipt.signature?.publicKeyRef).toBe('arcanum-producer-v1');
-    expect(result.signerPublicKey).toBeUndefined();
+    expect(receipt.signature?.publicKeyRef).toBe('test-producer-v1');
+    expect(result.signerPublicKey).toBeUndefined(); // explicit keys are never echoed
+    expect(archive.size()).toBe(1);
 
-    const hash = receipt.receiptHash;
-    expect(archive.get(hash)?.receiptHash).toBe(hash);
-    archive.close();
-
-    // "Restart" — reopen master DB, load, verify
-    const reopened = openArcanum({ dbPath, driver: 'node:sqlite' });
-    const loaded = reopened.get(hash);
+    // "Restart": read the stored JSON back and verify integrity + signature.
+    const loaded = archive.get(receipt.receiptHash);
     expect(loaded).not.toBeNull();
-    expect(loaded!.arcanumType).toBe('uvrn-market');
-    expect(loaded!.kind).not.toBe('uvrn-market'); // purpose is not kind
-    expect(loaded!.tags).toBeUndefined();
+    expect(loaded.receiptHash).toBe(receipt.receiptHash);
+    expect(loaded.arcanumType).toBe('uvrn-market');
+    expect(loaded.kind).not.toBe('uvrn-market'); // purpose is not kind
+    expect(loaded.tags).toBeUndefined();
 
-    const verify = verifyReceiptFull(loaded!, { publicKey: keys.publicKey });
-    expect(verify.verified).toBe(true);
+    const verify = verifyReceiptFull(loaded, { publicKey: keys.publicKey });
     expect(verify.integrityOk).toBe(true);
     expect(verify.signatureOk).toBe(true);
-    reopened.close();
+    expect(verify.verified).toBe(true);
   });
 
   it('omitting arcanum keeps ephemeral default (no persist required)', async () => {

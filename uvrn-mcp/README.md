@@ -34,7 +34,7 @@ The Delta Engine MCP server exposes UVRN's Delta Engine functionality to AI assi
 |------|-------------|
 | **`delta_run_engine`** | Execute Delta Engine on bundles to verify data consensus across sources |
 | **`delta_validate_bundle`** | Validate bundle structure without executing (fast pre-flight check) |
-| **`delta_verify_receipt`** | Integrity-check a receipt by recomputing its hash (`integrityOk`; `verified` is a deprecated alias) |
+| **`delta_verify_receipt`** | Integrity-check a receipt by recomputing its hash (`integrityOk`; the legacy `verified` alias was removed in 5.1.2) |
 | **`delta_score_drift`** | Score temporal drift for an already enriched `DriftInputReceipt` |
 | **`delta_compare`** | Compare exactly two already scored receipts with `claimId` and `vScore` |
 | **`delta_verify_identity`** | Look up signer reputation in an in-memory identity registry |
@@ -274,11 +274,17 @@ Validate bundle structure without executing the engine.
 
 ### `delta_verify_receipt`
 
-Integrity-check a DeltaReceipt by recomputing its canonical hash. Returns `integrityOk`
-(true means the receipt has not been altered). This does **not** check a producer
-signature — so it is not verification. (`verified` is a deprecated alias of
-`integrityOk`.) For full verification — integrity plus a producer signature that
-checks out — use `verifyReceiptFull()` from `@uvrn/receipt`.
+Integrity-check a legacy DeltaReceipt by recomputing its canonical hash. Returns `integrityOk`
+(true means the covered contents have not been altered since the hash was computed). This is
+**integrity-checked, not verified**: legacy DeltaReceipts carry no signature, so nothing about
+who produced the receipt is established. The former `verified` field was **removed in 5.1.2**
+(it was an alias of `integrityOk`); read `integrityOk`.
+
+No tool in this server checks signatures. For verification — integrity plus a producer
+signature that checks out — take the signed `networkReceipt` returned by `delta_score_claim` and
+check it with `verifyReceiptFull(networkReceipt, { publicKey })` from `@uvrn/receipt` (install it
+separately; `@uvrn/mcp` bundles it but does not re-export it; in ephemeral mode the key is the
+result's `signerPublicKey`), or with `npx @uvrn/cli verify-receipt`.
 
 **Input:**
 ```json
@@ -299,9 +305,8 @@ checks out — use `verifyReceiptFull()` from `@uvrn/receipt`.
 ```json
 {
   "integrityOk": true,
-  "verified": true,
   "recomputedHash": "sha256:abc123...",
-  "details": "Receipt for bundle \"test-bundle-001\" is integrity-checked: its canonical payload rehashes to sha256:abc123.... No producer signature was checked, so this is not verification — use verifyReceiptFull() from @uvrn/receipt for integrity plus signature."
+  "details": "Receipt for bundle \"test-bundle-001\" is integrity-checked: its canonical payload rehashes to sha256:abc123.... Legacy DeltaReceipts carry no signature, so integrity is all that can be checked here; for verification use the signed networkReceipt from delta_score_claim with verifyReceiptFull()."
 }
 ```
 
@@ -309,7 +314,6 @@ checks out — use `verifyReceiptFull()` from `@uvrn/receipt`.
 ```json
 {
   "integrityOk": false,
-  "verified": false,
   "error": "Hash mismatch",
   "details": "Expected sha256:abc123..., got sha256:def456..."
 }
@@ -514,6 +518,7 @@ The path taken is reported back as `evidenceMode` (`host_sources` | `connector` 
 - **`evidenceScore` is a first-class numeric field, not text.** Do not encode it into the `snippet`. The scorer reads the field directly, so a number elsewhere in the `title`/`snippet` (a year, "Top 10", a price) can never override it. If `evidenceScore` is omitted (and no `value`), the scorer falls back to the first number found in `title`/`snippet`.
 - **At least 2 sources are required for host mode.** Exactly one source is a hard `ValidationError` — it does **not** fall back to a connector/mock. Omit `sources` (or pass `[]`) to use connectors/mock instead.
 - **Bounds are enforced.** `evidenceScore` outside 0–100, `credibility` outside 0–1, non-finite `value`, or any other non-finite number is rejected with a `ValidationError`.
+- **Stance needs `stanceValue`.** When the stance quorum is met (4+ sources, 3+ grounded: `stanceLabel`, non-empty `stanceEvidence`, `stanceConfidence` ≥ 0.6), agreement is measured on grounded sources' `stanceValue` (−1…1). It is never derived from `stanceLabel` (`SPEC/uvrn-stance-v1.md` §2); fewer than 2 such sources returns an `insufficientIndependentSources` result. If every grounded source takes the same side with graded values, the Tier-0 verdict stays "split" and the human view carries the `same-side-graded` descriptor.
 - **`stanceCounts` on the result envelope** reports all five stance labels plus quorum state on every run (envelope-only, never hashed). Distinct from the receipt payload's gated `stanceSummary` (support/oppose only, quorum-on only).
 
 **Input (host-provided sources):**
@@ -540,7 +545,10 @@ The path taken is reported back as `evidenceMode` (`host_sources` | `connector` 
     "claim": "Cottagecore prints are trending",
     "base": { "hash": "..." },
     "measurements": [{ "type": "disagree", "verdict": "disagree", "humanExplanation": "..." }],
-    "nodes": [{ "id": "HostSources", "status": "on", "detail": "2 host sources" }],
+    "nodes": [
+      { "id": "https://a.example.com", "status": "on", "detail": "host source" },
+      { "id": "https://b.example.com", "status": "on", "detail": "host source" }
+    ],
     "masterHash": "..."
   },
   "v_score": 76,
@@ -565,7 +573,27 @@ The path taken is reported back as `evidenceMode` (`host_sources` | `connector` 
 ```
 `v_score` is the canonical V-Score. `sourceCount` is the number of sources **actually scored** — after non-numeric sources are dropped and near-identical sources (within 1% of each other and 1 day apart) are deduplicated — so it may be lower than the number of `sources` supplied.
 
-**Result fields added since v4 (additive — every pre-v4 field is unchanged):**
+**Not enough independent sources (honest result, not an error):** when fewer than 2 sources survive parsing and deduplication (for example, two same-day reprints 0.5% apart, or stance runs without `stanceValue`), the result has no `masterReceipt`, `networkReceipt`, `humanView` or `v_score` — nothing is scored, sealed or signed:
+
+```json
+{
+  "claimId": "the-index-closed-at-100-1a2b3c4d",
+  "evidenceMode": "host_sources",
+  "sourceCount": 1,
+  "insufficientIndependentSources": {
+    "inputCount": 2, "usableCount": 2, "retainedCount": 1, "requiredCount": 2,
+    "shortfall": 1, "deduplicatedCount": 1,
+    "reason": "2 usable measurements were found, but 1 near-identical source was removed, leaving 1; 1 more independent source required."
+  },
+  "absoluteConsensusValue": { "median": 100, "n": 1, "min": 100, "max": 100 },
+  "stanceCounts": { "supports": 0, "opposes": 0, "mixed": 0, "neutral": 0, "insufficient": 0, "unlabeled": 2, "quorum": { "met": false, "evidenceAxis": "prominence", "sourceCount": 2, "groundedCount": 0, "requiredSources": 4, "requiredGrounded": 3, "confidenceFloor": 0.6, "reason": "source-quorum-missed" } },
+  "hostMeasurements": [ { "url": "https://example.org/wire", "value": 100 }, { "url": "https://example.org/reprint", "value": 100.5 } ]
+}
+```
+
+**`scoreBasis` (stance axis):** the V-Score components come from numeric `value`/`evidenceScore` and `measuredAt`, not from stance. On a stance run where no source carries a numeric value, the result adds `scoreBasis: { measured: false, reason }`, `v_score` is 0 meaning *not measured*, and `humanView.scoreCard` omits the numbers.
+
+**Result fields added since v4 (additive on scored results; since 5.1.2 an insufficient result carries none of the receipt fields, see above):**
 
 - `networkReceipt` — the signed `uvrn-receipt-4` NetworkReceipt envelope wrapping `masterReceipt` (payload untouched, narrative auto-generated from the human vocabulary, optional normalized `topic`). Measurements inside the payload carry `humanExplanation`, stamped **before** master hashing so the human language is inside the hashed envelope.
 - `humanView` — `toHumanView(networkReceipt)` from `@uvrn/receipt`: a render-ready, protocol-free object (headline, verdict label/tone, score card carrying `v_score` plus the consensus `completeness`/`parity`/`freshness` components, sources, measurements, gaps, provenance, how-to-verify).

@@ -64,7 +64,7 @@ export function createServer(runtimeConfig?: RuntimeConfig): McpServerHandle {
   const server = new Server(
     {
       name: 'delta-engine-mcp',
-      version: '5.1.1',
+      version: '5.1.2',
     },
     {
       capabilities: {
@@ -103,13 +103,13 @@ export function createServer(runtimeConfig?: RuntimeConfig): McpServerHandle {
         {
           name: 'delta_verify_receipt',
           description:
-            'Integrity-check a DeltaReceipt by recomputing its canonical hash. Returns `integrityOk`: ' +
-            'true means the receipt has not been altered since it was produced. It does NOT mean the ' +
-            'receipt was verified — no producer signature is checked here, so nothing about who ' +
-            'produced it is established. (`verified` is a deprecated alias of `integrityOk`, kept for ' +
-            'existing callers.) For full verification — integrity plus a producer signature that checks ' +
-            'out — use verifyReceiptFull() from @uvrn/receipt; its FullVerifyResult reports `integrityOk` ' +
-            'and `signatureOk` separately so the two are never conflated.',
+            'Integrity-check a legacy DeltaReceipt by recomputing its canonical hash. Returns `integrityOk`: ' +
+            'true means the covered contents have not been altered since the hash was computed. This is ' +
+            'integrity-checked, not verified: legacy DeltaReceipts carry no signature, so nothing about who ' +
+            'produced the receipt is established. (The former `verified` field was removed in 5.1.2.) ' +
+            'For verification — integrity plus a producer signature that checks out — use the signed ' +
+            '`networkReceipt` returned by delta_score_claim with verifyReceiptFull() from @uvrn/receipt ' +
+            '(installed separately) or `npx @uvrn/cli verify-receipt`. No tool in this server checks signatures.',
           inputSchema: verifyReceiptSchema,
         },
         {
@@ -149,7 +149,7 @@ export function createServer(runtimeConfig?: RuntimeConfig): McpServerHandle {
         {
           name: 'delta_score_claim',
           description:
-            'Score a claim against evidence and return a MasterReceipt + canonical V-Score, plus a signed NetworkReceipt envelope (`networkReceipt`) and a render-ready `humanView`. Optionally pass `topic` ("domain/subject/instrument") to organize the receipt. Evidence options: (1) if you can search the web, gather sources and pass them as `sources`; (2) if you cannot, have an admin configure a connector; (3) otherwise it runs on built-in mock data. Check `evidenceMode` in the result to see which path was used (`mock` = no real evidence, low-confidence score). Per source, pass the measurement as `value` at its real magnitude (uncapped, finite) with an optional free-text `unit`; `evidenceScore` stays a 0–100 quality score, so do not rescale a real-world number into it. The result envelope carries `stanceCounts`: all five stance labels (supports/opposes/mixed/neutral/insufficient) plus quorum state and, when the quorum was missed, the reason — reported on every run, so a disagreement below quorum is visible rather than looking empty. This differs from the receipt payload\'s `stanceSummary`, which reports only support/oppose and only once the stance quorum activates; the two coexist and mean different things. `stanceCounts` is envelope-only and never enters a hashed receipt. After scoring, optional post-pipeline tools: `delta_read_support` (lattice sufficiency) then `delta_report_rank_stability` (algox ordering stability).',
+            'Score a claim against evidence and return a MasterReceipt + canonical V-Score, plus a signed NetworkReceipt envelope (`networkReceipt`) and a render-ready `humanView`. When fewer than 2 independent sources remain after parsing and deduplication, the result carries `insufficientIndependentSources` and no masterReceipt, networkReceipt, humanView or v_score: an honest result, not an error, so check that field first. Optionally pass `topic` ("domain/subject/instrument") to organize the receipt. Evidence options: (1) if you can search the web, gather sources and pass them as `sources`; (2) if you cannot, have an admin configure a connector; (3) otherwise it runs on built-in mock data. Check `evidenceMode` in the result to see which path was used (`mock` = no real evidence, low-confidence score). Per source, pass the measurement as `value` at its real magnitude (uncapped, finite) with an optional free-text `unit`; `evidenceScore` stays a 0–100 quality score, so do not rescale a real-world number into it. The result envelope carries `stanceCounts`: all five stance labels (supports/opposes/mixed/neutral/insufficient) plus quorum state and, when the quorum was missed, the reason — reported on every run, so a disagreement below quorum is visible rather than looking empty. This differs from the receipt payload\'s `stanceSummary`, which reports only support/oppose and only once the stance quorum activates; the two coexist and mean different things. `stanceCounts` is envelope-only and never enters a hashed receipt. After scoring, optional post-pipeline tools: `delta_read_support` (lattice sufficiency) then `delta_report_rank_stability` (algox ordering stability).',
           inputSchema: scoreClaimSchema,
         },
         {

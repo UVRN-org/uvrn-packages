@@ -10,7 +10,7 @@ UVRN measures whether independent evidence **agrees, disagrees, conflicts, or sh
 
 | Set | Scope | Count | Version |
 |-----|-------|-------|---------|
-| Public spine + advancements | `@uvrn/*` | 33 | `5.1.0`; `cli`, `mcp`, `track-record`, `store-sqlite` → `5.1.1` |
+| Public spine + advancements | `@uvrn/*` | 33 | `5.1.0`; `cli`, `track-record`, `store-sqlite` → `5.1.1`; `mcp` → `5.1.2` |
 | Probability layer | `@uvrn/probability` | 1 | `0.3.1` |
 
 

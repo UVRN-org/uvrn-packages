@@ -16,6 +16,12 @@ UVRN measures whether independent evidence **agrees, disagrees, conflicts, or sh
 
 **Public advancements (Apache-2.0):** `@uvrn/visual`, `@uvrn/chart-memory` @ `5.1.0`; `@uvrn/track-record` @ `5.1.1`.
 
+**Latest: `@uvrn/mcp` 5.1.2 (2026-10-13).**
+- `delta_score_claim` returns an honest `insufficientIndependentSources` result, instead of an error, when fewer than two independent sources remain.
+- Stance runs need a numeric `stanceValue`; it is never derived from a label.
+- **Breaking:** `delta_verify_receipt` no longer returns `verified`. Read `integrityOk`.
+- Details in [`uvrn-mcp/CHANGELOG.md`](uvrn-mcp/CHANGELOG.md).
+
 
 Public consumers use `@uvrn/*` only (including `@uvrn/store-sqlite` main). `@uvrn/store-sqlite/track-record` subpath peers `@uvrn/track-record`. Existing v3 receipts and `verifyReceipt()` remain byte-for-byte valid (additive-only rule, golden-vector enforced). See [`CHANGELOG.md`](CHANGELOG.md).
 
@@ -62,6 +68,8 @@ Minimal Cursor / Claude Desktop shape:
 **Honesty walls (agents):**
 
 - Integrity-checked ≠ verified (verification needs a checked producer signature).
+- `delta_verify_receipt` reports `integrityOk` only: legacy DeltaReceipts carry no signature. For verification, check the signed `networkReceipt` from `delta_score_claim` with `verifyReceiptFull()` (`@uvrn/receipt`).
+- `delta_score_claim` with fewer than 2 independent sources succeeds with `insufficientIndependentSources` and no receipt or `v_score`. Check that field first.
 - `insufficient-data` is a successful honest outcome — not a failure to guess.
 - Gaps and missing origins are recorded; do not invent corroboration.
 - Possible reasons and diagnostics are not verdicts.

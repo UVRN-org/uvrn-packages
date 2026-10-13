@@ -11,7 +11,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import os from 'node:os';
-import { PRIVATE_TERM_RULES } from './check-published-purity.mjs';
+import { PRIVATE_TERM_RULES, findPrivateNames } from './check-published-purity.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const errors = [];
@@ -69,6 +69,9 @@ if (!fs.existsSync(mainDts)) {
     if (new RegExp(pattern.source, 'i').test(dts)) {
       errors.push(`store-sqlite main dist/index.d.ts contains a ${label} string`);
     }
+  }
+  for (const label of new Set(findPrivateNames(dts).map((h) => h.label))) {
+    errors.push(`store-sqlite main dist/index.d.ts contains a ${label} string`);
   }
 }
 if (fs.existsSync(mainJs)) {

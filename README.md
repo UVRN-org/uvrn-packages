@@ -225,42 +225,42 @@ The measurement function has several front doors. They are access layers onto th
 
 | Package | Layer | Status | Description |
 |---------|-------|--------|-------------|
-| `@uvrn/core` | 2 | ✅ Live (5.1) | Delta engine — V-Score math, validation, DRVC3 receipts, **Measurement contract + master receipt** |
-| `@uvrn/sdk` | 2 | ✅ Live (5.1) | TypeScript SDK — submit claims, read receipts |
-| `@uvrn/adapter` | 2 | ✅ Live (5.1) | DRVC3 envelope adapter — EIP-191 signatures |
-| `@uvrn/mcp` | 4 | ✅ Live (5.1) | MCP server — 14 stateless tools, AI-agent native access |
-| `@uvrn/api` | 4 | ✅ Live (5.1) | Fastify REST API — self-hosted deployments |
-| `@uvrn/cli` | 4 | ✅ Live (5.1) | CLI — `uvrn run bundle.json` → receipt; `uvrn prob run` → receipted probability |
-| `@uvrn/drift` | 3 | ✅ Live (5.1) | Temporal decay scoring |
-| `@uvrn/agent` | 3 | ✅ Live (5.1) | Continuous claim monitoring loop |
-| `@uvrn/canon` | 3 | ✅ Live (5.1) | Canonization engine — permanent signed records |
-| `@uvrn/signal` | 1 | ✅ Live (5.1) | Typed internal event bus — zero deps |
-| `@uvrn/score` | 2 | ✅ Live (5.1) | V-Score breakdown + domain profiles (re-exports core's `VSCORE_WEIGHTS`) |
-| `@uvrn/test` | 2 | ✅ Live (5.1) | Mocks, fixtures, factory functions |
-| `@uvrn/farm` | 1 | ✅ Live (5.1) | Data source connectors (news, financial, on-chain) |
-| `@uvrn/normalize` | 1 | ✅ Live (5.1) | Source normalization layer |
-| `@uvrn/lattice` | 1 | ✅ Live (5.1) | Cross-domain question decomposition |
-| `@uvrn/consensus` | 1 | ✅ Live (5.1) | Multi-source signal aggregation |
-| `@uvrn/compare` | 2 | ✅ Live (5.1) | Cross-receipt comparison |
-| `@uvrn/measure` | 2 | ✅ Live (5.1) | Pluggable agree/disagree/conflict/potential measurements + registry |
-| `@uvrn/identity` | 2 | ✅ Live (5.1) | Signer reputation layer |
-| `@uvrn/timeline` | 3 | ✅ Live (5.1) | Time-series query layer |
-| `@uvrn/algox` | 3 | ✅ Live (5.1) | Signal ranking and selection |
-| `@uvrn/watch` | 4 | ✅ Live (5.1) | Subscription & threshold alerts — `WatchStore` seam, delivery retry |
-| `@uvrn/embed` | 4 | ✅ Live (5.1) | Embeddable React badge + UMD script |
-| `@uvrn/receipt` | 2 | ✅ Live (5.1) | **The canonical receipt object model** — NetworkReceipt envelope, JCS canonicalization (single ecosystem implementation), Ed25519 signing, topics, Layer D vocabulary, `toHumanView()` |
-| `@uvrn/store-sqlite` | 3 | ✅ Live (5.1) | Every store interface against one local SQLite file + `pushToNetwork()` — main entry public; `/track-record` subpath peers `@uvrn/track-record@^5.1.0` |
-| `@uvrn/protocol` | — | ✅ Live (5.1) | Single-install production umbrella: core + receipt + measure + consensus + normalize + score + algox + signal |
-| `@uvrn/visual` | 4 | ✅ Live (5.1) | Plain-default receipt → HTML/SVG views (picture is never the proof) |
-| `@uvrn/chart-memory` | 4 | ✅ Live (5.1) | Plain-default history → SVG/HTML time charts (picture is never the proof) |
-| `@uvrn/jsonld` | 2 | ✅ Live (5.1) | Offline JSON-LD projection of receipts (never a hash input) |
-| `@uvrn/track-record` | 3 | ✅ Live (5.1) | Per-origin track records — transcription, revisions, Brier-scored forecasts, forecast log + multi-class Brier |
-| `@uvrn/meta-readout` | 4 | ✅ Live (5.1) | HumanView → MetaReadout facts bag (soft-go context; not buy/rank law) |
-| `@uvrn/pattern` | 3 | ✅ Live (5.1) | PatternObservations over history — detected ≠ verified; not receipt-class |
-| `@uvrn/validate` | 2 | ✅ Live (5.1) | DataPoint shape check + optional Stage2 measure route (never emits `verified`) |
+| `@uvrn/core` | 2 | ✅ Live (5.1.0) | Delta engine — V-Score math, validation, DRVC3 receipts, **Measurement contract + master receipt** |
+| `@uvrn/sdk` | 2 | ✅ Live (5.1.0) | TypeScript SDK — submit claims, read receipts |
+| `@uvrn/adapter` | 2 | ✅ Live (5.1.0) | DRVC3 envelope adapter — EIP-191 signatures |
+| `@uvrn/mcp` | 4 | ✅ Live (5.1.2) | MCP server — 14 stateless tools, AI-agent native access |
+| `@uvrn/api` | 4 | ✅ Live (5.1.0) | Fastify REST API — self-hosted deployments |
+| `@uvrn/cli` | 4 | ✅ Live (5.1.1) | CLI — `uvrn run bundle.json` → receipt; `uvrn prob run` → receipted probability |
+| `@uvrn/drift` | 3 | ✅ Live (5.1.0) | Temporal decay scoring |
+| `@uvrn/agent` | 3 | ✅ Live (5.1.0) | Continuous claim monitoring loop |
+| `@uvrn/canon` | 3 | ✅ Live (5.1.0) | Canonization engine — permanent signed records |
+| `@uvrn/signal` | 1 | ✅ Live (5.1.0) | Typed internal event bus — zero deps |
+| `@uvrn/score` | 2 | ✅ Live (5.1.0) | V-Score breakdown + domain profiles (re-exports core's `VSCORE_WEIGHTS`) |
+| `@uvrn/test` | 2 | ✅ Live (5.1.0) | Mocks, fixtures, factory functions |
+| `@uvrn/farm` | 1 | ✅ Live (5.1.0) | Data source connectors (news, financial, on-chain) |
+| `@uvrn/normalize` | 1 | ✅ Live (5.1.0) | Source normalization layer |
+| `@uvrn/lattice` | 1 | ✅ Live (5.1.0) | Cross-domain question decomposition |
+| `@uvrn/consensus` | 1 | ✅ Live (5.1.0) | Multi-source signal aggregation |
+| `@uvrn/compare` | 2 | ✅ Live (5.1.0) | Cross-receipt comparison |
+| `@uvrn/measure` | 2 | ✅ Live (5.1.0) | Pluggable agree/disagree/conflict/potential measurements + registry |
+| `@uvrn/identity` | 2 | ✅ Live (5.1.0) | Signer reputation layer |
+| `@uvrn/timeline` | 3 | ✅ Live (5.1.0) | Time-series query layer |
+| `@uvrn/algox` | 3 | ✅ Live (5.1.0) | Signal ranking and selection |
+| `@uvrn/watch` | 4 | ✅ Live (5.1.0) | Subscription & threshold alerts — `WatchStore` seam, delivery retry |
+| `@uvrn/embed` | 4 | ✅ Live (5.1.0) | Embeddable React badge + UMD script |
+| `@uvrn/receipt` | 2 | ✅ Live (5.1.0) | **The canonical receipt object model** — NetworkReceipt envelope, JCS canonicalization (single ecosystem implementation), Ed25519 signing, topics, Layer D vocabulary, `toHumanView()` |
+| `@uvrn/store-sqlite` | 3 | ✅ Live (5.1.1) | Every store interface against one local SQLite file + `pushToNetwork()` — main entry public; `/track-record` subpath peers `@uvrn/track-record@^5.1.0` |
+| `@uvrn/protocol` | — | ✅ Live (5.1.0) | Single-install production umbrella: core + receipt + measure + consensus + normalize + score + algox + signal |
+| `@uvrn/visual` | 4 | ✅ Live (5.1.0) | Plain-default receipt → HTML/SVG views (picture is never the proof) |
+| `@uvrn/chart-memory` | 4 | ✅ Live (5.1.0) | Plain-default history → SVG/HTML time charts (picture is never the proof) |
+| `@uvrn/jsonld` | 2 | ✅ Live (5.1.0) | Offline JSON-LD projection of receipts (never a hash input) |
+| `@uvrn/track-record` | 3 | ✅ Live (5.1.1) | Per-origin track records — transcription, revisions, Brier-scored forecasts, forecast log + multi-class Brier |
+| `@uvrn/meta-readout` | 4 | ✅ Live (5.1.0) | HumanView → MetaReadout facts bag (soft-go context; not buy/rank law) |
+| `@uvrn/pattern` | 3 | ✅ Live (5.1.0) | PatternObservations over history — detected ≠ verified; not receipt-class |
+| `@uvrn/validate` | 2 | ✅ Live (5.1.0) | DataPoint shape check + optional Stage2 measure route (never emits `verified`) |
 | `@uvrn/probability` | 3 | ✅ Live (0.3.1) | Deterministic, receipted forecasts — market, base-rate, or attributed-judgment mode; v1/v2/v3 contracts (v3: fixed-offset local deadlines); refuses rather than guesses; thresholds PROVISIONAL |
 
-*Public `@uvrn/*` packages: **34** (33 at `5.1.x` plus `@uvrn/probability` `0.3.1`).*
+*Public `@uvrn/*` packages: **34**. Versions are the ones live on npm: 29 at `5.1.0`, `cli` / `store-sqlite` / `track-record` at `5.1.1`, `mcp` at `5.1.2`, and `@uvrn/probability` at `0.3.1`.*
 
 
 ---
@@ -268,21 +268,28 @@ The measurement function has several front doors. They are access layers onto th
 ## Protocol layer model
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│  Layer 4 — Distribution & Access                                │
-│  @uvrn/embed  @uvrn/watch  @uvrn/mcp  @uvrn/api  @uvrn/cli    │
-├─────────────────────────────────────────────────────────────────┤
-│  Layer 3 — Temporal & Lifecycle                                 │
-│  @uvrn/drift  @uvrn/agent  @uvrn/canon  @uvrn/timeline  @uvrn/algox │
-├─────────────────────────────────────────────────────────────────┤
-│  Layer 2 — Receipt, Measurement & Verification                  │
-│  @uvrn/core  @uvrn/sdk  @uvrn/adapter  @uvrn/score             │
-│  @uvrn/compare  @uvrn/measure  @uvrn/identity  @uvrn/test      │
-├─────────────────────────────────────────────────────────────────┤
-│  Layer 1 — Data & Consensus                                     │
-│  @uvrn/farm  @uvrn/consensus  @uvrn/normalize  @uvrn/lattice  @uvrn/signal │
-└─────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────┐
+│  Layer 4 — Distribution & Access                                     │
+│  @uvrn/embed  @uvrn/watch  @uvrn/mcp  @uvrn/api  @uvrn/cli           │
+│  @uvrn/visual  @uvrn/chart-memory  @uvrn/meta-readout                │
+├──────────────────────────────────────────────────────────────────────┤
+│  Layer 3 — Temporal & Lifecycle                                      │
+│  @uvrn/drift  @uvrn/agent  @uvrn/canon  @uvrn/timeline  @uvrn/algox  │
+│  @uvrn/store-sqlite  @uvrn/track-record  @uvrn/pattern               │
+│  @uvrn/probability                                                   │
+├──────────────────────────────────────────────────────────────────────┤
+│  Layer 2 — Receipt, Measurement & Verification                       │
+│  @uvrn/core  @uvrn/receipt  @uvrn/sdk  @uvrn/adapter  @uvrn/score    │
+│  @uvrn/compare  @uvrn/measure  @uvrn/identity  @uvrn/test            │
+│  @uvrn/jsonld  @uvrn/validate                                        │
+├──────────────────────────────────────────────────────────────────────┤
+│  Layer 1 — Data & Consensus                                          │
+│  @uvrn/farm  @uvrn/consensus  @uvrn/normalize  @uvrn/lattice         │
+│  @uvrn/signal                                                        │
+└──────────────────────────────────────────────────────────────────────┘
 ```
+
+`@uvrn/protocol` sits outside the layers: it is a single-install umbrella over core, receipt, measure, consensus, normalize, score, algox and signal.
 
 ---
 
@@ -329,7 +336,7 @@ uvrn-packages/
 ├── uvrn-drift/    uvrn-agent/ uvrn-canon/
 ├── uvrn-signal/   uvrn-score/ uvrn-test/
 ├── uvrn-farm/     uvrn-normalize/ uvrn-lattice/
-├── uvrn-consensus/ uvrn-compare/ uvrn-measure/ uvrn-identity/ uvrn-timeline/
+├── uvrn-consensus/ uvrn-compare/ uvrn-measure/ uvrn-identity/ uvrn-timeline/ uvrn-algox/
 ├── uvrn-watch/    uvrn-embed/
 ├── uvrn-receipt/  uvrn-store-sqlite/ uvrn-protocol/
 ├── uvrn-visual/   uvrn-chart-memory/
@@ -347,6 +354,8 @@ Publish is owner-gated — see [`PUBLISH.md`](PUBLISH.md) for the full order and
 `@uvrn/probability` at `0.3.x` — core first, `@uvrn/visual` last, so the registry carries the public
 repository URL and the release-test fixes. The exact dependency order is in
 [`PUBLISH.md`](PUBLISH.md); only `pnpm publish` is allowed (a `prepublishOnly` guard refuses `npm publish`).
+
+**5.1.2 patch (2026-10-13):** only `@uvrn/mcp` was republished. Every other package stays at its version above. See [`uvrn-mcp/CHANGELOG.md`](uvrn-mcp/CHANGELOG.md).
 
 
 ---

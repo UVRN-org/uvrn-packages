@@ -64,3 +64,12 @@ jobs:
 
       - name: Check published-artifact purity
         run: pnpm check:published-purity
+
+      - name: Check publish access
+        run: pnpm run check:publish-access
+
+      - name: Check packed manifests
+        run: pnpm run check:packed-manifests
+
+      - name: Dual dry-run (pack)
+        run: pnpm run check:dual-dry-run

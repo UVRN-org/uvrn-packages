@@ -6,7 +6,7 @@ packages:
   - 'uvrn-api'
   - 'uvrn-mcp'
   - 'uvrn-adapter'
-  # Pre-release (built, audited — publishing after wave 1)
+  # Live on npm (temporal / lifecycle / ranking)
   - 'uvrn-drift'
   - 'uvrn-canon'
   - 'uvrn-agent'
@@ -39,7 +39,7 @@ packages:
   - 'uvrn-protocol'
   - 'uvrn-jsonld'
   - 'uvrn-track-record'
-  # Probability layer — in-tree, unpublished (Admin-gated)
+  # Probability layer — published on npm; process-gated (Admin GO + phase1 gates)
   - 'uvrn-probability'
 # Approve install/build scripts: esbuild (@uvrn/embed UMD bundle) and better-sqlite3
 # (@uvrn/store-sqlite native driver). pnpm 11 otherwise exits non-zero on a fresh

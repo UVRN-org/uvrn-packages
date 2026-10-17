@@ -25,7 +25,7 @@ and loads only `@uvrn/probability` from the host.
 ## Publish posture (current)
 
 - Promoted packages (`visual`, `chart-memory`, `track-record`) must be `@uvrn/*` + `access: public`.
-- Gate: `pnpm run check:phase1-gates` must pass before publish.
+- Gate: `pnpm run check:phase1-gates` must pass before publish. CI job `mcp-distribution` also runs `check:publish-access`, `check:packed-manifests`, and `check:dual-dry-run` after purity.
 
 ## Commands (never publish from this doc alone)
 

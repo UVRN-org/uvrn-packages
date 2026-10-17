@@ -1,15 +1,15 @@
 # UVRN Package Roadmap — Open Protocol Specs
 
-**Status:** Active — updated as packages ship
-**Last updated:** 2026-10-10
+**Status:** Archive / design history — Live package status lives in the [README package table](README.md#full-package-status)
+**Last updated:** 2026-10-17
 
-> **Current release line (2026-10-10) — UVRN 5.1:** 29 public `@uvrn/*` packages at `5.1.0`; `@uvrn/cli`, `@uvrn/mcp` (14 MCP tools, including `delta_prob_run`), `@uvrn/store-sqlite`, and `@uvrn/track-record` at `5.1.1`; and `@uvrn/probability` at `0.3.1`. The interface specs below date from the v3 (23-package) generation and remain the design reference; package READMEs, `README.md`, and `CHANGELOG.md` are authoritative for current versions and surfaces.
+> **Current release line — UVRN 5.1:** see the [README package table](README.md#full-package-status) for Live versions and surfaces (34 public `@uvrn/*` on the 5.1 / probability 0.3 line). The interface specs below are **v3-generation (23-package) design sketches kept as archive/history**; they are not a claim that those packages are unshipped.
 >
 > **UVRN Packages v3 (historical).** All 23 packages were aligned to `3.0.0` with `^3.0.0` internal peer ranges at that time. See `CHANGELOG.md`.
 
-> This document contains the full technical specifications for every upcoming UVRN package. Each spec includes the package intent, public API sketch, dependency requirements, interface contracts, and authoring notes — enough detail to serve as a seed for building a compatible implementation against the UVRN protocol.
+> This document keeps the full technical specifications from the v3 design generation. Each spec includes the package intent, public API sketch, dependency requirements, interface contracts, and authoring notes — useful as a design reference and seed for compatible implementations.
 >
-> **Use this however you want.** Hand a package spec to an AI agent, build it yourself, or use it as a reference for how the protocol fits together. The only rule: implementations that want to interoperate with the official UVRN ecosystem must match the interface contracts defined here.
+> **Use this however you want.** Hand a package spec to an AI agent, build against it, or use it as a reference for how the protocol fits together. For **whether a package is Live on npm**, trust `README.md` — not the historical section headings below. Implementations that want to interoperate with the official UVRN ecosystem must match the interface contracts defined here (or their current package README where the surface has evolved).
 >
 > **Design philosophy — provider-agnostic by default.** Every UVRN package is built around its *interface contract*, not around any specific third-party service. Where packages touch external systems (data sources, storage, delivery channels), they define a pluggable interface that any provider can implement. Reference implementations using free/open APIs are included as examples — not requirements. You bring your own providers. UVRN wires them together.
 
@@ -21,7 +21,7 @@ Each package spec follows a consistent format:
 
 - **What it does** — plain-language intent
 - **Layer** — where it sits in the protocol stack (see layer model below)
-- **Status** — pre-release (built, audited) or roadmap (design only)
+- **Status** — historical sketch labels from the v3 generation; current Live/in-tree status is in the [README package table](README.md#full-package-status)
 - **Public API sketch** — TypeScript usage examples showing the expected developer interface
 - **Dependencies** — what it imports from or peers with
 - **Interface contracts** — the types and shapes that must be honored for interop
@@ -147,16 +147,16 @@ Key conventions: `dist/` and `tsconfig.tsbuildinfo` are never committed. All exp
 
 ---
 
-## UVRN Official Pre-Release Packages
+## UVRN Official Pre-Release Packages (historical label)
 
-These three packages are built, tested, and audited. They ship as part of the next official release.
+These three packages were labeled pre-release in the v3 design generation. They are **Live** on npm in the current release line — see the [README package table](README.md#full-package-status). Specs below remain the design reference.
 
 ---
 
 ### `@uvrn/drift` — Temporal Decay Scoring
 
 **Layer:** 3 — Temporal & Lifecycle
-**Status:** Pre-release (built, audited — v3.0.0)
+**Status (historical sketch):** Pre-release at v3 design time — now Live (see README)
 
 **What it does:** Models how a receipt's V-Score degrades over time. Uses configurable decay curves and claim-type profiles so different kinds of claims (financial vs. research vs. news) can decay at different rates. Only the Freshness component decays — Completeness and Parity are re-scored when new sources arrive.
 
@@ -188,7 +188,7 @@ const snapshot = engine.score(receipt, { now: Date.now() });
 ### `@uvrn/agent` — Continuous Claim Monitoring
 
 **Layer:** 3 — Temporal & Lifecycle
-**Status:** Pre-release (built, audited — v3.0.0)
+**Status (historical sketch):** Pre-release at v3 design time — now Live (see README)
 
 **What it does:** Registers claims, polls on configurable intervals, calls drift scoring, and emits unsigned `AgentDriftReceipt` envelopes. This is the monitoring loop — it watches claims over time and reports when consensus shifts. It does NOT sign receipts (that's canon's job) and does NOT fetch data itself (that's farm's job via the `FarmConnector` interface).
 
@@ -241,7 +241,7 @@ agent.on('claim:threshold', (event) => {
 ### `@uvrn/canon` — Canonization Engine
 
 **Layer:** 3 — Temporal & Lifecycle
-**Status:** Pre-release (built, audited — v3.0.0)
+**Status (historical sketch):** Pre-release at v3 design time — now Live (see README)
 
 **What it does:** Locks a receipt as a permanent, human-confirmed, signed canonical record. Auto-suggests candidates for canonization but never auto-canonizes — a human or explicitly confirmed system trigger must call `canonize()`. Storage is pluggable — bring your own backend.
 
@@ -284,16 +284,16 @@ canon.on('suggest', (suggestion) => {
 
 ---
 
-## Roadmap Packages
+## Roadmap Packages (archive / design history)
 
-These packages are in the design phase. The specs below define the intended contract — build against them to create interoperable implementations.
+These sections were written as roadmap / design-phase sketches for the v3 (23-package) generation. The packages named below are **Live** on npm in the current release line — see the [README package table](README.md#full-package-status). Specs below are kept as archive/history (API sketches and interface contracts), not as a claim that they are unshipped.
 
 ---
 
 ### `@uvrn/farm` — Data Source Connectors
 
 **Layer:** 1 — Data & Consensus
-**Priority:** Highest — the missing input layer
+**Priority (historical):** Highest — the input-layer connectors (now Live; see README)
 
 **What it does:** Standardized connector framework for ingesting external data sources — financial feeds, news, research, alt data, or any custom source. Defines the `FarmConnector` interface and provides `BaseConnector` (an abstract class with built-in retry/timeout logic) plus a `MultiFarm` aggregator. Ships with a small set of open/free-tier reference connectors as working examples. You can use these as-is, extend them, or replace them entirely with your own connectors.
 
@@ -759,6 +759,6 @@ All 23 packages specified above are published at `5.1.x` in the UVRN 5.1 release
 
 ---
 
-*UVRN is an open protocol. These specs are public so anyone can build compatible implementations. The official packages will ship on their own timeline — but the protocol doesn't have to wait.*
+*UVRN is an open protocol. These specs are public so anyone can build compatible implementations. Official packages for the sketches above are Live on the current release line — see the [README package table](README.md#full-package-status).*
 
 *Apache License 2.0 — [UVRN-org](https://github.com/UVRN-org)*

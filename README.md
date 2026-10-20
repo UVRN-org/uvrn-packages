@@ -8,7 +8,7 @@ UVRN measures whether independent evidence **agrees, disagrees, conflicts, or sh
 
 **Org / protocol home**: [`UVRN-org/uvrn`](https://github.com/UVRN-org/uvrn)
 
-**Claude skills (not an `@uvrn/*` workspace package):** [`uvrn-skills/`](uvrn-skills/) — Claude Code plugin + Desktop skill zips; private; not in the pnpm workspace.
+**Agent skills (not an `@uvrn/*` workspace package):** [`uvrn-skills/`](uvrn-skills/) — fact-check, forecast and trend skills for any AI agent that can run a skill folder ([universal install](uvrn-skills/universal/README.md)), plus a Claude Code plugin and Desktop skill zips; private; not in the pnpm workspace.
 
 | Set | Scope | Count | Version |
 |-----|-------|-------|---------|

@@ -1,6 +1,6 @@
 # uvrn-skills
 
-UVRN-adapted skills for Claude: a **fact-checking / cross-reference engine**, a **probability layer**, and **trend analysis**. Every run returns text **and** a chart (self-contained HTML + inline SVG) and offers an optional Markdown report.
+UVRN-adapted skills for any AI agent that can read a skill folder and run Node ≥ 18: a **fact-checking / cross-reference engine**, a **probability layer**, and **trend analysis**. Claude plugin packaging is included; the [universal layer](universal/README.md) covers every other agent. Every run returns text **and** a chart (self-contained HTML + inline SVG) and offers an optional Markdown report.
 
 > Built on UVRN — https://github.com/UVRN-org/uvrn-packages (Apache-2.0). Not a published `@uvrn` package and not part of the pnpm workspace.
 
@@ -39,7 +39,15 @@ node scripts/run.mjs <factcheck|forecast|trend> input.json --out DIR [--md] [--n
 
 Reports say "cross-referenced" or "sources agree", never "verified". A score measures how supplied sources relate, not whether the world matches them. Provisional thresholds inherited from `@uvrn/probability` (min 8 cases, 24 h quote age, spread ≤ 0.05, depth ≥ $1,000, overround ≤ 0.5) are not finalized by the package owner.
 
-## Install / distribute
+## Any agent (universal)
+
+The skill folders need nothing Claude-specific. See [universal/README.md](universal/README.md):
+
+- **Paste one prompt:** [universal/INSTALL-PROMPT.md](universal/INSTALL-PROMPT.md) asks the agent to check its environment first and take only the matching path. Tried in Grok and ChatGPT.
+- **With a shell:** `node scripts/install.mjs --dest <skills dir> --check` copies only the three skill folders and runs each once. It never deletes; `--force` overwrites files in an existing folder.
+- **Zip:** `npm run build:universal` builds `dist/uvrn-skills-universal.zip` (three skill folders + universal README, install prompt, NOTICE, LICENSE; git-ignored, attach it to a release).
+
+## Install / distribute (Claude)
 
 - **Claude Code:** `.claude-plugin/plugin.json` (plugin) and `.claude-plugin/marketplace.json` (self-hosted marketplace) are included. Not yet validated against an installer.
 - **Claude Desktop plugins area:** add `dist/uvrn-skills.plugin` (a zip of `.claude-plugin/`, `skills/`, `NOTICE`, `README.md`; git-ignored, attach it to a release).

@@ -3,9 +3,11 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "UVRN-adapted skills plugin (not a published @uvrn package; not part of the pnpm workspace).",
+  "description": "UVRN-adapted skills for any AI agent that can run a skill folder, with Claude plugin packaging (not a published @uvrn package; not part of the pnpm workspace).",
   "scripts": {
     "sync": "node scripts/sync-skills.mjs",
+    "install-skills": "node scripts/install.mjs",
+    "build:universal": "node scripts/build-universal.mjs",
     "test": "node --test tests/*.test.mjs"
   },
   "engines": { "node": ">=18" },

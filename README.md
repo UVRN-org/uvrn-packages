@@ -8,6 +8,8 @@ UVRN measures whether independent evidence **agrees, disagrees, conflicts, or sh
 
 **Org / protocol home**: [`UVRN-org/uvrn`](https://github.com/UVRN-org/uvrn)
 
+**Claude skills (not an `@uvrn/*` workspace package):** [`uvrn-skills/`](uvrn-skills/) — Claude Code plugin + Desktop skill zips; private; not in the pnpm workspace.
+
 | Set | Scope | Count | Version |
 |-----|-------|-------|---------|
 | Public spine + advancements | `@uvrn/*` | 33 | `5.1.0`; `cli`, `track-record`, `store-sqlite` → `5.1.1`; `mcp` → `5.1.2` |

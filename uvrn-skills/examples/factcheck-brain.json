@@ -1,0 +1,16 @@
+{
+  "claim": "Humans only use 10% of their brains",
+  "profile": "research",
+  "evaluatedAt": "2026-10-18T15:00:00Z",
+  "freshnessWindowDays": 3650,
+  "sources": [
+    { "id": "s1", "title": "Society for Neuroscience (BrainFacts.org): Debunked, the 10 percent brain myth", "url": "https://www.brainfacts.org/Thinking-Sensing-and-Behaving/Thinking-and-Awareness/2019/Debunked-The-10-Percent-Brain-Myth-061719", "assertion": "myth", "credibility": 90, "measuredAt": "2019-06-19T00:00:00Z", "publishedAt": "2019-06-19T00:00:00Z" },
+    { "id": "s2", "title": "Association for Psychological Science: Myth, we only use 10% of our brains (S. Chew)", "url": "https://www.psychologicalscience.org/teaching/myth-we-only-use-10-of-our-brains.html", "assertion": "myth", "credibility": 88, "measuredAt": "2018-08-29T00:00:00Z", "publishedAt": "2018-08-29T00:00:00Z" },
+    { "id": "s3", "title": "Medical News Today: Do we use only 10 percent of our brain? (medically reviewed)", "url": "https://www.medicalnewstoday.com/articles/321060.php", "assertion": "myth", "credibility": 75, "measuredAt": "2024-07-17T00:00:00Z", "publishedAt": "2024-07-17T00:00:00Z" }
+  ],
+  "checks": [
+    { "id": "c1", "question": "Does each page, read in full, say the 10% claim is false?", "result": "pass", "method": "re-read all three sources" },
+    { "id": "c2", "question": "Do the three sources come from three different publishers rather than one repeating another?", "result": "pass", "note": "Society for Neuroscience, Association for Psychological Science and Medical News Today are separate organizations" },
+    { "id": "c3", "question": "Is the underlying research read directly, not only summaries of it?", "result": "unresolved", "note": "Brain-imaging and the cited journal paper were not read directly; the BrainFacts page cites no evidence of its own" }
+  ]
+}

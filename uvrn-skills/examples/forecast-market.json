@@ -1,0 +1,18 @@
+{
+  "forecastId": "fx-demo-market-1",
+  "asOf": "2026-10-18T12:00:00-07:00",
+  "question": { "text": "Will the Example Home team win tonight's game?", "resolveBy": "2026-10-19", "resolutionRule": "Resolves YES if the official box score lists Example Home as the winner of tonight's game." },
+  "mode": "market",
+  "market": {
+    "kind": "sportsbook", "venue": "Example Book", "targetOutcome": "Home", "resolvesAt": "2026-10-19",
+    "source": { "url": "https://example.org/book/market-1", "accessedAt": "2026-10-18T11:00:00-07:00" },
+    "outcomes": [
+      { "label": "Home", "odds": { "format": "american", "value": -150 }, "quotedAt": "2026-10-18T10:30:00-07:00" },
+      { "label": "Away", "odds": { "format": "american", "value": 130 }, "quotedAt": "2026-10-18T10:30:00-07:00" }
+    ]
+  },
+  "track": [
+    { "forecastP": 0.7, "outcome": 1 }, { "forecastP": 0.6, "outcome": 0 }, { "forecastP": 0.8, "outcome": 1 }, { "forecastP": 0.3, "outcome": 0 },
+    { "forecastP": 0.55, "outcome": 1 }, { "forecastP": 0.9, "outcome": 1 }, { "forecastP": 0.2, "outcome": 0 }, { "forecastP": 0.65, "outcome": 1 }
+  ]
+}

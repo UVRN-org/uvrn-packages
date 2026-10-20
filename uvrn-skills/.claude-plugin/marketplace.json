@@ -1,0 +1,11 @@
+{
+  "name": "uvrn-skills",
+  "owner": { "name": "Suttle Media" },
+  "plugins": [
+    {
+      "name": "uvrn-skills",
+      "source": "./",
+      "description": "UVRN-style fact-checking, probability and trend skills with chart reports."
+    }
+  ]
+}

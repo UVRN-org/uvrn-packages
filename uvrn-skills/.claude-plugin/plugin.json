@@ -1,0 +1,10 @@
+{
+  "name": "uvrn-skills",
+  "version": "0.1.0",
+  "description": "UVRN-style fact-checking (independent-source cross-reference with agent self-checks), a probability layer, and trend analysis. Each run returns text plus a chart, with an optional Markdown report.",
+  "author": { "name": "Suttle Media" },
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/UVRN-org/uvrn-packages",
+  "repository": "https://github.com/UVRN-org/uvrn-packages",
+  "keywords": ["fact-check", "verification", "probability", "forecast", "trends", "uvrn"]
+}

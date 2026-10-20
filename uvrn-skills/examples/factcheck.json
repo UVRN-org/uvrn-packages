@@ -1,0 +1,17 @@
+{
+  "claim": "The Federal Reserve held interest rates steady at its September 2026 meeting",
+  "profile": "news",
+  "evaluatedAt": "2026-10-18T15:00:00Z",
+  "sources": [
+    { "id": "s1", "title": "Federal Reserve press release (FOMC statement)", "url": "https://example.org/fed/fomc-statement", "assertion": "held steady", "credibility": 95, "measuredAt": "2026-09-17T18:00:00Z", "publishedAt": "2026-09-17T18:00:00Z" },
+    { "id": "s2", "title": "Wire service report on the FOMC decision", "url": "https://example.org/wire/fomc", "assertion": "held steady", "credibility": 80, "measuredAt": "2026-09-17T19:00:00Z", "publishedAt": "2026-09-17T19:30:00Z" },
+    { "id": "s3", "title": "Newspaper of record coverage", "url": "https://example.org/paper/fomc", "originId": "https://example.org/wire/fomc", "assertion": "held steady", "credibility": 75, "measuredAt": "2026-09-18T08:00:00Z", "publishedAt": "2026-09-18T08:00:00Z" },
+    { "id": "s4", "title": "Market data provider rate tracker", "url": "https://example.org/data/fedfunds", "assertion": "held steady", "credibility": 70, "measuredAt": "2026-10-10T00:00:00Z", "publishedAt": "2026-10-10T00:00:00Z" },
+    { "id": "s5", "title": "Blog post claiming a surprise cut", "url": "https://example.org/blog/fed-cut", "assertion": "cut", "credibility": 25, "measuredAt": "2026-09-17T22:00:00Z", "publishedAt": "2026-09-17T22:00:00Z" }
+  ],
+  "checks": [
+    { "id": "c1", "question": "Does the primary source (FOMC statement) say the target range was unchanged?", "result": "pass", "method": "reread primary source" },
+    { "id": "c2", "question": "Is the 'surprise cut' blog post traceable to any primary or wire source?", "result": "pass", "note": "No: it cites no origin, so it counts as a single uncorroborated voice" },
+    { "id": "c3", "question": "Does the data-provider tracker show the same rate before and after the meeting date?", "result": "unresolved", "note": "tracker history not accessible" }
+  ]
+}

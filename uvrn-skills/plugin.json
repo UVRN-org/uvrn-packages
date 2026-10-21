@@ -1,0 +1,19 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "uvrn-skills",
+  "version": "0.1.0",
+  "description": "Cross-reference evidence, estimate probabilities, and analyze trends with transparent statistical reports and charts. Requires Node.js 18+ for bundled calculations.",
+  "author": {
+    "name": "Suttle Media"
+  },
+  "homepage": "https://github.com/UVRN-org/uvrn-packages/tree/main/uvrn-skills",
+  "repository": "https://github.com/UVRN-org/uvrn-packages",
+  "license": "Apache-2.0",
+  "keywords": [
+    "fact-checking",
+    "research",
+    "probability",
+    "forecasting",
+    "trend-analysis"
+  ]
+}

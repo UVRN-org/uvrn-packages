@@ -15,5 +15,22 @@
     "probability",
     "forecasting",
     "trend-analysis"
-  ]
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "UVRN Research Skills",
+        "shortDescription": "Evidence, odds and trends",
+        "longDescription": "Cross-reference independently sourced claims, estimate probabilities using clearly labeled methods, and analyze dated trend data with charts. Includes FactCheck, Forecast and Trends. The host must gather credible sources; calculations require Node.js 18 or newer. Results are not guarantees of truth or signed UVRN receipts.",
+        "developerName": "Suttle Media",
+        "category": "Productivity",
+        "capabilities": [
+          "Cross-reference independent sources and flag conflicts",
+          "Calculate evidence-labeled event probabilities",
+          "Quantify dated trends and create charts"
+        ],
+        "websiteURL": "https://github.com/UVRN-org/uvrn-packages/tree/main/uvrn-skills"
+      }
+    }
+  }
 }

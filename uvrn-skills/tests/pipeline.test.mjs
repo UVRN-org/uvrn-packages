@@ -115,6 +115,46 @@ test('trend: exact slope on a clean line; refuses below minimum points; flat noi
   assert.equal(noise.direction, 'no-significant-trend');
   assert.equal(analyzeTrend([{ t: 'nope', v: 1 }]).status, 'invalid');
 });
+test('trend: xUnit defaults to day; omitted, undefined and "day" give identical results', () => {
+  const pts = Array.from({ length: 8 }, (_, i) => ({ t: i, v: 3 + 2 * i }));
+  const omitted = analyzeTrend(pts);
+  assert.equal(omitted.status, 'ok'); assert.equal(omitted.xUnit, 'day');
+  assert.deepEqual(analyzeTrend(pts, { xUnit: undefined }), omitted);
+  assert.deepEqual(analyzeTrend(pts, { xUnit: 'day' }), omitted);
+});
+test('trend: every xUnit other than "day" is rejected, not relabelled', () => {
+  const pts = Array.from({ length: 8 }, (_, i) => ({ t: i, v: 3 + 2 * i }));
+  for (const xUnit of ['month', 'week', 'year', 'fortnight', 'Day', '', null, 1, {}]) {
+    const r = analyzeTrend(pts, { xUnit });
+    assert.equal(r.status, 'invalid', `xUnit ${JSON.stringify(xUnit)}`);
+    assert.ok(r.errors.some((e) => e.includes('xUnit') && e.includes('only "day" is supported')), JSON.stringify(r.errors));
+  }
+});
+test('trend: daily slope on an exact line; a one-day horizon advances the projection one day', () => {
+  const r = analyzeTrend(Array.from({ length: 8 }, (_, i) => ({ t: i, v: 3 + 2 * i })), { horizon: 1 });
+  assert.ok(Math.abs(r.ols.slope - 2) < 1e-12 && Math.abs(r.theilSen.slope - 2) < 1e-12);
+  assert.equal(r.projection.horizon, 1); assert.equal(r.projection.xUnit, 'day');
+  assert.equal(r.projection.at, '1970-01-09'); // last point t = 7 days, +1 day
+  assert.ok(Math.abs(r.projection.value - (3 + 2 * 8)) < 1e-9);
+});
+test('trend: insufficient data keeps its existing refusal', () => {
+  const r = analyzeTrend([0, 1, 2, 3].map((i) => ({ t: i, v: i })));
+  assert.equal(r.status, 'insufficient-data'); assert.equal(r.n, 4); assert.equal(r.minPoints, 5);
+  assert.equal(r.reason, '4 points is below the minimum 5; no trend is reported rather than guessing one.');
+});
+test('trend CLI: a rejected xUnit writes explanatory JSON, HTML and Markdown and exits 1', () => {
+  const input = { title: 'Unit probe', options: { xUnit: 'month' }, points: Array.from({ length: 8 }, (_, i) => ({ t: i, v: 3 + 2 * i })) };
+  const r = runSkill('uvrn-trends', 'trend', input, ['--md']);
+  assert.equal(r.status, 1, r.stderr);
+  assert.equal(r.summary.status, 'invalid');
+  const msg = 'xUnit "month" is not supported: only "day" is supported, and horizon is measured in days.';
+  const json = JSON.parse(readFileSync(r.summary.files.json, 'utf8'));
+  assert.equal(json.status, 'invalid'); assert.deepEqual(json.errors, [msg]);
+  const html = readFileSync(r.summary.files.html, 'utf8');
+  assert.ok(html.includes('Invalid trend input'));
+  assert.ok(html.includes(msg.replaceAll('"', '&quot;')), 'HTML carries the escaped error'); // report.mjs esc() turns " into &quot;
+  assert.ok(readFileSync(r.summary.files.md, 'utf8').includes(msg));
+});
 test('trend: a single wild outlier is flagged and Theil–Sen resists it', () => {
   const pts = Array.from({ length: 12 }, (_, i) => ({ t: i, v: 10 + i + (i === 6 ? 80 : 0) }));
   const r = analyzeTrend(pts);

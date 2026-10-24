@@ -18,7 +18,8 @@ const errors = [];
 
 const dirs = fs
   .readdirSync(root)
-  .filter((d) => d.startsWith('uvrn-') && fs.existsSync(path.join(root, d, 'package.json')));
+  .filter((d) => d.startsWith('uvrn-') && fs.existsSync(path.join(root, d, 'package.json')))
+  .filter((d) => !JSON.parse(fs.readFileSync(path.join(root, d, 'package.json'), 'utf8')).private); // "private": true packages (uvrn-skills) are never published
 
 function packDryRun(dir) {
   const result = spawnSync('npm', ['pack', '--dry-run', '--json'], {

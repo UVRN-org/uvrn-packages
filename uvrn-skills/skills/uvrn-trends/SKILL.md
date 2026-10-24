@@ -13,7 +13,7 @@ Computes direction and size of a trend from points you collect, refuses when the
 2. **Collect at least 5 dated points** (10+ is much better) from sources you read. Put each source URL on its point. Prefer one consistent source over a patchwork; if you must mix sources, say so.
 3. **Optionally cross-check the individual figures** with the `uvrn-factcheck` skill when a single point carries a lot of weight.
 4. **Run:** `node scripts/run.mjs trend input.json --out <dir> --name <slug>`
-5. **Deliver text AND the chart:** direction, the Theil–Sen slope with units, first-to-last change, the Mann–Kendall result, any outliers, the projection with its caveat, and the cautions the script returned. Show the HTML report (artifact if available, otherwise send the file).
+5. **Deliver text AND the chart:** direction, the Theil–Sen slope with units (value unit per day), first-to-last change, the Mann–Kendall result, any outliers, the projection with its caveat, and the cautions the script returned. Show the HTML report (artifact if available, otherwise send the file).
 6. **Ask once:** "Want a Markdown report to go with this?" If yes, re-run with `--md`.
 
 ## Input
@@ -27,6 +27,8 @@ Computes direction and size of a trend from points you collect, refuses when the
 ```
 
 `t` is an ISO date/time (or a number of days). `horizon` is how far ahead to extrapolate, in days.
+
+**Time is always measured in days.** `xUnit` accepts only `"day"` (the default when omitted); any other value (`"month"`, `"week"`, `"year"`, an empty string, `null`) returns `invalid` instead of relabelling per-day numbers. Slopes are therefore **per day**. If a monthly figure helps the reader, multiply the per-day slope by 30.44 and call it an *approximate average-month rate*, not an exact monthly slope.
 
 ## What the numbers mean
 

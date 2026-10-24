@@ -19,7 +19,9 @@ const normCdf = (z) => 0.5 * (1 + erf(z / Math.SQRT2));
 /** points: [{ t: ISO string | number, v: number, source?: url, note?: string }] */
 export function analyzeTrend(points, opts = {}) {
   const minPoints = opts.minPoints ?? 5;
-  const xUnit = opts.xUnit ?? 'day';
+  // time is always measured in days; any other unit label would mislabel per-day numbers, so refuse it
+  const xUnit = opts.xUnit === undefined ? 'day' : opts.xUnit;
+  if (xUnit !== 'day') return { status: 'invalid', errors: [`xUnit ${JSON.stringify(xUnit)} is not supported: only "day" is supported, and horizon is measured in days.`] };
   const errors = [];
   const clean = [];
   (points ?? []).forEach((p, i) => {

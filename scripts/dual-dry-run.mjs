@@ -26,7 +26,8 @@ function dryPack(dir) {
 
 const dirs = fs
   .readdirSync(root)
-  .filter((d) => d.startsWith('uvrn-') && fs.existsSync(path.join(root, d, 'package.json')));
+  .filter((d) => d.startsWith('uvrn-') && fs.existsSync(path.join(root, d, 'package.json')))
+  .filter((d) => JSON.parse(fs.readFileSync(path.join(root, d, 'package.json'), 'utf8')).private !== true); // "private": true packages (uvrn-skills) are never published
 
 for (const dir of dirs) {
   const pkg = JSON.parse(fs.readFileSync(path.join(root, dir, 'package.json'), 'utf8'));
